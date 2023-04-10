@@ -2,6 +2,7 @@ package io.taraxacum.finaltech.util;
 
 import io.github.thebusybiscuit.slimefun4.core.handlers.BlockBreakHandler;
 import io.github.thebusybiscuit.slimefun4.core.handlers.BlockPlaceHandler;
+import io.taraxacum.libs.plugin.dto.AdvancedMachineRecipe;
 import io.taraxacum.libs.plugin.dto.ItemAmountWrapper;
 import io.taraxacum.libs.plugin.dto.ItemWrapper;
 import io.taraxacum.finaltech.core.item.machine.AbstractMachine;
@@ -9,6 +10,7 @@ import io.taraxacum.libs.plugin.util.ItemStackUtil;
 import me.mrCookieSlime.Slimefun.api.BlockStorage;
 import me.mrCookieSlime.Slimefun.api.inventory.BlockMenu;
 import org.bukkit.Location;
+import org.bukkit.World;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.inventory.Inventory;
@@ -333,7 +335,160 @@ public final class MachineUtil {
         return count / itemAmountWrapper.getAmount();
     }
 
+    public static int calMaxMatch(@Nonnull Inventory inventory, int[] slots, @Nonnull ItemStack[] item) {
+        return MachineUtil.calMaxMatch(inventory, slots, ItemStackUtil.calItemArrayWithAmount(item));
+    }
+
     public static int calMaxMatch(@Nonnull Inventory inventory, int[] slots, @Nonnull ItemStack item) {
         return MachineUtil.calMaxMatch(inventory, slots, new ItemAmountWrapper(item));
+    }
+
+    public static void pushItem(@Nonnull Inventory inventory, int[] slots, @Nonnull ItemStack... itemStacks) {
+        MachineUtil.pushItem(inventory, slots, 1, itemStacks);
+    }
+
+    public static void pushItem(@Nonnull Inventory inventory, int[] slots, int amount, @Nonnull ItemStack... itemStacks) {
+        ItemAmountWrapper[] itemAmountWrappers = ItemStackUtil.calItemArrayWithAmount(itemStacks);
+        MachineUtil.pushItem(inventory, slots, amount, itemAmountWrappers);
+    }
+
+    public static void pushItem(@Nonnull Inventory inventory, int[] slots, @Nonnull ItemAmountWrapper... itemAmountWrappers) {
+        MachineUtil.pushItem(inventory, slots, 1, itemAmountWrappers);
+
+    }
+
+    /**
+     * Use {@link #calMaxMatch} to make sure that it is available to do this
+     */
+    public static void pushItem(@Nonnull Inventory inventory, int[] slots, int amount, @Nonnull ItemAmountWrapper... itemAmountWrappers) {
+        if(itemAmountWrappers.length == 0 || amount == 0) {
+            return;
+        }
+        int[] totalAmount = new int[itemAmountWrappers.length];
+        for(int i = 0; i < totalAmount.length; i++) {
+            totalAmount[i] = amount * itemAmountWrappers[i].getAmount();
+        }
+        int finish = 0;
+        List<Integer> emptySlotList = new ArrayList<>();
+        ItemWrapper itemWrapper = new ItemWrapper();
+        int count;
+        Map<Integer, Integer> slotAmountMap = new HashMap<>();
+        for(int slot : slots) {
+            ItemStack itemStack = inventory.getItem(slot);
+            if(ItemStackUtil.isItemNull(itemStack)) {
+                emptySlotList.add(slot);
+            } else if(itemStack.getAmount() < itemStack.getMaxStackSize()) {
+                slotAmountMap.put(slot, itemStack.getAmount());
+                itemWrapper.newWrap(itemStack);
+                for(int i = 0; i < itemAmountWrappers.length; i++) {
+                    if(totalAmount[i] > 0 && ItemStackUtil.isItemSimilar(itemWrapper, itemAmountWrappers[i])) {
+                        count = Math.min(totalAmount[i], itemStack.getMaxStackSize() - itemStack.getAmount());
+                        itemStack.setAmount(itemStack.getAmount() + count);
+                        totalAmount[i] -= count;
+                        if(totalAmount[i] == 0) {
+                            finish++;
+                        }
+                        break;
+                    }
+                }
+            }
+        }
+
+        if(finish == totalAmount.length) {
+            return;
+        }
+
+        List<Integer> emptySlotListCopy = new ArrayList<>(emptySlotList);
+        Iterator<Integer> iterator;
+        int i;
+        for(i = 0; i < itemAmountWrappers.length; i++) {
+            if(totalAmount[i] > 0) {
+                iterator = emptySlotList.iterator();
+                while (iterator.hasNext()) {
+                    Integer slot = iterator.next();
+                    if(totalAmount[i] > 0) {
+                        count = Math.min(totalAmount[i], itemAmountWrappers[i].getItemStack().getMaxStackSize());
+                        inventory.setItem(slot, itemAmountWrappers[i].getItemStack());
+                        inventory.getItem(slot).setAmount(count);
+                        totalAmount[i] -= count;
+                        iterator.remove();
+                        if(totalAmount[i] == 0) {
+                            finish++;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        // This should not happen as if the items could not be put in the inventory
+        // If it happened, just rollback
+        if(finish != totalAmount.length) {
+            for(int slot : emptySlotListCopy) {
+                inventory.setItem(slot, null);
+            }
+            for(Map.Entry<Integer, Integer> entry : slotAmountMap.entrySet()) {
+                inventory.getItem(entry.getKey()).setAmount(entry.getValue());
+            }
+        }
+    }
+
+    /**
+     * @return how many items truly dropped in stack
+     */
+    public static int dropItems(@Nonnull Inventory inventory, @Nonnull Location location, int... slots) {
+        return MachineUtil.dropItems(inventory, location.getWorld(), location, slots);
+    }
+
+    /**
+     * @return how many items truly dropped in stack
+     */
+    public static int dropItems(@Nonnull Inventory inventory, @Nonnull World world, @Nonnull Location location, int... slots) {
+        int amount = 0;
+        for(int slot : slots) {
+            ItemStack itemStack = inventory.getItem(slot);
+            if(itemStack != null) {
+                inventory.clear(slot);
+                world.dropItemNaturally(location, itemStack);
+                amount++;
+            }
+        }
+        return amount;
+    }
+
+    /**
+     * @param sourceList May be altered! Clone it if necessary!
+     */
+    public static List<ItemAmountWrapper> calParsed(@Nonnull List<ItemAmountWrapper> sourceList, @Nonnull List<AdvancedMachineRecipe> recipeList, int amount) {
+        for(int i = 0; i < amount; i++) {
+            boolean work = false;
+            List<ItemAmountWrapper> tempList = new ArrayList<>();
+            for(ItemAmountWrapper oldItem : sourceList) {
+                if(oldItem.getAmount() < Integer.MAX_VALUE / ConstantTableUtil.ITEM_MAX_STACK) {
+                    for (AdvancedMachineRecipe advancedMachineRecipe : recipeList) {
+                        for (AdvancedMachineRecipe.AdvancedRandomOutput advancedRandomOutput : advancedMachineRecipe.getOutputs()) {
+                            ItemAmountWrapper outputItem = advancedRandomOutput.getOutputItem()[0];
+                            if (advancedRandomOutput.getOutputItem().length == 1 && oldItem.getAmount() >= outputItem.getAmount() && ItemStackUtil.isItemSimilar(oldItem, outputItem)) {
+                                int count = oldItem.getAmount() / outputItem.getAmount();
+                                for (ItemAmountWrapper inputItem : advancedMachineRecipe.getInput()) {
+                                    ItemAmountWrapper.addToList(tempList, inputItem, count * advancedMachineRecipe.getWeightSum() / advancedRandomOutput.weight());
+                                }
+                                oldItem.setAmount(oldItem.getAmount() - count * outputItem.getAmount());
+                                work = true;
+                            }
+                        }
+                    }
+                }
+                if (oldItem.getAmount() > 0) {
+                    ItemAmountWrapper.addToList(tempList, oldItem);
+                    oldItem.setAmount(0);
+                }
+            }
+            sourceList = tempList;
+            if (!work) {
+                break;
+            }
+        }
+        return sourceList;
     }
 }
