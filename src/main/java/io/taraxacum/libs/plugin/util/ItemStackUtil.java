@@ -852,6 +852,13 @@ public final class ItemStackUtil {
         itemStack.setItemMeta(itemMeta);
     }
 
+    public static void clearNBT(@Nonnull ItemMeta itemMeta) {
+        PersistentDataContainer persistentDataContainer = itemMeta.getPersistentDataContainer();
+        for(NamespacedKey namespacedKey : persistentDataContainer.getKeys()) {
+            persistentDataContainer.remove(namespacedKey);
+        }
+    }
+
     @Nullable
     public static ItemStack cloneWithoutNBT(@Nullable ItemStack itemStack) {
         if(itemStack == null) {
@@ -862,6 +869,21 @@ public final class ItemStackUtil {
         }
         ItemStack result = new ItemStack(itemStack);
         ItemStackUtil.clearNBT(result);
+        return result;
+    }
+
+    @Nonnull
+    public static ItemStack cloneAsDescriptiveItem(@Nonnull ItemStack itemStack, @Nonnull String... loreToLast) {
+        if(!itemStack.hasItemMeta()) {
+            return new ItemStack(itemStack);
+        }
+
+        ItemStack result = new ItemStack(itemStack);
+        ItemMeta itemMeta = result.getItemMeta();
+        ItemStackUtil.clearNBT(itemMeta);
+        ItemStackUtil.addLoresToLast(itemMeta, loreToLast);
+        result.setItemMeta(itemMeta);
+
         return result;
     }
 
