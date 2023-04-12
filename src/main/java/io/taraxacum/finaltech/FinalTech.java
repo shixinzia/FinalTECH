@@ -4,6 +4,8 @@ import io.github.thebusybiscuit.slimefun4.api.SlimefunAddon;
 import io.github.thebusybiscuit.slimefun4.implementation.Slimefun;
 import io.taraxacum.common.util.StringNumberUtil;
 import io.taraxacum.finaltech.core.patch.EnergyRegulatorBlockTicker;
+import io.taraxacum.finaltech.core.service.LogService;
+import io.taraxacum.finaltech.core.service.impl.FakeLogService;
 import io.taraxacum.finaltech.setup.TemplateParser;
 import io.taraxacum.finaltech.setup.Updater;
 import io.taraxacum.finaltech.util.ConstantTableUtil;
@@ -62,6 +64,7 @@ public class FinalTech extends JavaPlugin implements SlimefunAddon {
     private ConfigFileManager item;
     private ConfigFileManager template;
     private LanguageManager languageManager;
+    private LogService logService;
     private Set<String> asyncSlimefunIdSet = new HashSet<>();
     private Set<String> antiAccelerateSlimefunIdSet = new HashSet<>();
     private Set<String> performanceLimitSlimefunIdSet = new HashSet<>();
@@ -96,6 +99,9 @@ public class FinalTech extends JavaPlugin implements SlimefunAddon {
             Bukkit.getPluginManager().disablePlugin(this);
             return;
         }
+
+        /* set log service. */
+        this.logService = new FakeLogService();
 
         /* set language manager */
         SetupUtil.setupLanguageManager(this.languageManager);
@@ -457,6 +463,11 @@ public class FinalTech extends JavaPlugin implements SlimefunAddon {
     @Nonnull
     public static String[] getLanguageStringArray(@Nonnull String... paths) {
         return instance.languageManager.getStringList(paths).toArray(new String[0]);
+    }
+
+    @Nonnull
+    public static LogService getLogService() {
+        return instance.logService;
     }
 
     public static boolean isAsyncSlimefunItem(@Nonnull String id) {
