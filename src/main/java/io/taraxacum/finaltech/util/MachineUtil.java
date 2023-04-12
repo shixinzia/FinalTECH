@@ -510,6 +510,7 @@ public final class MachineUtil {
                 ItemStack itemStack = inventory.getItem(slot);
                 int n = Math.min(count, itemStack.getMaxStackSize() - itemStack.getAmount());
                 itemStack.setAmount(itemStack.getAmount() + n);
+                count -= n;
             }
 
             for(int slot : emptyUseSlot[i]) {
@@ -555,8 +556,8 @@ public final class MachineUtil {
         List<Integer>[] pushSlot = new List[itemAmountWrappers.length];
         List<Integer>[] emptyUseSlot = new List[itemAmountWrappers.length];
         for(int i = 0; i < totalAmount.length; i++) {
-            totalAmount[i] = amount * itemAmountWrappers[i].getAmount();
-            maxMatchAmount[i] = totalAmount[i];
+            totalAmount[i] = 0;
+            maxMatchAmount[i] = amount * itemAmountWrappers[i].getAmount();
             matchAmount[i] = 0;
             pushSlot[i] = new ArrayList<>();
             emptyUseSlot[i] = new ArrayList<>();
@@ -571,10 +572,10 @@ public final class MachineUtil {
             } else if(itemStack.getAmount() < itemStack.getMaxStackSize()) {
                 itemWrapper.newWrap(itemStack);
                 for(int i = 0; i < itemAmountWrappers.length; i++) {
-                    if(totalAmount[i] > 0 && ItemStackUtil.isItemSimilar(itemWrapper, itemAmountWrappers[i])) {
+                    if(totalAmount[i] < maxMatchAmount[i] && ItemStackUtil.isItemSimilar(itemWrapper, itemAmountWrappers[i])) {
                         pushSlot[i].add(slot);
-                        totalAmount[i] -= Math.min(totalAmount[i], itemStack.getMaxStackSize() - itemStack.getAmount());
-                        matchAmount[i] = (maxMatchAmount[i] - totalAmount[i]) / itemAmountWrappers[i].getAmount();
+                        totalAmount[i] = Math.min(totalAmount[i] + itemStack.getMaxStackSize() - itemStack.getAmount(), maxMatchAmount[i]);
+                        matchAmount[i] = totalAmount[i] / itemAmountWrappers[i].getAmount();
                         break;
                     }
                 }
@@ -590,7 +591,7 @@ public final class MachineUtil {
             allFull = true;
 
             for(int i = 0; i < totalAmount.length; i++) {
-                if(matchAmount[i] != amount) {
+                if(matchAmount[i] < amount) {
                     allFull = false;
                     if(minMatch > matchAmount[i]) {
                         minMatchP = i;
@@ -603,8 +604,8 @@ public final class MachineUtil {
                 break;
             } else {
                 emptyUseSlot[minMatchP].add(slot);
-                totalAmount[minMatchP] -= itemAmountWrappers[minMatchP].getItemStack().getMaxStackSize();
-                matchAmount[minMatchP] = (maxMatchAmount[minMatchP] - totalAmount[minMatchP]) / itemAmountWrappers[minMatchP].getAmount();
+                totalAmount[minMatchP] = Math.min(totalAmount[minMatchP] + itemAmountWrappers[minMatchP].getItemStack().getMaxStackSize(), maxMatchAmount[minMatchP]);
+                matchAmount[minMatchP] = totalAmount[minMatchP] / itemAmountWrappers[minMatchP].getAmount();
             }
         }
 
@@ -620,6 +621,7 @@ public final class MachineUtil {
                 ItemStack itemStack = inventory.getItem(slot);
                 int n = Math.min(count, itemStack.getMaxStackSize() - itemStack.getAmount());
                 itemStack.setAmount(itemStack.getAmount() + n);
+                count -= n;
             }
 
             for(int slot : emptyUseSlot[i]) {
