@@ -433,6 +433,206 @@ public final class MachineUtil {
         }
     }
 
+    public static boolean tryPushAllItem(@Nonnull Inventory inventory, int[] slots, @Nonnull ItemStack... itemStacks) {
+        return MachineUtil.tryPushAllItem(inventory, slots, 1, ItemStackUtil.calItemArrayWithAmount(itemStacks));
+    }
+
+    public static boolean tryPushAllItem(@Nonnull Inventory inventory, int[] slots, int amount, @Nonnull ItemStack... itemStacks) {
+        return MachineUtil.tryPushAllItem(inventory, slots, amount, ItemStackUtil.calItemArrayWithAmount(itemStacks));
+    }
+
+    public static boolean tryPushAllItem(@Nonnull Inventory inventory, int[] slots, @Nonnull ItemAmountWrapper... itemAmountWrappers) {
+        return MachineUtil.tryPushAllItem(inventory, slots, 1, itemAmountWrappers);
+    }
+
+    /**
+     * Push items to the inventory with given amount
+     * @param amount how many items should be pushed
+     * @return true if item can be pushed and pushed successfully
+     * for example:
+     *      amount = 4
+     *      itemAmountWrappers = [cobblestone with 12 amount]
+     *      in this case, 4 * 12 = 48 cobblestones will be pushed to the inventory, and it will return true
+     */
+    public static boolean tryPushAllItem(@Nonnull Inventory inventory, int[] slots, int amount, @Nonnull ItemAmountWrapper... itemAmountWrappers) {
+        if(itemAmountWrappers.length == 0) {
+            return false;
+        }
+        int[] totalAmount = new int[itemAmountWrappers.length];
+        List<Integer>[] pushSlot = new List[itemAmountWrappers.length];
+        List<Integer>[] emptyUseSlot = new List[itemAmountWrappers.length];
+        for(int i = 0; i < totalAmount.length; i++) {
+            totalAmount[i] = amount * itemAmountWrappers[i].getAmount();
+            pushSlot[i] = new ArrayList<>();
+            emptyUseSlot[i] = new ArrayList<>();
+        }
+
+        ItemWrapper itemWrapper = new ItemWrapper();
+        List<Integer> emptySlotList = new ArrayList<>();
+        for(int slot : slots) {
+            ItemStack itemStack = inventory.getItem(slot);
+            if(ItemStackUtil.isItemNull(itemStack)) {
+                emptySlotList.add(slot);
+            } else if(itemStack.getAmount() < itemStack.getMaxStackSize()) {
+                itemWrapper.newWrap(itemStack);
+                for(int i = 0; i < itemAmountWrappers.length; i++) {
+                    if(totalAmount[i] > 0 && ItemStackUtil.isItemSimilar(itemWrapper, itemAmountWrappers[i])) {
+                        pushSlot[i].add(slot);
+                        totalAmount[i] -= Math.min(totalAmount[i], itemStack.getMaxStackSize() - itemStack.getAmount());
+                        break;
+                    }
+                }
+            }
+        }
+
+        for(int i = 0; i < totalAmount.length; i++) {
+            if(totalAmount[i] > 0) {
+                Iterator<Integer> iterator = emptySlotList.iterator();
+                while (iterator.hasNext()) {
+                    Integer slot = iterator.next();
+                    iterator.remove();
+                    emptyUseSlot[i].add(slot);
+                    totalAmount[i] -= Math.min(totalAmount[i], itemAmountWrappers[i].getItemStack().getMaxStackSize());
+                    if(totalAmount[i] == 0) {
+                        break;
+                    }
+                }
+                if(totalAmount[i] > 0) {
+                    return false;
+                }
+            }
+        }
+
+        int count;
+        for(int i = 0; i < totalAmount.length; i++) {
+            count =  amount * itemAmountWrappers[i].getAmount();
+            for(int slot : pushSlot[i]) {
+                ItemStack itemStack = inventory.getItem(slot);
+                int n = Math.min(count, itemStack.getMaxStackSize() - itemStack.getAmount());
+                itemStack.setAmount(itemStack.getAmount() + n);
+            }
+
+            for(int slot : emptyUseSlot[i]) {
+                int n = Math.min(count, itemAmountWrappers[i].getItemStack().getMaxStackSize());
+                inventory.setItem(slot, itemAmountWrappers[i].getItemStack());
+                inventory.getItem(slot).setAmount(n);
+                count -= n;
+            }
+        }
+
+        return true;
+    }
+
+    public static int tryPushItem(@Nonnull Inventory inventory, int[] slots, @Nonnull ItemStack... itemStacks) {
+        return MachineUtil.tryPushItem(inventory, slots, 1, ItemStackUtil.calItemArrayWithAmount(itemStacks));
+    }
+
+    public static int tryPushItem(@Nonnull Inventory inventory, int[] slots, int amount, @Nonnull ItemStack... itemStacks) {
+        return MachineUtil.tryPushItem(inventory, slots, amount, ItemStackUtil.calItemArrayWithAmount(itemStacks));
+    }
+
+    public static int tryPushItem(@Nonnull Inventory inventory, int[] slots, @Nonnull ItemAmountWrapper... itemAmountWrappers) {
+        return MachineUtil.tryPushItem(inventory, slots, 1, itemAmountWrappers);
+    }
+
+    /**
+     * Push items to the inventory with given amount
+     * @param amount how many items should be pushed
+     * @return amount that is actually can be pushed and successfully pushed
+     * for example:
+     *      amount = 4
+     *      itemAmountWrappers = [cobblestone with 12 amount]
+     *      in this case, 4 * 12 = 48 cobblestones will be pushed to the inventory, and it will return 4
+     *      or maybe 2 * 12 = 24 cobblestones will be pushed to the inventory, and it will return 2
+     */
+    public static int tryPushItem(@Nonnull Inventory inventory, int[] slots, int amount, @Nonnull ItemAmountWrapper... itemAmountWrappers) {
+        if(itemAmountWrappers.length == 0) {
+            return 0;
+        }
+        int[] totalAmount = new int[itemAmountWrappers.length];
+        int[] maxMatchAmount = new int[itemAmountWrappers.length];
+        int[] matchAmount = new int[itemAmountWrappers.length];
+        List<Integer>[] pushSlot = new List[itemAmountWrappers.length];
+        List<Integer>[] emptyUseSlot = new List[itemAmountWrappers.length];
+        for(int i = 0; i < totalAmount.length; i++) {
+            totalAmount[i] = amount * itemAmountWrappers[i].getAmount();
+            maxMatchAmount[i] = totalAmount[i];
+            matchAmount[i] = 0;
+            pushSlot[i] = new ArrayList<>();
+            emptyUseSlot[i] = new ArrayList<>();
+        }
+
+        ItemWrapper itemWrapper = new ItemWrapper();
+        List<Integer> emptySlotList = new ArrayList<>();
+        for(int slot : slots) {
+            ItemStack itemStack = inventory.getItem(slot);
+            if(ItemStackUtil.isItemNull(itemStack)) {
+                emptySlotList.add(slot);
+            } else if(itemStack.getAmount() < itemStack.getMaxStackSize()) {
+                itemWrapper.newWrap(itemStack);
+                for(int i = 0; i < itemAmountWrappers.length; i++) {
+                    if(totalAmount[i] > 0 && ItemStackUtil.isItemSimilar(itemWrapper, itemAmountWrappers[i])) {
+                        pushSlot[i].add(slot);
+                        totalAmount[i] -= Math.min(totalAmount[i], itemStack.getMaxStackSize() - itemStack.getAmount());
+                        matchAmount[i] = (maxMatchAmount[i] - totalAmount[i]) / itemAmountWrappers[i].getAmount();
+                        break;
+                    }
+                }
+            }
+        }
+
+        int minMatch;
+        int minMatchP;
+        boolean allFull;
+        for(int slot : emptySlotList) {
+            minMatchP = 0;
+            minMatch = matchAmount[0];
+            allFull = true;
+
+            for(int i = 0; i < totalAmount.length; i++) {
+                if(matchAmount[i] != amount) {
+                    allFull = false;
+                    if(minMatch > matchAmount[i]) {
+                        minMatchP = i;
+                        minMatch = matchAmount[i];
+                    }
+                }
+            }
+
+            if(allFull) {
+                break;
+            } else {
+                emptyUseSlot[minMatchP].add(slot);
+                totalAmount[minMatchP] -= itemAmountWrappers[minMatchP].getItemStack().getMaxStackSize();
+                matchAmount[minMatchP] = (maxMatchAmount[minMatchP] - totalAmount[minMatchP]) / itemAmountWrappers[minMatchP].getAmount();
+            }
+        }
+
+        minMatch = matchAmount[0];
+        for(int i = 1; i < totalAmount.length; i++) {
+            minMatch = Math.min(minMatch, matchAmount[i]);
+        }
+
+        int count;
+        for(int i = 0; i < totalAmount.length; i++) {
+            count =  minMatch * itemAmountWrappers[i].getAmount();
+            for(int slot : pushSlot[i]) {
+                ItemStack itemStack = inventory.getItem(slot);
+                int n = Math.min(count, itemStack.getMaxStackSize() - itemStack.getAmount());
+                itemStack.setAmount(itemStack.getAmount() + n);
+            }
+
+            for(int slot : emptyUseSlot[i]) {
+                int n = Math.min(count, itemAmountWrappers[i].getItemStack().getMaxStackSize());
+                inventory.setItem(slot, itemAmountWrappers[i].getItemStack());
+                inventory.getItem(slot).setAmount(n);
+                count -= n;
+            }
+        }
+
+        return minMatch;
+    }
+
     /**
      * @return how many items truly dropped in stack
      */
