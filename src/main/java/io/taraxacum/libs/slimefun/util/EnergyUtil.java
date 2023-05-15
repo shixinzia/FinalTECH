@@ -1,11 +1,9 @@
 package io.taraxacum.libs.slimefun.util;
 
 import io.taraxacum.common.util.JavaUtil;
-import io.taraxacum.common.util.StringNumberUtil;
 import io.taraxacum.finaltech.util.ConstantTableUtil;
-import me.mrCookieSlime.CSCoreLibPlugin.Configuration.Config;
-import me.mrCookieSlime.Slimefun.api.BlockStorage;
-import org.bukkit.Location;
+import io.taraxacum.libs.plugin.interfaces.LocationDataService;
+import io.taraxacum.libs.plugin.dto.LocationData;
 
 import javax.annotation.Nonnull;
 
@@ -15,27 +13,11 @@ import javax.annotation.Nonnull;
  */
 public class EnergyUtil {
     @Nonnull
-    public static String getCharge(@Nonnull Location location) {
-        Config config = BlockStorage.getLocationInfo(location);
-        return BlockStorageConfigUtil.isEmptyConfig(config) ? "0" : EnergyUtil.getCharge(BlockStorage.getLocationInfo(location));
+    public static String getCharge(@Nonnull LocationDataService locationDataService, @Nonnull LocationData locationData) {
+        return JavaUtil.getFirstNotNull(locationDataService.getLocationData(locationData, ConstantTableUtil.CONFIG_CHARGE), "0");
     }
 
-    @Nonnull
-    public static String getCharge(@Nonnull Config config) {
-        return JavaUtil.getFirstNotNull(config.getString(ConstantTableUtil.CONFIG_CHARGE), StringNumberUtil.ZERO);
+    public static void setCharge(@Nonnull LocationDataService locationDataService, @Nonnull LocationData locationData, @Nonnull String energy) {
+        locationDataService.setLocationData(locationData, ConstantTableUtil.CONFIG_CHARGE, energy);
     }
-
-    public static void setCharge(@Nonnull Location location, @Nonnull String energy) {
-        BlockStorage.addBlockInfo(location, ConstantTableUtil.CONFIG_CHARGE, energy);
-    }
-
-    public static void setCharge(@Nonnull Config config, @Nonnull String energy) {
-        config.setValue(ConstantTableUtil.CONFIG_CHARGE, energy);
-    }
-
-    public static void setCharge(@Nonnull Config config, int energy) {
-        config.setValue(ConstantTableUtil.CONFIG_CHARGE, String.valueOf(energy));
-    }
-
-
 }
