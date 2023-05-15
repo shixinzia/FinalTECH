@@ -4,13 +4,12 @@ import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import io.taraxacum.finaltech.FinalTech;
-import io.taraxacum.finaltech.core.helper.IgnorePermission;
+import io.taraxacum.finaltech.core.option.IgnorePermission;
 import io.taraxacum.finaltech.setup.FinalTechItems;
 import io.taraxacum.libs.plugin.dto.ConfigFileManager;
-import io.taraxacum.libs.slimefun.dto.LocationInfo;
-import me.mrCookieSlime.CSCoreLibPlugin.Configuration.Config;
-import me.mrCookieSlime.Slimefun.api.BlockStorage;
-import org.bukkit.Location;
+import io.taraxacum.libs.plugin.dto.LocationData;
+import io.taraxacum.libs.plugin.interfaces.LocationDataService;
+import io.taraxacum.libs.slimefun.util.LocationDataUtil;
 import org.bukkit.NamespacedKey;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -143,55 +142,34 @@ public class ItemConfigurationUtil {
         return resultMap;
     }
 
-    public static boolean saveConfigToItem(@Nonnull ItemStack itemStack, @Nonnull Config config) {
-        String itemId = config.getString(ConstantTableUtil.CONFIG_ID);
-        if(!ItemConfigurationUtil.allowedItemId.contains(itemId)) {
+    public static boolean saveConfigToItem(@Nonnull ItemStack itemStack, @Nonnull LocationDataService locationDataService, @Nonnull LocationData locationData) {
+        String id = LocationDataUtil.getId(locationDataService, locationData);
+        if(!ItemConfigurationUtil.allowedItemId.contains(id) || id == null) {
             return false;
         }
 
         Map<String, String> configMap = new HashMap<>();
-        for (String key : config.getKeys()) {
-            configMap.put(key, config.getString(key));
+        for (String key : locationDataService.getKeys(locationData)) {
+            configMap.put(key, locationDataService.getLocationData(locationData, key));
         }
 
-        configMap = ItemConfigurationUtil.filterByItem(itemId, configMap);
+        configMap = ItemConfigurationUtil.filterByItem(id, configMap);
 
         ItemConfigurationUtil.setConfigurationToItem(itemStack, configMap);
 
-        ItemConfigurationUtil.setIdToItem(itemStack, itemId);
+        ItemConfigurationUtil.setIdToItem(itemStack, id);
 
         return true;
     }
 
-    public static boolean saveConfigToItem(@Nonnull ItemStack itemStack, @Nonnull LocationInfo locationInfo) {
-        if(!ItemConfigurationUtil.allowedItemId.contains(locationInfo.getId())) {
-            return false;
-        }
-
-        Map<String, String> configMap = new HashMap<>();
-        for (String key : locationInfo.getConfig().getKeys()) {
-            configMap.put(key, locationInfo.getConfig().getString(key));
-        }
-
-        configMap = ItemConfigurationUtil.filterByItem(locationInfo.getId(), configMap);
-
-        ItemConfigurationUtil.setConfigurationToItem(itemStack, configMap);
-
-        ItemConfigurationUtil.setIdToItem(itemStack, locationInfo.getId());
-
-        return true;
-    }
-
-    public static boolean loadConfigFromItem(@Nonnull ItemStack itemStack, @Nonnull Location location) {
-        LocationInfo locationInfo = LocationInfo.get(location);
-
+    public static boolean loadConfigFromItem(@Nonnull LocationDataService locationDataService, @Nonnull ItemStack itemStack, @Nonnull LocationData locationData) {
         ItemMeta itemMeta = itemStack.getItemMeta();
         if(itemMeta == null) {
             return false;
         }
         String itemId = ItemConfigurationUtil.getIdFromItem(itemMeta);
 
-        if(locationInfo == null || itemId == null || !ItemConfigurationUtil.isSameGroup(itemId, locationInfo.getId())) {
+        if(locationData == null || itemId == null || !ItemConfigurationUtil.isSameGroup(itemId, LocationDataUtil.getId(locationDataService, locationData))) {
             return false;
         }
 
@@ -199,28 +177,8 @@ public class ItemConfigurationUtil {
         configMap = ItemConfigurationUtil.filterByItem(itemId, configMap);
 
         for (Map.Entry<String, String> entry : configMap.entrySet()) {
-            if(locationInfo.getConfig().contains(entry.getKey())) {
-                BlockStorage.addBlockInfo(location, entry.getKey(), entry.getValue());
-            }
-        }
-
-        return true;
-    }
-
-    public static boolean loadConfigFromItem(@Nonnull ItemStack itemStack, @Nonnull LocationInfo locationInfo) {
-        ItemMeta itemMeta = itemStack.getItemMeta();
-        String itemId = ItemConfigurationUtil.getIdFromItem(itemMeta);
-
-        if(!ItemConfigurationUtil.isSameGroup(itemId, locationInfo.getId())) {
-            return false;
-        }
-
-        Map<String, String> configMap = ItemConfigurationUtil.getConfigurationFromItem(itemMeta);
-        configMap = ItemConfigurationUtil.filterByItem(itemId, configMap);
-
-        for (Map.Entry<String, String> entry : configMap.entrySet()) {
-            if(locationInfo.getConfig().contains(entry.getKey())) {
-                BlockStorage.addBlockInfo(locationInfo.getLocation(), entry.getKey(), entry.getValue());
+            if(locationDataService.getLocationData(locationData, entry.getKey()) != null) {
+                locationDataService.setLocationData(locationData, entry.getKey(), entry.getValue());
             }
         }
 
