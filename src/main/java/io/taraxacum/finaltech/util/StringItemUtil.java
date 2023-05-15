@@ -1,9 +1,13 @@
-package io.taraxacum.libs.plugin.util;
+package io.taraxacum.finaltech.util;
 
 import io.taraxacum.finaltech.FinalTech;
 import io.taraxacum.common.util.StringNumberUtil;
+import io.taraxacum.finaltech.core.dto.StringItemCardCache;
 import io.taraxacum.libs.plugin.dto.ItemWrapper;
+import io.taraxacum.libs.plugin.util.ItemStackUtil;
+import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
+import org.bukkit.Tag;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -47,13 +51,15 @@ public class StringItemUtil {
      */
     public static int pullItemFromCard(@Nonnull ItemMeta cardItemMeta, @Nonnull Inventory inventory, @Nonnull int[] slots) {
         PersistentDataContainer persistentDataContainer = cardItemMeta.getPersistentDataContainer();
-        if (persistentDataContainer.has(ITEM_KEY, PersistentDataType.STRING)) {
-            String itemString = persistentDataContainer.get(ITEM_KEY, PersistentDataType.STRING);
+        String itemString = persistentDataContainer.get(ITEM_KEY, PersistentDataType.STRING);
+        String amount = persistentDataContainer.get(AMOUNT_KEY, PersistentDataType.STRING);
+        if (itemString != null && amount != null) {
             ItemWrapper stringItem = new ItemWrapper(ItemStackUtil.stringToItemStack(itemString));
-            return StringItemUtil.pullItemFromCard(cardItemMeta, stringItem, inventory, slots);
+            return StringItemUtil.pullItemFromCard(cardItemMeta, stringItem, amount, inventory, slots);
         }
         return 0;
     }
+    @Deprecated
     public static int pullItemFromCard(@Nonnull ItemMeta cardItemMeta, @Nonnull ItemWrapper stringItem, @Nonnull Inventory inventory, @Nonnull int[] slots) {
         PersistentDataContainer persistentDataContainer = cardItemMeta.getPersistentDataContainer();
         String amount = persistentDataContainer.get(AMOUNT_KEY, PersistentDataType.STRING);
@@ -92,6 +98,84 @@ public class StringItemUtil {
         }
         return count;
     }
+    @Deprecated
+    public static int pullItemFromCard(@Nonnull ItemMeta cardItemMeta, @Nonnull ItemWrapper stringItem, @Nonnull String amount, @Nonnull Inventory inventory, @Nonnull int[] slots) {
+        int maxStackSize = stringItem.getItemStack().getMaxStackSize();
+        int validAmount = StringNumberUtil.compare(amount, String.valueOf(maxStackSize * slots.length)) >= 1 ? maxStackSize * slots.length : Integer.parseInt(amount);
+        if (validAmount == 0) {
+            PersistentDataContainer persistentDataContainer = cardItemMeta.getPersistentDataContainer();
+            persistentDataContainer.remove(ITEM_KEY);
+            persistentDataContainer.remove(AMOUNT_KEY);
+            return 0;
+        }
+
+        amount = StringNumberUtil.sub(amount, String.valueOf(validAmount));
+        ItemStack targetItem;
+        int itemAmount;
+        int count = 0;
+        for (int slot : slots) {
+            targetItem = inventory.getItem(slot);
+            if (ItemStackUtil.isItemNull(targetItem)) {
+                itemAmount = Math.min(validAmount, maxStackSize);
+                if (itemAmount > 0) {
+                    inventory.setItem(slot, ItemStackUtil.cloneItem(stringItem.getItemStack(), itemAmount));
+                    count += validAmount;
+                    validAmount -= itemAmount;
+                    if(validAmount == 0) {
+                        break;
+                    }
+                }
+            }
+        }
+
+        amount = StringNumberUtil.add(amount, String.valueOf(validAmount));
+        PersistentDataContainer persistentDataContainer = cardItemMeta.getPersistentDataContainer();
+        persistentDataContainer.set(AMOUNT_KEY, PersistentDataType.STRING, amount);
+
+        return count;
+    }
+    public static int pullItemFromCard(@Nonnull StringItemCardCache stringItemCardCache, @Nonnull Inventory inventory, @Nonnull int[] slots) {
+        if(!stringItemCardCache.storedItem()) {
+            return 0;
+        }
+
+        ItemWrapper stringItem = stringItemCardCache.getTemplateStringItem();
+        String amount = stringItemCardCache.getAmount();
+        int maxStackSize = stringItem.getItemStack().getMaxStackSize();
+        int validAmount = StringNumberUtil.compare(amount, String.valueOf(maxStackSize * slots.length)) >= 1 ? maxStackSize * slots.length : Integer.parseInt(amount);
+        if (validAmount == 0) {
+            stringItemCardCache.clearWithoutUpdate();
+            return 0;
+        }
+
+        amount = StringNumberUtil.sub(amount, String.valueOf(validAmount));
+        ItemStack targetItem;
+        int itemAmount;
+        int count = 0;
+        for (int slot : slots) {
+            targetItem = inventory.getItem(slot);
+            if (ItemStackUtil.isItemNull(targetItem)) {
+                itemAmount = Math.min(validAmount, maxStackSize);
+                if (itemAmount > 0) {
+                    inventory.setItem(slot, ItemStackUtil.cloneItem(stringItem.getItemStack(), itemAmount));
+                    count += validAmount;
+                    validAmount -= itemAmount;
+                    if(validAmount == 0) {
+                        break;
+                    }
+                }
+            }
+        }
+
+        amount = StringNumberUtil.add(amount, String.valueOf(validAmount));
+        if(StringNumberUtil.ZERO.equals(amount)) {
+            stringItemCardCache.clearWithoutUpdate();
+        } else {
+            stringItemCardCache.setWithoutUpdate(amount);
+        }
+
+        return count;
+    }
 
     public static int storageItemToCard(@Nonnull ItemStack cardItem, @Nonnull Inventory inventory, @Nonnull int[] slots) {
         if (!cardItem.hasItemMeta()) {
@@ -111,15 +195,20 @@ public class StringItemUtil {
     public static int storageItemToCard(@Nonnull ItemMeta itemMeta, int size, @Nonnull Inventory inventory, @Nonnull int[] slots) {
         PersistentDataContainer persistentDataContainer = itemMeta.getPersistentDataContainer();
         ItemWrapper stringItem = null;
-        if (persistentDataContainer.has(ITEM_KEY, PersistentDataType.STRING)) {
-            String itemString = persistentDataContainer.get(ITEM_KEY, PersistentDataType.STRING);
+        String amount = persistentDataContainer.get(AMOUNT_KEY, PersistentDataType.STRING);
+        String itemString = persistentDataContainer.get(ITEM_KEY, PersistentDataType.STRING);
+        if (itemString != null) {
             ItemStack item = ItemStackUtil.stringToItemStack(itemString);
             if (item != null) {
                 stringItem = new ItemWrapper(item);
             }
         }
-        return StringItemUtil.storageItemToCard(itemMeta, stringItem, size, inventory, slots);
+        if(stringItem == null) {
+            amount = null;
+        }
+        return StringItemUtil.storageItemToCard(itemMeta, stringItem, amount, size, inventory, slots);
     }
+    @Deprecated
     public static int storageItemToCard(@Nonnull ItemMeta cardItemMeta, @Nullable ItemWrapper stringItem, int size, @Nonnull Inventory inventory, @Nonnull int[] slots) {
         PersistentDataContainer persistentDataContainer = cardItemMeta.getPersistentDataContainer();
         String amount = StringNumberUtil.ZERO;
@@ -169,6 +258,103 @@ public class StringItemUtil {
             if (StringNumberUtil.ZERO.equals(amount)) {
                 persistentDataContainer.remove(ITEM_KEY);
                 persistentDataContainer.remove(AMOUNT_KEY);
+            }
+        }
+
+        return count;
+    }
+    @Deprecated
+    public static int storageItemToCard(@Nonnull ItemMeta cardItemMeta, @Nullable ItemWrapper stringItem, @Nullable String amount, int size, @Nonnull Inventory inventory, @Nonnull int[] slots) {
+        if(stringItem == null || amount == null) {
+            stringItem = null;
+            amount = null;
+        }
+
+        int totalAmount = 0;
+        List<ItemStack> sourceItemList = new ArrayList<>(slots.length);
+        ItemStack sourceItem;
+        for (int slot : slots) {
+            sourceItem = inventory.getItem(slot);
+            if (ItemStackUtil.isItemNull(sourceItem)) {
+                continue;
+            }
+            if (stringItem == null || ItemStackUtil.isItemNull(stringItem.getItemStack())) {
+                stringItem = new ItemWrapper(ItemStackUtil.cloneItem(sourceItem, 1));
+                totalAmount += sourceItem.getAmount();
+                sourceItemList.add(sourceItem);
+            } else if (ItemStackUtil.isItemSimilar(stringItem, sourceItem)) {
+                totalAmount += sourceItem.getAmount();
+                sourceItemList.add(sourceItem);
+            }
+        }
+
+        totalAmount = totalAmount - totalAmount % size;
+        int count = totalAmount / size;
+        for (ItemStack item : sourceItemList) {
+            if (item.getAmount() < totalAmount) {
+                totalAmount -= item.getAmount();
+                item.setAmount(0);
+            } else {
+                item.setAmount(item.getAmount() - totalAmount);
+                break;
+            }
+        }
+
+//        if (count > 0) {
+//            if (StringNumberUtil.ZERO.equals(amount)) {
+//                persistentDataContainer.set(AMOUNT_KEY, PersistentDataType.STRING, String.valueOf(count));
+//                persistentDataContainer.set(ITEM_KEY, PersistentDataType.STRING, ItemStackUtil.itemStackToString(stringItem.getItemStack()));
+//            } else {
+//                persistentDataContainer.set(AMOUNT_KEY, PersistentDataType.STRING, StringNumberUtil.add(amount, String.valueOf(count)));
+//            }
+//        } else {
+//            if (StringNumberUtil.ZERO.equals(amount)) {
+//                persistentDataContainer.remove(ITEM_KEY);
+//                persistentDataContainer.remove(AMOUNT_KEY);
+//            }
+//        }
+
+        return count;
+    }
+    public static int storageItemToCard(@Nonnull StringItemCardCache stringItemCardCache, @Nonnull Inventory inventory, @Nonnull int[] slots) {
+        ItemWrapper stringItem = stringItemCardCache.getTemplateStringItem();
+        int totalAmount = 0;
+        List<ItemStack> sourceItemList = new ArrayList<>(slots.length);
+        ItemStack sourceItem;
+        for (int slot : slots) {
+            sourceItem = inventory.getItem(slot);
+            if (ItemStackUtil.isItemNull(sourceItem)) {
+                continue;
+            }
+            if (stringItem == null || ItemStackUtil.isItemNull(stringItem.getItemStack())) {
+                if(StringItemUtil.storageItem(sourceItem)) {
+                    stringItem = new ItemWrapper(ItemStackUtil.cloneItem(sourceItem, 1));
+                    totalAmount += sourceItem.getAmount();
+                    sourceItemList.add(sourceItem);
+                }
+            } else if (ItemStackUtil.isItemSimilar(stringItem, sourceItem)) {
+                totalAmount += sourceItem.getAmount();
+                sourceItemList.add(sourceItem);
+            }
+        }
+
+        totalAmount = totalAmount - totalAmount % stringItemCardCache.getCardItem().getAmount();
+        int count = totalAmount / stringItemCardCache.getCardItem().getAmount();
+        for (ItemStack itemStack : sourceItemList) {
+            if (itemStack.getAmount() < totalAmount) {
+                totalAmount -= itemStack.getAmount();
+                itemStack.setAmount(0);
+            } else {
+                itemStack.setAmount(itemStack.getAmount() - totalAmount);
+                break;
+            }
+        }
+
+        if(count > 0) {
+            if(!stringItemCardCache.storedItem()) {
+                stringItemCardCache.setWithoutUpdate(stringItem, String.valueOf(count));
+            } else {
+                stringItemCardCache.setWithoutUpdate(StringNumberUtil.add(stringItemCardCache.getAmount(), String.valueOf(count)));
             }
         }
 
@@ -267,5 +453,10 @@ public class StringItemUtil {
             }
         }
         cardItem.setItemMeta(cardItemMeta);
+    }
+
+    public static boolean storageItem(@Nonnull ItemStack itemStack) {
+        Material material = itemStack.getType();
+        return !Tag.SHULKER_BOXES.isTagged(material) && !Material.BUNDLE.equals(material);
     }
 }
