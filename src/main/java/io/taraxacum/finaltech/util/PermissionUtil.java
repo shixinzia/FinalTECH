@@ -2,10 +2,9 @@ package io.taraxacum.finaltech.util;
 
 import io.github.thebusybiscuit.slimefun4.implementation.Slimefun;
 import io.github.thebusybiscuit.slimefun4.libraries.dough.protection.Interaction;
-import io.taraxacum.finaltech.core.helper.IgnorePermission;
-import io.taraxacum.libs.plugin.util.PlayerUtil;
-import me.mrCookieSlime.CSCoreLibPlugin.Configuration.Config;
-import me.mrCookieSlime.Slimefun.api.BlockStorage;
+import io.taraxacum.finaltech.core.option.IgnorePermission;
+import io.taraxacum.libs.plugin.dto.LocationData;
+import io.taraxacum.libs.plugin.interfaces.LocationDataService;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
@@ -52,8 +51,8 @@ public class PermissionUtil {
             return ignorePermission;
         }
     }
-    public static boolean checkOfflinePermission(@Nonnull Location sourceLocation, @Nonnull Config config, @Nonnull Location... targetLocations) {
-        String uuid = config.getString(ConstantTableUtil.CONFIG_UUID);
+    public static boolean checkOfflinePermission(@Nonnull LocationDataService locationDataService, @Nonnull LocationData locationData, @Nonnull Location... targetLocations) {
+        String uuid = locationDataService.getLocationData(locationData, ConstantTableUtil.CONFIG_UUID);
         if (uuid == null) {
             return false;
         }
@@ -61,16 +60,18 @@ public class PermissionUtil {
         if (player != null && player.isOnline()) {
             for (Location targetLocation : targetLocations) {
                 if (!PermissionUtil.checkPermission(player, targetLocation, Interaction.INTERACT_BLOCK)) {
-                    IgnorePermission.HELPER.setOrClearValue(sourceLocation, IgnorePermission.VALUE_FALSE);
+                    IgnorePermission.OPTION.setOrClearValue(locationDataService, locationData, IgnorePermission.VALUE_FALSE);
                     return false;
                 }
             }
-            IgnorePermission.HELPER.setOrClearValue(sourceLocation, IgnorePermission.VALUE_TRUE);
+            IgnorePermission.OPTION.setOrClearValue(locationDataService, locationData, IgnorePermission.VALUE_TRUE);
             return true;
-        } else return IgnorePermission.VALUE_TRUE.equals(IgnorePermission.HELPER.getOrDefaultValue(config));
+        } else return IgnorePermission.VALUE_TRUE.equals(IgnorePermission.OPTION.getOrDefaultValue(locationDataService, locationData));
     }
-    public static boolean checkOfflinePermission(@Nonnull Location sourceLocation, @Nonnull Location... targetLocations) {
-        return PermissionUtil.checkOfflinePermission(sourceLocation, BlockStorage.getLocationInfo(sourceLocation), targetLocations);
+
+    public static boolean checkOfflinePermission(@Nonnull LocationDataService locationDataService, @Nonnull Location sourceLocation, @Nonnull Location... targetLocations) {
+        LocationData locationData = locationDataService.getLocationData(sourceLocation);
+        return locationData != null && PermissionUtil.checkOfflinePermission(locationDataService, locationData, targetLocations);
     }
 
     public static boolean checkPermission(@Nonnull String uuid, @Nonnull Block block, @Nonnull Interaction... interactions) {
