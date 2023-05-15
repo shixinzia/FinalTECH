@@ -1,31 +1,37 @@
 package io.taraxacum.finaltech;
 
 import io.github.thebusybiscuit.slimefun4.api.SlimefunAddon;
+import io.github.thebusybiscuit.slimefun4.core.config.SlimefunDatabaseManager;
 import io.github.thebusybiscuit.slimefun4.implementation.Slimefun;
+import io.taraxacum.common.util.ReflectionUtil;
 import io.taraxacum.common.util.StringNumberUtil;
 import io.taraxacum.finaltech.core.patch.EnergyRegulatorBlockTicker;
 import io.taraxacum.finaltech.core.service.LogService;
 import io.taraxacum.finaltech.core.service.impl.FakeLogService;
-import io.taraxacum.finaltech.setup.TemplateParser;
 import io.taraxacum.finaltech.setup.Updater;
 import io.taraxacum.finaltech.util.ConstantTableUtil;
 import io.taraxacum.libs.plugin.dto.ConfigFileManager;
 import io.taraxacum.libs.plugin.dto.*;
 import io.taraxacum.finaltech.setup.FinalTechItemStacks;
-import io.taraxacum.finaltech.setup.SetupUtil;
+import io.taraxacum.finaltech.util.SetupUtil;
 import io.taraxacum.libs.slimefun.dto.ItemValueTable;
-import me.mrCookieSlime.Slimefun.api.BlockStorage;
+import io.taraxacum.libs.slimefun.service.BlockTickerService;
+import io.taraxacum.libs.slimefun.service.impl.BlockStorageDataService;
+import io.taraxacum.libs.slimefun.service.impl.BlockStorageTickerService;
+import io.taraxacum.libs.slimefun.service.impl.DatabaseDataService;
+import io.taraxacum.libs.plugin.interfaces.LocationDataService;
+import io.taraxacum.libs.slimefun.service.impl.DatabaseTickerService;
 import org.bstats.bukkit.Metrics;
 import org.bstats.charts.AdvancedPie;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
-import org.bukkit.World;
 import org.bukkit.entity.Entity;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitTask;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.*;
@@ -56,6 +62,7 @@ public class FinalTech extends JavaPlugin implements SlimefunAddon {
     private Map<String, Map<String, String>> dataLossFixCustomMap = new HashMap<>();
     private double tps = 20;
     private boolean debugMode = false;
+    private boolean safeSql = false;
     private CustomLogger logger;
     private ServerRunnableLockFactory<Location> locationRunnableFactory;
     private ServerRunnableLockFactory<Entity> entityRunnableFactory;
@@ -76,6 +83,8 @@ public class FinalTech extends JavaPlugin implements SlimefunAddon {
     private Random random;
     private long seed;
     private BukkitTask bukkitTask;
+    private LocationDataService locationDataService;
+    private BlockTickerService blockTickerService;
     private final String version = Updater.LATEST_VERSION;
     private static FinalTech instance;
 
@@ -140,6 +149,34 @@ public class FinalTech extends JavaPlugin implements SlimefunAddon {
         this.debugMode = this.config.getOrDefault(false, "debug-mode");
         if(this.debugMode) {
             this.logger.warning("You have debug mode on!");
+        }
+
+        /* set location data service and block ticker service */
+        if("auto".equals(this.config.getOrDefault("auto", "location-data-service", "type"))) {
+            try {
+                SlimefunDatabaseManager slimefunDatabaseManager = ReflectionUtil.getProperty(Slimefun.instance(), Slimefun.class, "databaseManager");
+                if(slimefunDatabaseManager != null) {
+                    Method method = ReflectionUtil.getMethod(slimefunDatabaseManager.getClass(), "getBlockDataController");
+                    if(method != null) {
+                        this.locationDataService = new DatabaseDataService(slimefunDatabaseManager.getBlockDataController());
+                        this.blockTickerService = DatabaseTickerService.newInstance(slimefunDatabaseManager.getBlockDataController());
+                        this.safeSql = true;
+                    } else {
+                        this.locationDataService = new BlockStorageDataService();
+                        this.blockTickerService = BlockStorageTickerService.newInstance();
+                    }
+                } else {
+                    this.locationDataService = new BlockStorageDataService();
+                    this.blockTickerService = BlockStorageTickerService.newInstance();
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+                this.locationDataService = new BlockStorageDataService();
+                this.blockTickerService = BlockStorageTickerService.newInstance();
+            }
+        } else if("bs".equals(this.config.getOrDefault("auto", "location-data-service", "type"))) {
+            this.locationDataService = new BlockStorageDataService();
+            this.blockTickerService = BlockStorageTickerService.newInstance();
         }
 
         /* set runnable factory */
@@ -321,43 +358,16 @@ public class FinalTech extends JavaPlugin implements SlimefunAddon {
         if (this.bukkitTask != null) {
             this.bukkitTask.cancel();
         }
-        BlockStorage.saveChunks();
         try {
             FinalTech.logger().info("Waiting all task to end.(" + FinalTech.getLocationRunnableFactory().taskSize() + ")");
             FinalTech.getLocationRunnableFactory().waitAllTask();
         } catch (ExecutionException | InterruptedException e) {
             e.printStackTrace();
-        } finally {
-            BlockStorage.saveChunks();
-            try {
-                for (World world : Bukkit.getWorlds()) {
-                    BlockStorage storage = BlockStorage.getStorage(world);
-                    if (storage != null) {
-                        storage.save();
-                    }
-                }
-                BlockStorage.saveChunks();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
         }
         try {
             FinalTech.getEntityRunnableFactory().waitAllTask();
         } catch (ExecutionException | InterruptedException e) {
             e.printStackTrace();
-        } finally {
-            BlockStorage.saveChunks();
-            try {
-                for (World world : Bukkit.getWorlds()) {
-                    BlockStorage storage = BlockStorage.getStorage(world);
-                    if (storage != null) {
-                        storage.save();
-                    }
-                }
-                BlockStorage.saveChunks();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
         }
     }
 
@@ -382,6 +392,10 @@ public class FinalTech extends JavaPlugin implements SlimefunAddon {
 
     public static boolean debugMode() {
         return instance.debugMode;
+    }
+
+    public static boolean safeSql() {
+        return instance.safeSql;
     }
 
     public static int getMultiThreadLevel() {
@@ -519,5 +533,13 @@ public class FinalTech extends JavaPlugin implements SlimefunAddon {
 
     public static Set<String> getNoBlockTickerSlimefunPluginSet() {
         return instance.noBlockTickerSlimefunPluginSet;
+    }
+
+    public static LocationDataService getLocationDataService() {
+        return instance.locationDataService;
+    }
+
+    public static BlockTickerService getBlockTickerService() {
+        return instance.blockTickerService;
     }
 }
