@@ -1,10 +1,11 @@
-package io.taraxacum.finaltech.setup;
+package io.taraxacum.finaltech.util;
 
 import io.github.thebusybiscuit.slimefun4.api.SlimefunAddon;
 import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItem;
 import io.github.thebusybiscuit.slimefun4.core.attributes.RecipeDisplayItem;
 import io.github.thebusybiscuit.slimefun4.implementation.Slimefun;
 import io.github.thebusybiscuit.slimefun4.implementation.SlimefunItems;
+import io.taraxacum.common.util.JavaUtil;
 import io.taraxacum.common.util.ReflectionUtil;
 import io.taraxacum.common.util.StringUtil;
 import io.taraxacum.finaltech.FinalTech;
@@ -13,13 +14,15 @@ import io.taraxacum.finaltech.core.command.TransformToCopyCardItem;
 import io.taraxacum.finaltech.core.command.TransformToStorageItem;
 import io.taraxacum.finaltech.core.command.TransformToValidItem;
 import io.taraxacum.finaltech.core.enchantment.NullEnchantment;
-import io.taraxacum.finaltech.core.interfaces.RecipeItem;
 import io.taraxacum.finaltech.core.item.machine.AbstractMachine;
-import io.taraxacum.finaltech.util.ConstantTableUtil;
+import io.taraxacum.finaltech.setup.FinalTechItemStacks;
+import io.taraxacum.finaltech.setup.FinalTechItems;
+import io.taraxacum.finaltech.setup.FinalTechMenus;
 import io.taraxacum.libs.plugin.util.ItemStackUtil;
-import io.taraxacum.finaltech.util.BlockTickerUtil;
-import io.taraxacum.libs.slimefun.dto.LocationInfo;
+import io.taraxacum.libs.plugin.dto.LocationData;
 import io.taraxacum.libs.slimefun.interfaces.SimpleValidItem;
+import io.taraxacum.libs.slimefun.service.BlockTickerService;
+import io.taraxacum.libs.slimefun.service.impl.BlockStorageDataService;
 import io.taraxacum.libs.slimefun.util.ResearchUtil;
 import io.taraxacum.libs.plugin.util.TextUtil;
 import io.taraxacum.libs.plugin.dto.ConfigFileManager;
@@ -39,6 +42,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 /**
@@ -47,6 +52,10 @@ import java.util.function.Function;
  */
 public final class SetupUtil {
     private static final List<String> BELIEVABLE_PLUGIN_ID_LIST = new ArrayList<>();
+
+    static {
+        BELIEVABLE_PLUGIN_ID_LIST.add(FinalTech.getInstance().getName());
+    }
 
     public static void setupLanguageManager(@Nonnull LanguageManager languageManager) {
         // Color normal
@@ -116,7 +125,7 @@ public final class SetupUtil {
     private static void setupEnchantment() {
         try {
             ReflectionUtil.setStaticValue(Enchantment.class, "acceptingNew", true);
-            Enchantment.registerEnchantment(NullEnchantment.ENCHANTMENT);
+            Enchantment.registerEnchantment(NullEnchantment.INSTANCE);
 
 
             // material
@@ -240,7 +249,11 @@ public final class SetupUtil {
                 FinalTechItems.POTION_EFFECT_DILATOR.registerThis(),
                 FinalTechItems.POTION_EFFECT_PURIFIER.registerThis(),
                 FinalTechItems.GRAVITY_REVERSAL_RUNE.registerThis(),
-                FinalTechItems.STAFF_ELEMENTAL_LINE.registerThis());
+                FinalTechItems.STAFF_ELEMENTAL_LINE.registerThis(),
+                FinalTechItems.STEPPING_STONE.registerThis(),
+                FinalTechItems.STEPPING_STONE_PLACER.registerThis(),
+                FinalTechItems.AUTO_FLASH_BACK_POCKET_WATCH.registerThis(),
+                FinalTechItems.DEATH_FLASH_BACK_POCKET_WATCH.registerThis());
         FinalTechMenus.SUB_MENU_TOOL.addTo(
                 FinalTechItems.MENU_VIEWER.registerThis(),
                 FinalTechItems.ROUTE_VIEWER.registerThis(),
@@ -263,7 +276,9 @@ public final class SetupUtil {
                 FinalTechItems.ENERGY_CARD_M.registerThis(),
                 FinalTechItems.ENERGY_CARD_B.registerThis(),
                 FinalTechItems.ENERGY_CARD_T.registerThis(),
-                FinalTechItems.ENERGY_CARD_Q.registerThis());
+                FinalTechItems.ENERGY_CARD_Q.registerThis(),
+                FinalTechItems.ENERGIZED_OPERATION_ACCELERATE_CARD.registerThis(),
+                FinalTechItems.OVERLOADED_OPERATION_ACCELERATE_CARD.registerThis());
         FinalTechMenus.SUB_MENU_CONSUMABLE.addTo(
                 FinalTechItems.MAGIC_HYPNOTIC.registerThis(),
                 FinalTechItems.RESEARCH_UNLOCK_TICKET.registerThis());
@@ -340,7 +355,8 @@ public final class SetupUtil {
                 FinalTechItems.STORAGE_INTERACT_PORT.registerThis(),
                 FinalTechItems.STORAGE_INSERT_PORT.registerThis(),
                 FinalTechItems.STORAGE_WITHDRAW_PORT.registerThis(),
-                FinalTechItems.STORAGE_CARD.registerThis());
+                FinalTechItems.STORAGE_CARD.registerThis(),
+                FinalTechItems.ADVANCED_STORAGE.registerThis());
         // accessor
         FinalTechMenus.SUB_MENU_ACCESSOR.addTo(
                 FinalTechItems.REMOTE_ACCESSOR.registerThis(),
@@ -400,9 +416,13 @@ public final class SetupUtil {
                 FinalTechItems.ENERGY_INPUT_TABLE.registerThis(),
                 FinalTechItems.ENERGY_OUTPUT_TABLE.registerThis(),
                 FinalTechItems.ITEM_DISMANTLE_TABLE.registerThis(),
-                FinalTechItems.AUTO_ITEM_DISMANTLE_TABLE.registerThis(),
+                FinalTechItems.AUTO_ITEM_DISMANTLE_TABLE.registerThis());
+        FinalTechMenus.SUB_MENU_CORE_MACHINE.addTo(
                 FinalTechItems.ADVANCED_AUTO_CRAFT_FRAME.registerThis(),
-                FinalTechItems.MULTI_FRAME_MACHINE.registerThis());
+                FinalTechItems.MULTI_FRAME_MACHINE.registerThis(),
+                FinalTechItems.ADVANCED_AUTO_CRAFT.registerThis(),
+                FinalTechItems.AUTO_CRAFT.registerThis(),
+                FinalTechItems.SUPER_AUTO_CRAFT.registerThis());
 
         // special machines
         FinalTechMenus.SUB_MENU_SPECIAL_MACHINE.addTo(
@@ -481,13 +501,13 @@ public final class SetupUtil {
                 FinalTechItems.MATRIX_MACHINE_CHARGE_CARD.registerThis(),
                 FinalTechItems.MATRIX_MACHINE_ACCELERATE_CARD.registerThis(),
                 FinalTechItems.MATRIX_MACHINE_ACTIVATE_CARD.registerThis(),
+                FinalTechItems.MATRIX_OPERATION_ACCELERATE_CARD.registerThis(),
                 FinalTechItems.MATRIX_QUANTITY_MODULE.registerThis(),
                 FinalTechItems.MATRIX_OPERATION_ACCELERATOR.registerThis());
         FinalTechMenus.SUB_MENU_FINAL_ITEM.addTo(
                 FinalTechItems.ENTROPY_CONSTRUCTOR.registerThis(),
                 FinalTechItems.MATRIX_EXPANDED_CAPACITOR.registerThis(),
                 FinalTechItems.MATRIX_GENERATOR.registerThis(),
-                FinalTechItems.ADVANCED_AUTO_CRAFT.registerThis(),
                 FinalTechItems.MATRIX_ITEM_DISMANTLE_TABLE.registerThis(),
                 FinalTechItems.MATRIX_ACCELERATOR.registerThis(),
                 FinalTechItems.MATRIX_ITEM_DESERIALIZE_PARSER.registerThis(),
@@ -538,8 +558,8 @@ public final class SetupUtil {
         FinalTechMenus.MAIN_MENU_ITEM.addFrom(
                 FinalTechMenus.SUB_MENU_MATERIAL,
                 FinalTechMenus.SUB_MENU_LOGIC_ITEM,
-                FinalTechMenus.SUB_MENU_CONSUMABLE,
                 FinalTechMenus.SUB_MENU_TOOL,
+                FinalTechMenus.SUB_MENU_CONSUMABLE,
                 FinalTechMenus.SUB_MENU_WEAPON);
         // electricity system
         FinalTechMenus.MAIN_ITEM_GROUP.addTo(FinalTechMenus.MAIN_MENU_ELECTRICITY_SYSTEM,
@@ -904,40 +924,55 @@ public final class SetupUtil {
 
     private static void registerBlockTicker(int begin) {
         try {
+            BiConsumer<Runnable, LocationData> defaultTicker = (runnable, locationData) -> FinalTech.getLocationRunnableFactory().waitThenRun(runnable, locationData.getLocation());
+
             ConfigFileManager configManager = FinalTech.getConfigManager();
             List<SlimefunItem> slimefunItemList = Slimefun.getRegistry().getAllSlimefunItems();
             for(int size = slimefunItemList.size(); begin < size; begin++) {
                 SlimefunItem slimefunItem = slimefunItemList.get(begin);
                 SlimefunAddon slimefunAddon = slimefunItem.getAddon();
+
+                if(slimefunItem instanceof RecipeDisplayItem recipeDisplayItem) {
+                    for(ItemStack itemStack : recipeDisplayItem.getDisplayRecipes()) {
+                        SlimefunItem sfItem = SlimefunItem.getByItem(itemStack);
+                        if(sfItem instanceof SimpleValidItem simpleValidItem && !BELIEVABLE_PLUGIN_ID_LIST.contains(sfItem.getAddon().getName()) && simpleValidItem.verifyItem(itemStack)) {
+                            FinalTech.getConfigManager().setValue(new Random().nextLong(Long.MAX_VALUE), "valid-item-seed");
+                        }
+                    }
+                }
                 if (slimefunItem.getBlockTicker() != null) {
                     BlockTicker blockTicker = slimefunItem.getBlockTicker();
 
-                    if(FinalTech.debugMode()) {
-                        blockTicker = BlockTickerUtil.getDebugModeBlockTicker(blockTicker, slimefunItem);
+                    BiConsumer<Runnable, LocationData> biConsumer = BlockTickerService.DEFAULT_TICKER;
+                    List<Function<LocationData, Boolean>> functionList = new ArrayList<>();
+                    List<Consumer<LocationData>> consumerList = new ArrayList<>();
+                    List<Runnable> runnableList = new ArrayList<>();
+
+                    if(FinalTech.isAntiAccelerateSlimefunItem(slimefunItem.getId()) || FinalTech.getAntiAccelerateSlimefunPluginSet().contains(slimefunAddon.getName())) {
+                        functionList.add(BlockTickerUtil.functionAntiAcceleration(FinalTech.getLocationDataService()));
+                        FinalTech.logger().info(slimefunItem.getId() + " is tweaked for anti accelerate");
                     }
 
-                    if(slimefunItem instanceof RecipeDisplayItem recipeDisplayItem) {
-                        for(ItemStack itemStack : recipeDisplayItem.getDisplayRecipes()) {
-                            SlimefunItem sfItem = SlimefunItem.getByItem(itemStack);
-                            if(sfItem instanceof SimpleValidItem simpleValidItem && !BELIEVABLE_PLUGIN_ID_LIST.contains(sfItem.getAddon().getName()) && simpleValidItem.verifyItem(itemStack)) {
-                                FinalTech.getConfigManager().setValue(new Random().nextLong(Long.MAX_VALUE), "valid-item-seed");
-                            }
-                        }
+                    if(FinalTech.isPerformanceLimitSlimefunItem(slimefunItem.getId()) || FinalTech.getPerformanceLimitSlimefunPluginSet().contains(slimefunAddon.getName())) {
+                        functionList.add(BlockTickerUtil.functionPerformanceLimit(FinalTech.getLocationDataService()));
+                        FinalTech.logger().info(slimefunItem.getId() + " is tweaked for performance limit");
                     }
 
                     if(configManager.containPath("tweak", "interval", "general", slimefunItem.getId())) {
                         int interval = configManager.getOrDefault(-1, "tweak", "interval", "general", slimefunItem.getId());
                         if(interval > 0) {
-                            blockTicker = BlockTickerUtil.getGeneralIntervalBlockTicker(blockTicker, interval);
+                            functionList.add(BlockTickerUtil.functionIndependentIntervalBefore(FinalTech.getLocationDataService()));
+                            consumerList.add(BlockTickerUtil.functionIndependentIntervalAfter(FinalTech.getLocationDataService(), interval));
                             FinalTech.logger().info(slimefunItem.getId() + " is tweaked for general interval limit");
                         } else {
                             FinalTech.logger().warning("wrong value of tweak.interval.general." + slimefunItem.getId() + " in config file");
                         }
                     }
+
                     if(configManager.containPath("tweak", "interval", "independent", slimefunItem.getId())) {
                         int interval = configManager.getOrDefault(-1, "tweak", "interval", "independent", slimefunItem.getId());
                         if(interval > 1) {
-                            blockTicker = BlockTickerUtil.getIndependentIntervalBlockTicker(blockTicker, interval);
+                            functionList.add(BlockTickerUtil.functionGeneralInterval(interval));
                             FinalTech.logger().info(slimefunItem.getId() + " is tweaked for independent interval limit");
                         } else {
                             FinalTech.logger().warning("wrong value of tweak.interval.independent." + slimefunItem.getId() + " in config file");
@@ -950,7 +985,11 @@ public final class SetupUtil {
                             int mulRange = configManager.getOrDefault(0, "tweak", "range-limit", slimefunItem.getId(), "mul-range");
                             boolean dropSelf = configManager.getOrDefault(false, "tweak", "range-limit", slimefunItem.getId(), "drop-self");
                             String message = configManager.getOrDefault("{1} is not allowed to be placed too closely", "tweak", "range-limit", slimefunItem.getId(), "message");
-                            blockTicker = BlockTickerUtil.getRangeLimitBlockTicker(blockTicker, range, mulRange, dropSelf, message);
+
+                            BlockTickerUtil.RangeLimitHandler rangeLimitHandler = new BlockTickerUtil.RangeLimitHandler(range, mulRange, dropSelf, message);
+                            functionList.add(BlockTickerUtil.functionRangeLimitBefore(FinalTech.getLocationDataService(), rangeLimitHandler));
+                            consumerList.add(BlockTickerUtil.functionRangeLimitAfter(rangeLimitHandler));
+                            runnableList.add(BlockTickerUtil.functionRangeLimitUnique(rangeLimitHandler));
                             FinalTech.logger().info(slimefunItem.getId() + " is tweaked for range limit");
 
                             if(dropSelf) {
@@ -962,30 +1001,48 @@ public final class SetupUtil {
                         }
                     }
 
+                    if(configManager.containPath("tweak", "live-time", slimefunItem.getId(), "time")) {
+                        int time = configManager.getOrDefault(-1, "tweak", "live-time", slimefunItem.getId(), "time");
+                        if(time > 0) {
+                            boolean dropSelf = configManager.getOrDefault(false, "tweak", "live-time", slimefunItem.getId(), "drop-self");
+                            List<Integer> dropSlots = configManager.getOrDefault(new ArrayList<>(), "tweak", "live-time", slimefunItem.getId(), "drop-slots");
+                            consumerList.add(BlockTickerUtil.functionLiveTimeAfter(FinalTech.getLocationDataService(), slimefunItem.getId(), time, dropSelf, JavaUtil.toArray(dropSlots)));
+                            FinalTech.logger().info(slimefunItem.getId() + " is tweaked for living time");
+                        }
+                    }
+
                     boolean forceAsync = !blockTicker.isSynchronized() && (FinalTech.getForceSlimefunMultiThread() || FinalTech.isAsyncSlimefunItem(slimefunItem.getId()) || FinalTech.getAsyncSlimefunPluginSet().contains(slimefunAddon.getName()));
-                    boolean antiAccelerate = FinalTech.isAntiAccelerateSlimefunItem(slimefunItem.getId()) || FinalTech.getAntiAccelerateSlimefunPluginSet().contains(slimefunAddon.getName());
-                    boolean performanceLimit = FinalTech.isPerformanceLimitSlimefunItem(slimefunItem.getId()) || FinalTech.getPerformanceLimitSlimefunPluginSet().contains(slimefunAddon.getName());
-                    if(forceAsync || antiAccelerate || performanceLimit) {
-                        blockTicker = BlockTickerUtil.generateBlockTicker(blockTicker, forceAsync, antiAccelerate, performanceLimit);
-                        if(antiAccelerate) {
-                            FinalTech.addAntiAccelerateSlimefunItem(slimefunItem.getId());
-                            FinalTech.logger().info(slimefunItem.getId() + " is tweaked for anti accelerate");
-                        }
-                        if(performanceLimit) {
-                            FinalTech.addPerformanceLimitSlimefunItem(slimefunItem.getId());
-                            FinalTech.logger().info(slimefunItem.getId() + " is tweaked for performance limit");
-                        }
+
+                    if(forceAsync) {
+                        biConsumer = defaultTicker;
                     }
 
                     if (configManager.getOrDefault(false, "super-ban") && slimefunItem.isDisabled()) {
                         blockTicker = null;
                         FinalTech.logger().info(slimefunItem.getId() + " is tweaked to remove block ticker");
-                    } else if(FinalTech.isNoBlockTickerSlimefunItem(slimefunItem.getId())) {
+                    } else if(FinalTech.isNoBlockTickerSlimefunItem(slimefunItem.getId()) || FinalTech.getNoBlockTickerSlimefunPluginSet().contains(slimefunAddon.getJavaPlugin().getName())){
                         blockTicker = null;
                         FinalTech.logger().info(slimefunItem.getId() + " is tweaked to remove block ticker");
-                    } else if(FinalTech.getNoBlockTickerSlimefunPluginSet().contains(slimefunAddon.getJavaPlugin().getName())){
-                        blockTicker = null;
-                        FinalTech.logger().info(slimefunItem.getId() + " is tweaked to remove block ticker");
+                    } else {
+                        Function<LocationData, Boolean>[] functions = new Function[functionList.size()];
+                        Consumer<LocationData>[] consumers = new Consumer[consumerList.size()];
+                        Runnable[] runnables = new Runnable[runnableList.size()];
+
+                        for(int i = 0; i < functions.length; i++) {
+                            functions[i] = functionList.get(i);
+                        }
+
+                        for(int i = 0; i < consumers.length; i++) {
+                            consumers[i] = consumerList.get(i);
+                        }
+
+                        for(int i = 0; i < runnables.length; i++) {
+                            runnables[i] = runnableList.get(i);
+                        }
+
+                        if(functions.length != 0 || consumers.length != 0 || biConsumer != BlockTickerService.DEFAULT_TICKER) {
+                            blockTicker = FinalTech.getBlockTickerService().warp(blockTicker, biConsumer, functions, consumers, runnables);
+                        }
                     }
 
                     if(slimefunItem.getBlockTicker() != blockTicker) {
@@ -999,6 +1056,7 @@ public final class SetupUtil {
                             ticking.setAccessible(true);
                             ticking.set(slimefunItem, false);
                             ticking.setAccessible(false);
+                            Slimefun.getRegistry().getTickerBlocks().remove(slimefunItem.getId());
                         }
                         if (forceAsync) {
                             FinalTech.logger().info(slimefunItem.getId() + "(" + slimefunItem.getItemName() + ")" + " is optimized for multi-thread！！！");
@@ -1014,6 +1072,11 @@ public final class SetupUtil {
     }
 
     public static void dataLossFix() {
+        if(!(FinalTech.getLocationDataService() instanceof BlockStorageDataService blockStorageDataService)) {
+            // This fix is only for block storage.
+            // Others should not need this.
+            return;
+        }
         for(World world : FinalTech.getInstance().getServer().getWorlds()) {
             BlockStorage storage = BlockStorage.getStorage(world);
             if(storage != null) {
@@ -1027,8 +1090,8 @@ public final class SetupUtil {
                             if(location.getBlock().getType().isAir()) {
                                 continue;
                             }
-                            LocationInfo locationInfo = LocationInfo.get(location);
-                            if(locationInfo == null) {
+                            LocationData locationData = blockStorageDataService.getLocationData(location);
+                            if(locationData == null) {
                                 String id = entry.getValue().getPreset().getID();
                                 SlimefunItem slimefunItem = SlimefunItem.getById(id);
                                 if(slimefunItem != null && !(slimefunItem instanceof AbstractMachine) && slimefunItem.getItem().getType().equals(location.getBlock().getType())) {
