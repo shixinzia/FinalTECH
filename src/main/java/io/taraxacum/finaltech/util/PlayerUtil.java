@@ -1,6 +1,7 @@
-package io.taraxacum.libs.plugin.util;
+package io.taraxacum.finaltech.util;
 
 import io.taraxacum.finaltech.FinalTech;
+import io.taraxacum.libs.plugin.util.ItemStackUtil;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
