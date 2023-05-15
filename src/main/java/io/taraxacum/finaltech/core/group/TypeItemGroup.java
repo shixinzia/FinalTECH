@@ -12,7 +12,9 @@ import io.github.thebusybiscuit.slimefun4.core.guide.SlimefunGuideMode;
 import io.github.thebusybiscuit.slimefun4.implementation.Slimefun;
 import io.github.thebusybiscuit.slimefun4.utils.ChestMenuUtils;
 import io.taraxacum.finaltech.FinalTech;
-import io.taraxacum.finaltech.core.helper.Icon;
+import io.taraxacum.finaltech.core.interfaces.SpecialResearch;
+import io.taraxacum.finaltech.core.option.Icon;
+import io.taraxacum.finaltech.util.MachineUtil;
 import io.taraxacum.libs.plugin.util.ItemStackUtil;
 import io.taraxacum.libs.slimefun.dto.RecipeTypeRegistry;
 import io.taraxacum.libs.slimefun.util.GuideUtil;
@@ -150,7 +152,7 @@ public class TypeItemGroup extends FlexItemGroup {
                 SlimefunItem slimefunItem = this.slimefunItemList.get(index);
                 Research research = slimefunItem.getResearch();
                 if (playerProfile.hasUnlocked(research)) {
-                    ItemStack itemStack = ItemStackUtil.cloneWithoutNBT(slimefunItem.getItem());
+                    ItemStack itemStack = MachineUtil.cloneAsDescriptiveItem(slimefunItem);
                     ItemStackUtil.addLoreToFirst(itemStack, "§7" + slimefunItem.getId());
                     chestMenu.addItem(MAIN_CONTENT[i], itemStack);
                     chestMenu.addMenuClickHandler(MAIN_CONTENT[i], (p, slot, item, action) -> {
@@ -162,13 +164,17 @@ public class TypeItemGroup extends FlexItemGroup {
                     });
                 } else {
                     ItemStack icon = ItemStackUtil.cloneItem(ChestMenuUtils.getNotResearchedItem());
-                    ItemStackUtil.setLore(icon,
-                            "§7" + research.getName(player),
-                            "§4§l" + Slimefun.getLocalization().getMessage(player, "guide.locked"),
-                            "",
-                            "§a> Click to unlock",
-                            "",
-                            "§7Cost: §b" + research.getCost() + " Level(s)");
+                    List<String> stringList = new ArrayList<>();
+                    stringList.add("§7" + research.getName(player));
+                    stringList.add("§4§l" + Slimefun.getLocalization().getMessage(player, "guide.locked"));
+                    stringList.add("§a> Click to unlock");
+                    if(research instanceof SpecialResearch specialResearch) {
+                        stringList.addAll(List.of(specialResearch.getShowText(player)));
+                    } else {
+                        stringList.add("");
+                        stringList.add("§7Cost: §b" + research.getCost() + " Level(s)");
+                    }
+                    ItemStackUtil.setLore(icon, stringList);
                     chestMenu.addItem(MAIN_CONTENT[i], icon);
                     chestMenu.addMenuClickHandler(MAIN_CONTENT[i], (p, slot, item, action) -> {
                         PlayerPreResearchEvent event = new PlayerPreResearchEvent(player, research, slimefunItem);

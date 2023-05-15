@@ -98,6 +98,28 @@ public class MainItemGroup extends FlexItemGroup {
         chestMenu.setEmptySlotsClickable(false);
         chestMenu.addMenuOpeningHandler(pl -> pl.playSound(pl.getLocation(), Sound.ITEM_BOOK_PAGE_TURN, 1, 1));
 
+        List<ItemGroup> fatherItemGroupList = new ArrayList<>();
+        List<List<ItemGroup>> sonItemGroupList = new ArrayList<>();
+        for(int i = 0; i < this.fatherItemGroupList.size(); i++) {
+            List<ItemGroup> itemGroupList = new ArrayList<>();
+            this.sonItemGroupList.get(i).forEach(itemGroup -> {
+                if(itemGroup instanceof FlexItemGroup flexItemGroup ? flexItemGroup.isVisible(player, playerProfile, slimefunGuideMode) : itemGroup.isVisible(player)) {
+                    itemGroupList.add(itemGroup);
+                }
+            });
+
+            if(!itemGroupList.isEmpty()) {
+                sonItemGroupList.add(itemGroupList);
+                fatherItemGroupList.add(this.fatherItemGroupList.get(i));
+            }
+        }
+        int page;
+        if(this.page > (fatherItemGroupList.size() - 1) / MAIN_CONTENT.length + 1) {
+            page = 1;
+        } else {
+            page = this.page;
+        }
+
         chestMenu.addItem(BACK_SLOT, ChestMenuUtils.getBackButton(player));
         chestMenu.addMenuClickHandler(BACK_SLOT, (pl, s, is, action) -> {
             GuideHistory guideHistory = playerProfile.getGuideHistory();
@@ -109,18 +131,18 @@ public class MainItemGroup extends FlexItemGroup {
             return false;
         });
 
-        chestMenu.addItem(PREVIOUS_SLOT, ChestMenuUtils.getPreviousButton(player, this.page, (this.fatherItemGroupList.size() - 1) / MAIN_CONTENT.length + 1));
+        chestMenu.addItem(PREVIOUS_SLOT, ChestMenuUtils.getPreviousButton(player, page, (fatherItemGroupList.size() - 1) / MAIN_CONTENT.length + 1));
         chestMenu.addMenuClickHandler(PREVIOUS_SLOT, (p, slot, item, action) -> {
             GuideUtil.removeLastEntry(playerProfile.getGuideHistory());
-            MainItemGroup mainItemGroup = this.getByPage(Math.max(this.page - 1, 1));
+            MainItemGroup mainItemGroup = this.getByPage(Math.max(page - 1, 1));
             mainItemGroup.open(player, playerProfile, slimefunGuideMode);
             return false;
         });
 
-        chestMenu.addItem(NEXT_SLOT, ChestMenuUtils.getNextButton(player, this.page, (this.fatherItemGroupList.size() - 1) / MAIN_CONTENT.length + 1));
+        chestMenu.addItem(NEXT_SLOT, ChestMenuUtils.getNextButton(player, page, (fatherItemGroupList.size() - 1) / MAIN_CONTENT.length + 1));
         chestMenu.addMenuClickHandler(NEXT_SLOT, (p, slot, item, action) -> {
             GuideUtil.removeLastEntry(playerProfile.getGuideHistory());
-            MainItemGroup mainItemGroup = this.getByPage(Math.min(this.page + 1, (this.fatherItemGroupList.size() - 1) / MAIN_CONTENT.length + 1));
+            MainItemGroup mainItemGroup = this.getByPage(Math.min(page + 1, (fatherItemGroupList.size() - 1) / MAIN_CONTENT.length + 1));
             mainItemGroup.open(player, playerProfile, slimefunGuideMode);
             return false;
         });
@@ -133,19 +155,19 @@ public class MainItemGroup extends FlexItemGroup {
             chestMenu.addMenuClickHandler(slot, ChestMenuUtils.getEmptyClickHandler());
         }
 
-        for (int i = this.page * MAIN_CONTENT.length - MAIN_CONTENT.length; i < this.page * MAIN_CONTENT.length; i++) {
-            if (i < this.fatherItemGroupList.size() && i < this.sonItemGroupList.size()) {
-                chestMenu.addItem(MAIN_CONTENT[i % MAIN_CONTENT.length], this.fatherItemGroupList.get(i).getItem(player));
+        for (int i = page * MAIN_CONTENT.length - MAIN_CONTENT.length; i < page * MAIN_CONTENT.length; i++) {
+            if (i < fatherItemGroupList.size() && i < sonItemGroupList.size()) {
+                chestMenu.addItem(MAIN_CONTENT[i % MAIN_CONTENT.length], fatherItemGroupList.get(i).getItem(player));
                 final int index = i;
                 chestMenu.addMenuClickHandler(MAIN_CONTENT[i % MAIN_CONTENT.length], (p, slot, item, action) -> {
-                    ItemGroup itemGroup = this.fatherItemGroupList.get(index);
+                    ItemGroup itemGroup = fatherItemGroupList.get(index);
                     if (itemGroup instanceof FlexItemGroup flexItemGroup) {
                         flexItemGroup.open(player, playerProfile, slimefunGuideMode);
                     }
                     return false;
                 });
 
-                List<ItemGroup> subItemGroupList = this.sonItemGroupList.get(i);
+                List<ItemGroup> subItemGroupList = sonItemGroupList.get(i);
                 for (int j = 0; j < subItemGroupList.size(); j++) {
                     chestMenu.addItem(SUB_CONTENT[i % MAIN_CONTENT.length][j], subItemGroupList.get(j).getItem(player));
                     final int subIndex = j;

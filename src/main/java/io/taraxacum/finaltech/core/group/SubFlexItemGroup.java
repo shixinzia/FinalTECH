@@ -13,6 +13,9 @@ import io.github.thebusybiscuit.slimefun4.core.guide.SlimefunGuideMode;
 import io.github.thebusybiscuit.slimefun4.implementation.Slimefun;
 import io.github.thebusybiscuit.slimefun4.utils.ChestMenuUtils;
 import io.taraxacum.finaltech.FinalTech;
+import io.taraxacum.finaltech.core.interfaces.SpecialResearch;
+import io.taraxacum.finaltech.core.interfaces.VisibleItem;
+import io.taraxacum.finaltech.util.MachineUtil;
 import io.taraxacum.libs.plugin.util.ItemStackUtil;
 import io.taraxacum.libs.slimefun.util.GuideUtil;
 import me.mrCookieSlime.CSCoreLibPlugin.general.Inventory.ChestMenu;
@@ -73,6 +76,19 @@ public class SubFlexItemGroup extends FlexItemGroup {
 
     @Override
     public boolean isVisible(@Nonnull Player player, @Nonnull PlayerProfile playerProfile, @Nonnull SlimefunGuideMode slimefunGuideMode) {
+        if(SlimefunGuideMode.SURVIVAL_MODE.equals(slimefunGuideMode)) {
+            for(List<SlimefunItem> slimefunItemList : this.slimefunItemList) {
+                for(SlimefunItem slimefunItem : slimefunItemList) {
+                    if(slimefunItem.isHidden()) {
+                        continue;
+                    }
+                    if(slimefunItem instanceof VisibleItem visibleItem && !visibleItem.isVisible(player)) {
+                        continue;
+                    }
+                    return true;
+                }
+            }
+        }
         return false;
     }
 
@@ -153,6 +169,29 @@ public class SubFlexItemGroup extends FlexItemGroup {
         chestMenu.setEmptySlotsClickable(false);
         chestMenu.addMenuOpeningHandler(pl -> pl.playSound(pl.getLocation(), Sound.ITEM_BOOK_PAGE_TURN, 1, 1));
 
+        List<List<SlimefunItem>> slimefunItemList = new ArrayList<>();
+        for(List<SlimefunItem> slimefunItems : this.slimefunItemList) {
+            List<SlimefunItem> tempList = new ArrayList<>();
+            for(SlimefunItem slimefunItem : slimefunItems) {
+                if(slimefunItem.isHidden()) {
+                    continue;
+                }
+                if(slimefunItem instanceof VisibleItem visibleItem && !visibleItem.isVisible(player)) {
+                    continue;
+                }
+                tempList.add(slimefunItem);
+            }
+            if(!tempList.isEmpty()) {
+                slimefunItemList.add(tempList);
+            }
+        }
+        int page;
+        if(this.page > (slimefunItemList.size() - 1) / MAIN_CONTENT_L.length + 1) {
+            page = 1;
+        } else {
+            page = this.page;
+        }
+
         chestMenu.addItem(BACK_SLOT, ChestMenuUtils.getBackButton(player));
         chestMenu.addMenuClickHandler(1, (pl, s, is, action) -> {
             GuideHistory guideHistory = playerProfile.getGuideHistory();
@@ -164,18 +203,18 @@ public class SubFlexItemGroup extends FlexItemGroup {
             return false;
         });
 
-        chestMenu.addItem(PREVIOUS_SLOT, ChestMenuUtils.getPreviousButton(player, this.page, (slimefunItemList.size() - 1) / MAIN_CONTENT_L.length + 1));
+        chestMenu.addItem(PREVIOUS_SLOT, ChestMenuUtils.getPreviousButton(player, page, (slimefunItemList.size() - 1) / MAIN_CONTENT_L.length + 1));
         chestMenu.addMenuClickHandler(PREVIOUS_SLOT, (p, slot, item, action) -> {
             GuideUtil.removeLastEntry(playerProfile.getGuideHistory());
-            SubFlexItemGroup subFlexItemGroup = this.getByPage(Math.max(this.page - 1, 1));
+            SubFlexItemGroup subFlexItemGroup = this.getByPage(Math.max(page - 1, 1));
             subFlexItemGroup.open(player, playerProfile, slimefunGuideMode);
             return false;
         });
 
-        chestMenu.addItem(NEXT_SLOT, ChestMenuUtils.getNextButton(player, this.page, (slimefunItemList.size() - 1) / MAIN_CONTENT_L.length + 1));
+        chestMenu.addItem(NEXT_SLOT, ChestMenuUtils.getNextButton(player, page, (slimefunItemList.size() - 1) / MAIN_CONTENT_L.length + 1));
         chestMenu.addMenuClickHandler(NEXT_SLOT, (p, slot, item, action) -> {
             GuideUtil.removeLastEntry(playerProfile.getGuideHistory());
-            SubFlexItemGroup subFlexItemGroup = this.getByPage(Math.min(this.page + 1, (slimefunItemList.size() - 1) / MAIN_CONTENT_L.length + 1));
+            SubFlexItemGroup subFlexItemGroup = this.getByPage(Math.min(page + 1, (slimefunItemList.size() - 1) / MAIN_CONTENT_L.length + 1));
             subFlexItemGroup.open(player, playerProfile, slimefunGuideMode);
             return false;
         });
@@ -189,14 +228,14 @@ public class SubFlexItemGroup extends FlexItemGroup {
         }
 
         for (int i = 0; i < MAIN_CONTENT_L.length; i++) {
-            int index = i + this.page * MAIN_CONTENT_L.length - MAIN_CONTENT_L.length;
+            int index = i + page * MAIN_CONTENT_L.length - MAIN_CONTENT_L.length;
             if (index < slimefunItemList.size()) {
-                List<SlimefunItem> slimefunItemList = this.slimefunItemList.get(index);
-                for (int j = 0; j < slimefunItemList.size(); j++) {
-                    SlimefunItem slimefunItem = slimefunItemList.get(j);
+                List<SlimefunItem> slimefunItems = slimefunItemList.get(index);
+                for (int j = 0; j < slimefunItems.size(); j++) {
+                    SlimefunItem slimefunItem = slimefunItems.get(j);
                     Research research = slimefunItem.getResearch();
                     if (playerProfile.hasUnlocked(research)) {
-                        ItemStack itemStack = ItemStackUtil.cloneWithoutNBT(slimefunItem.getItem());
+                        ItemStack itemStack = MachineUtil.cloneAsDescriptiveItem(slimefunItem);
                         ItemStackUtil.addLoreToFirst(itemStack, "§7" + slimefunItem.getId());
                         chestMenu.addItem(MAIN_CONTENT_L[i][j], itemStack);
                         chestMenu.addMenuClickHandler(MAIN_CONTENT_L[i][j], (p, slot, item, action) -> {
@@ -208,13 +247,17 @@ public class SubFlexItemGroup extends FlexItemGroup {
                         });
                     } else {
                         ItemStack icon = ItemStackUtil.cloneItem(ChestMenuUtils.getNotResearchedItem());
-                        ItemStackUtil.setLore(icon,
-                                "§7" + research.getName(player),
-                                "§4§l" + Slimefun.getLocalization().getMessage(player, "guide.locked"),
-                                "",
-                                "§a> Click to unlock",
-                                "",
-                                "§7Cost: §b" + research.getCost() + " Level(s)");
+                        List<String> stringList = new ArrayList<>();
+                        stringList.add("§7" + research.getName(player));
+                        stringList.add("§4§l" + Slimefun.getLocalization().getMessage(player, "guide.locked"));
+                        stringList.add("§a> Click to unlock");
+                        if(research instanceof SpecialResearch specialResearch) {
+                            stringList.addAll(List.of(specialResearch.getShowText(player)));
+                        } else {
+                            stringList.add("");
+                            stringList.add("§7Cost: §b" + research.getCost() + " Level(s)");
+                        }
+                        ItemStackUtil.setLore(icon, stringList);
                         chestMenu.addItem(MAIN_CONTENT_L[i][j], icon);
                         chestMenu.addMenuClickHandler(MAIN_CONTENT_L[i][j], (p, slot, item, action) -> {
                             PlayerPreResearchEvent event = new PlayerPreResearchEvent(player, research, slimefunItem);
@@ -257,6 +300,10 @@ public class SubFlexItemGroup extends FlexItemGroup {
                 return subFlexItemGroup;
             }
         }
+    }
+
+    public boolean isVisible(@Nonnull SlimefunItem slimefunItem, @Nonnull Player player) {
+        return true;
     }
 
     // TODO

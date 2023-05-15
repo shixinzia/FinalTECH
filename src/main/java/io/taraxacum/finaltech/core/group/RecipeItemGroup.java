@@ -8,9 +8,10 @@ import io.github.thebusybiscuit.slimefun4.core.guide.GuideHistory;
 import io.github.thebusybiscuit.slimefun4.core.guide.SlimefunGuide;
 import io.github.thebusybiscuit.slimefun4.core.guide.SlimefunGuideMode;
 import io.taraxacum.finaltech.FinalTech;
+import io.taraxacum.finaltech.util.MachineUtil;
 import io.taraxacum.libs.slimefun.dto.ItemValueTable;
 import io.taraxacum.libs.slimefun.interfaces.ShowInfoItem;
-import io.taraxacum.finaltech.core.helper.Icon;
+import io.taraxacum.finaltech.core.option.Icon;
 import io.taraxacum.finaltech.core.menu.common.SlimefunItemBigRecipeMenu;
 import io.taraxacum.finaltech.core.menu.common.SlimefunItemSmallRecipeMenu;
 import io.taraxacum.libs.plugin.util.ItemStackUtil;
@@ -40,13 +41,13 @@ public class RecipeItemGroup extends FlexItemGroup {
     private static final int BIG_LIMIT = 36;
 
     public RecipeItemGroup(@Nonnull NamespacedKey key, @Nonnull SlimefunItem slimefunItem) {
-        super(key, ItemStackUtil.cloneWithoutNBT(slimefunItem.getItem()));
+        super(key, MachineUtil.cloneAsDescriptiveItem(slimefunItem));
         this.id = slimefunItem.getId();
         this.page = 1;
     }
 
     public RecipeItemGroup(@Nonnull NamespacedKey key, @Nonnull SlimefunItem slimefunItem, int page) {
-        super(key, ItemStackUtil.cloneWithoutNBT(slimefunItem.getItem()));
+        super(key, MachineUtil.cloneAsDescriptiveItem(slimefunItem));
         this.id = slimefunItem.getId();
         this.page = page;
     }
@@ -156,16 +157,16 @@ public class RecipeItemGroup extends FlexItemGroup {
     @Nonnull
     public static ItemStack generateInfoIcon(@Nonnull SlimefunItem slimefunItem, @Nonnull Player player) {
         ItemStack infoIcon = ItemStackUtil.cloneItem(Icon.WIKI_ICON);
-        ItemStackUtil.setLore(infoIcon, FinalTech.getLanguageManager().replaceStringArray(FinalTech.getLanguageStringArray("helper", "ICON", "wiki-icon", "lore"),
+        ItemStackUtil.setLore(infoIcon, FinalTech.getLanguageManager().replaceStringArray(FinalTech.getLanguageStringArray("option", "ICON", "wiki-icon", "lore"),
                 slimefunItem.getId(),
-                slimefunItem.getResearch() != null ? slimefunItem.getResearch().getName(player) : FinalTech.getLanguageString("helper", "ICON", "wiki-icon", "no-research"),
+                slimefunItem.getResearch() != null ? slimefunItem.getResearch().getName(player) : FinalTech.getLanguageString("option", "ICON", "wiki-icon", "no-research"),
                 slimefunItem.getAddon().getName(),
                 String.valueOf(ItemValueTable.getInstance().getOrCalItemInputValue(slimefunItem)),
                 String.valueOf(ItemValueTable.getInstance().getOrCalItemOutputValue(slimefunItem))));
 
         if (slimefunItem instanceof EnergyNetComponent) {
-            String energyLore = FinalTech.getLanguageString("helper", "ICON", "wiki-icon", ((EnergyNetComponent) slimefunItem).getEnergyComponentType().name());
-            ItemStackUtil.addLoresToLast(infoIcon, FinalTech.getLanguageManager().replaceStringArray(FinalTech.getLanguageStringArray("helper", "ICON", "wiki-icon", "lore-energy"),
+            String energyLore = FinalTech.getLanguageString("option", "ICON", "wiki-icon", ((EnergyNetComponent) slimefunItem).getEnergyComponentType().name());
+            ItemStackUtil.addLoresToLast(infoIcon, FinalTech.getLanguageManager().replaceStringArray(FinalTech.getLanguageStringArray("option", "ICON", "wiki-icon", "lore-energy"),
                     energyLore,
                     String.valueOf(((EnergyNetComponent) slimefunItem).getCapacity())));
         }

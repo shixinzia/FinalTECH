@@ -9,9 +9,10 @@ import io.github.thebusybiscuit.slimefun4.core.guide.GuideHistory;
 import io.github.thebusybiscuit.slimefun4.core.guide.SlimefunGuide;
 import io.github.thebusybiscuit.slimefun4.core.guide.SlimefunGuideMode;
 import io.github.thebusybiscuit.slimefun4.implementation.Slimefun;
-import io.github.thebusybiscuit.slimefun4.implementation.guide.SurvivalSlimefunGuide;
 import io.github.thebusybiscuit.slimefun4.utils.ChestMenuUtils;
 import io.taraxacum.finaltech.FinalTech;
+import io.taraxacum.finaltech.core.interfaces.SpecialResearch;
+import io.taraxacum.finaltech.util.MachineUtil;
 import io.taraxacum.libs.plugin.util.ItemStackUtil;
 import io.taraxacum.libs.slimefun.dto.SlimefunCraftRegistry;
 import io.taraxacum.libs.slimefun.util.GuideUtil;
@@ -55,7 +56,7 @@ public class CraftItemGroup extends FlexItemGroup {
     private final List<SlimefunItem> slimefunItemList;
 
     protected CraftItemGroup(NamespacedKey key, SlimefunItem slimefunItem) {
-        super(key, ItemStackUtil.cloneWithoutNBT(slimefunItem.getItem()));
+        super(key, MachineUtil.cloneAsDescriptiveItem(slimefunItem));
         this.page = 1;
         this.slimefunItem = slimefunItem;
         this.slimefunItemList = new ArrayList<>();
@@ -72,7 +73,7 @@ public class CraftItemGroup extends FlexItemGroup {
     }
 
     protected CraftItemGroup(NamespacedKey key, SlimefunItem slimefunItem, int page) {
-        super(key, ItemStackUtil.cloneWithoutNBT(slimefunItem.getItem()));
+        super(key, MachineUtil.cloneAsDescriptiveItem(slimefunItem));
         this.page = page;
         this.slimefunItem = slimefunItem;
         this.slimefunItemList = new ArrayList<>();
@@ -149,7 +150,7 @@ public class CraftItemGroup extends FlexItemGroup {
                 SlimefunItem slimefunItem = this.slimefunItemList.get(index);
                 Research research = slimefunItem.getResearch();
                 if (playerProfile.hasUnlocked(research)) {
-                    ItemStack itemStack = ItemStackUtil.cloneWithoutNBT(slimefunItem.getItem());
+                    ItemStack itemStack = MachineUtil.cloneAsDescriptiveItem(slimefunItem);
                     ItemStackUtil.addLoreToFirst(itemStack, "§7" + slimefunItem.getId());
                     chestMenu.addItem(MAIN_CONTENT[i], itemStack);
                     chestMenu.addMenuClickHandler(MAIN_CONTENT[i], (p, slot, item, action) -> {
@@ -161,13 +162,17 @@ public class CraftItemGroup extends FlexItemGroup {
                     });
                 } else {
                     ItemStack icon = ItemStackUtil.cloneItem(ChestMenuUtils.getNotResearchedItem());
-                    ItemStackUtil.setLore(icon,
-                            "§7" + research.getName(player),
-                            "§4§l" + Slimefun.getLocalization().getMessage(player, "guide.locked"),
-                            "",
-                            "§a> Click to unlock",
-                            "",
-                            "§7Cost: §b" + research.getCost() + " Level(s)");
+                    List<String> stringList = new ArrayList<>();
+                    stringList.add("§7" + research.getName(player));
+                    stringList.add("§4§l" + Slimefun.getLocalization().getMessage(player, "guide.locked"));
+                    stringList.add("§a> Click to unlock");
+                    if(research instanceof SpecialResearch specialResearch) {
+                        stringList.addAll(List.of(specialResearch.getShowText(player)));
+                    } else {
+                        stringList.add("");
+                        stringList.add("§7Cost: §b" + research.getCost() + " Level(s)");
+                    }
+                    ItemStackUtil.setLore(icon, stringList);
                     chestMenu.addItem(MAIN_CONTENT[i], icon);
                     chestMenu.addMenuClickHandler(MAIN_CONTENT[i], (p, slot, item, action) -> {
                         PlayerPreResearchEvent event = new PlayerPreResearchEvent(player, research, slimefunItem);
