@@ -11,6 +11,7 @@ import java.util.Map;
  * @author Final_ROOT
  * @since 2.0
  */
+@Deprecated
 public class LocationRecipeRegistry {
     private final Map<Location, AdvancedMachineRecipe> LOCATION_RECIPE_MAP = new HashMap<>();
     private static volatile LocationRecipeRegistry instance;
