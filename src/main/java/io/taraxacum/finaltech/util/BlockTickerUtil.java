@@ -3,26 +3,31 @@ package io.taraxacum.finaltech.util;
 import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItem;
 import io.github.thebusybiscuit.slimefun4.core.attributes.MachineProcessHolder;
 import io.github.thebusybiscuit.slimefun4.libraries.dough.protection.Interaction;
-import io.taraxacum.common.api.RunnableLockFactory;
 import io.taraxacum.finaltech.FinalTech;
 import io.taraxacum.libs.plugin.dto.ServerRunnableLockFactory;
+import io.taraxacum.libs.plugin.interfaces.LocationDataService;
+import io.taraxacum.libs.plugin.util.InventoryUtil;
 import io.taraxacum.libs.plugin.util.ItemStackUtil;
+import io.taraxacum.libs.plugin.dto.LocationData;
+import io.taraxacum.libs.slimefun.dto.SlimefunLocationData;
+import io.taraxacum.libs.slimefun.service.SlimefunLocationDataService;
 import me.mrCookieSlime.CSCoreLibPlugin.Configuration.Config;
-import me.mrCookieSlime.Slimefun.Objects.handlers.BlockTicker;
-import me.mrCookieSlime.Slimefun.api.BlockStorage;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
-import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.inventory.Inventory;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 /**
@@ -30,6 +35,10 @@ import java.util.function.Supplier;
  * @since 2.0
  */
 public class BlockTickerUtil {
+    private final static String KEY_SLEEP = "finaltech-s";
+
+    private final static String KEY_LIVE_TIME = "finaltech-lt";
+
     @SafeVarargs
     public static <T> void runTask(@Nonnull ServerRunnableLockFactory<T> serverRunnableLockFactory, boolean async, @Nonnull Runnable runnable, T... locks) {
         if (async) {
@@ -48,14 +57,17 @@ public class BlockTickerUtil {
         }
     }
 
+    @Deprecated
     public static void setSleep(@Nonnull Config config, @Nullable String sleep) {
         config.setValue(ConstantTableUtil.CONFIG_SLEEP, sleep);
     }
 
+    @Deprecated
     public static boolean hasSleep(@Nonnull Config config) {
         return config.contains(ConstantTableUtil.CONFIG_SLEEP);
     }
 
+    @Deprecated
     public static void subSleep(@Nonnull Config config) {
         String sleepStr = config.getString(ConstantTableUtil.CONFIG_SLEEP);
         if (sleepStr != null) {
@@ -68,280 +80,199 @@ public class BlockTickerUtil {
         }
     }
 
+    public static void setSleep(@Nonnull LocationDataService locationDataService, @Nonnull LocationData locationData, @Nonnull Number sleep) {
+        locationDataService.setLocationData(locationData, KEY_SLEEP, String.valueOf(sleep));
+    }
+
+    /**
+     * @return true if something here will not sleep and should work
+     */
+    public static boolean subSleep(@Nonnull LocationDataService locationDataService, @Nonnull LocationData locationData) {
+        String value = locationDataService.getLocationData(locationData, KEY_SLEEP);
+        if(value == null) {
+            return true;
+        }
+        int sleep = Integer.parseInt(value);
+        sleep --;
+        if(sleep > 0) {
+            locationDataService.setLocationData(locationData, KEY_SLEEP, String.valueOf(sleep));
+            return false;
+        } else {
+            locationDataService.setLocationData(locationData, KEY_SLEEP, null);
+            return true;
+        }
+    }
+
     @Nonnull
-    public static BlockTicker getDebugModeBlockTicker(@Nonnull BlockTicker blockTicker, @Nonnull SlimefunItem slimefunItem) {
-        return new BlockTicker() {
-            @Override
-            public boolean isSynchronized() {
-                return blockTicker.isSynchronized();
+    public static Function<LocationData, Boolean> functionAntiAcceleration(@Nonnull LocationDataService locationDataService) {
+        final String key = "finaltech-aa";
+        return locationData -> {
+            String value = locationDataService.getLocationData(locationData, key);
+            if (value != null && Integer.parseInt(value) == FinalTech.getSlimefunTickCount()) {
+                return false;
             }
 
-            @Override
-            public void tick(Block b, SlimefunItem item, Config data) {
-                FinalTech.logger().info("DEBUG MODE: " + slimefunItem.getId() + " | Location: " + b.getLocation());
-                blockTicker.tick(b, item, data);
-            }
-
-            @Override
-            public void uniqueTick() {
-                blockTicker.uniqueTick();
-            }
+            locationDataService.setLocationData(locationData, key, String.valueOf(FinalTech.getSlimefunTickCount()));
+            return true;
         };
     }
 
-    public static BlockTicker getGeneralIntervalBlockTicker(@Nonnull BlockTicker blockTicker, int interval) {
-        return new BlockTicker() {
-            @Override
-            public boolean isSynchronized() {
-                return blockTicker.isSynchronized();
-            }
-
-            @Override
-            public void tick(Block b, SlimefunItem item, Config data) {
-                if(FinalTech.getSlimefunTickCount() % interval == 0) {
-                    blockTicker.tick(b, item, data);
+    @Nonnull
+    public static Function<LocationData, Boolean> functionPerformanceLimit(@Nonnull LocationDataService locationDataService) {
+        final String key = "finaltech-pl";
+        return locationData -> {
+            String value = locationDataService.getLocationData(locationData, key);
+            int charge = value == null ? 0 : Integer.parseInt(value);
+            charge += FinalTech.getTps();
+            if (charge >= 20) {
+                if (charge >= 40) {
+                    charge -= 20;
                 }
-            }
-
-            @Override
-            public void uniqueTick() {
-                blockTicker.uniqueTick();
-            }
-        };
-    }
-
-    public static BlockTicker getIndependentIntervalBlockTicker(@Nonnull BlockTicker blockTicker, int interval) {
-        String i = String.valueOf(--interval);
-        return new BlockTicker() {
-            @Override
-            public boolean isSynchronized() {
-                return blockTicker.isSynchronized();
-            }
-
-            @Override
-            public void tick(Block b, SlimefunItem item, Config data) {
-                if(BlockTickerUtil.hasSleep(data)) {
-                    BlockTickerUtil.subSleep(data);
-                }
-                blockTicker.tick(b, item, data);
-                BlockTickerUtil.setSleep(data, i);
-            }
-
-            @Override
-            public void uniqueTick() {
-                blockTicker.uniqueTick();
+                locationDataService.setLocationData(locationData, key, String.valueOf(charge - 20));
+                return true;
+            } else {
+                locationDataService.setLocationData(locationData, key, String.valueOf(charge));
+                return false;
             }
         };
     }
 
-    public static BlockTicker getRangeLimitBlockTicker(@Nonnull BlockTicker blockTicker, int range, int mulRange, boolean dropSelf, @Nonnull String message) {
-        return new BlockTicker() {
-            private List<Location> lastLocationList = new ArrayList<>();
-            private List<Location> locationList = new ArrayList<>();
-            private Random random = new Random();
+    @Nonnull
+    public static Function<LocationData, Boolean> functionGeneralInterval(int interval) {
+        return locationData -> FinalTech.getSlimefunTickCount() % interval == 0;
+    }
 
-            @Override
-            public boolean isSynchronized() {
-                return blockTicker.isSynchronized();
-            }
+    @Nonnull
+    public static Function<LocationData, Boolean> functionIndependentIntervalBefore(@Nonnull LocationDataService locationDataService) {
+        return locationData -> BlockTickerUtil.subSleep(locationDataService, locationData);
+    }
 
-            @Override
-            public void tick(Block block, SlimefunItem item, Config data) {
-                if(this.lastLocationList.size() > 1) {
-                    Location randomLocation = this.lastLocationList.get(this.random.nextInt(this.lastLocationList.size()));
-                    Location location = block.getLocation();
-                    double manhattanDistance = LocationUtil.getManhattanDistance(randomLocation, location);
-                    if(manhattanDistance < range + mulRange * this.lastLocationList.size() && manhattanDistance > 0) {
-                        JavaPlugin javaPlugin = item.getAddon().getJavaPlugin();
-                        World world = block.getLocation().getWorld();
-                        javaPlugin.getServer().getScheduler().runTask(javaPlugin, () -> {
-                            boolean canBreak = true;
-                            if(world != null) {
-                                List<Player> playerList = new ArrayList<>();
-                                for(Entity entity : world.getNearbyEntities(block.getLocation(), range, range, range, entity -> entity instanceof Player)) {
-                                    if(entity instanceof Player player) {
-                                        if(canBreak && !PermissionUtil.checkPermission(player, location, Interaction.BREAK_BLOCK)) {
-                                            canBreak = false;
-                                        }
-                                        playerList.add(player);
-                                    }
-                                }
-                                if(canBreak) {
-                                    BlockStorage.clearBlockInfo(block);
-                                    block.setType(Material.AIR);
-                                    if(item instanceof MachineProcessHolder machineProcessHolder) {
-                                        machineProcessHolder.getMachineProcessor().endOperation(block);
-                                    }
-                                    if(dropSelf && item.getId().equals(BlockStorage.getLocationInfo(block.getLocation(), ConstantTableUtil.CONFIG_ID))) {
-                                        block.getLocation().getWorld().dropItem(block.getLocation(), ItemStackUtil.cloneItem(item.getItem(), 1));
-                                    }
-                                    for(Player player : playerList) {
-                                        player.sendMessage(message.replace("{1}", item.getItemName()));
-                                    }
+    @Nonnull
+    public static Consumer<LocationData> functionIndependentIntervalAfter(@Nonnull LocationDataService locationDataService, int interval) {
+        return locationData -> BlockTickerUtil.setSleep(locationDataService, locationData, interval);
+    }
+
+    public static Consumer<LocationData> functionLiveTimeAfter(@Nonnull LocationDataService locationDataService, @Nonnull String id, int time, boolean dropSelf, int... dropSlots) {
+        return locationData -> {
+            String liveTimeStr = FinalTech.getLocationDataService().getLocationData(locationData, KEY_LIVE_TIME);
+            if(liveTimeStr == null) {
+                liveTimeStr = String.valueOf(time);
+                FinalTech.getLocationDataService().setLocationData(locationData, KEY_LIVE_TIME, liveTimeStr);
+            } else {
+                int liveTime = Integer.parseInt(liveTimeStr) - 1;
+                if(liveTime > 0) {
+                    FinalTech.getLocationDataService().setLocationData(locationData, KEY_LIVE_TIME, String.valueOf(liveTime));
+                } else {
+                    Bukkit.getScheduler().runTaskLater(FinalTech.getInstance(), () -> {
+                        LocationData tempLocationData = FinalTech.getLocationDataService().getLocationData(locationData.getLocation());
+                        if(tempLocationData instanceof SlimefunLocationData slimefunLocationData && slimefunLocationData.getId().equals(id)) {
+                            SlimefunItem slimefunItem = slimefunLocationData.getSlimefunItem();
+                            Location location = tempLocationData.getLocation();
+                            World world = location.getWorld();
+                            if(slimefunItem instanceof MachineProcessHolder<?> machineProcessHolder) {
+                                machineProcessHolder.getMachineProcessor().endOperation(location);
+                            }
+                            if(dropSelf) {
+                                world.dropItem(locationData.getLocation(), ItemStackUtil.cloneItem(slimefunItem.getItem(), 1));
+                            }
+                            if(dropSlots.length > 0) {
+                                Inventory inventory = FinalTech.getLocationDataService().getInventory(tempLocationData);
+                                if(inventory != null) {
+                                    InventoryUtil.dropItems(inventory, location, dropSlots);
                                 }
                             }
-                        });
-                        return;
-                    }
+                            locationDataService.clearLocationData(location);
+                            location.getBlock().setType(Material.AIR);
+                        }
+                    }, 0);
                 }
-                blockTicker.tick(block, item, data);
-                this.locationList.add(block.getLocation());
-            }
-
-            @Override
-            public void uniqueTick() {
-                blockTicker.uniqueTick();
-                List<Location> tempLocationList = this.lastLocationList;
-                this.lastLocationList = this.locationList;
-                this.locationList = tempLocationList;
-                this.locationList.clear();
             }
         };
     }
 
     @Nonnull
-    public static BlockTicker generateBlockTicker(@Nonnull BlockTicker blockTicker, boolean forceAsync, boolean antiAcceleration, boolean performanceLimit) {
-        if (forceAsync && antiAcceleration && performanceLimit) {
-            return new BlockTicker() {
-                private final RunnableLockFactory<Location> runnableLockFactory = FinalTech.getLocationRunnableFactory();
-
-                @Override
-                public boolean isSynchronized() {
+    public static Function<LocationData, Boolean> functionRangeLimitBefore(@Nonnull LocationDataService locationDataService, @Nonnull RangeLimitHandler rangeLimitHandler) {
+        return locationData -> {
+            if (rangeLimitHandler.lastLocationList.size() > 1) {
+                Location randomLocation = rangeLimitHandler.lastLocationList.get(rangeLimitHandler.random.nextInt(rangeLimitHandler.lastLocationList.size()));
+                int limitRange = rangeLimitHandler.range + rangeLimitHandler.mulRange * rangeLimitHandler.lastLocationList.size();
+                double distance = LocationUtil.getClosestDistance(locationData.getLocation(), randomLocation);
+                if (distance > 0 && distance < limitRange) {
+                    FinalTech.getInstance().getServer().getScheduler().runTask(FinalTech.getInstance(), () -> {
+                        boolean canBreak = true;
+                        World world = locationData.getLocation().getWorld();
+                        if (world != null) {
+                            List<Player> playerList = new ArrayList<>();
+                            for (Entity entity : world.getNearbyEntities(locationData.getLocation(), limitRange, limitRange, limitRange, entity -> entity instanceof Player)) {
+                                if (entity instanceof Player player) {
+                                    if (canBreak && !PermissionUtil.checkPermission(player, locationData.getLocation(), Interaction.BREAK_BLOCK)) {
+                                        canBreak = false;
+                                    }
+                                    playerList.add(player);
+                                }
+                            }
+                            if (canBreak) {
+                                locationDataService.clearLocationData(locationData.getLocation());
+                                Block block = locationData.getLocation().getBlock();
+                                block.setType(Material.AIR);
+                                if(locationData instanceof SlimefunLocationData slimefunLocationData && locationDataService instanceof SlimefunLocationDataService slimefunLocationDataService) {
+                                    if(slimefunLocationData.getSlimefunItem() instanceof MachineProcessHolder<?> machineProcessHolder) {
+                                        machineProcessHolder.getMachineProcessor().endOperation(locationData.getLocation());
+                                    }
+                                    SlimefunItem slimefunItem = slimefunLocationDataService.getSlimefunItem((SlimefunLocationData) locationData);
+                                    if(rangeLimitHandler.dropSelf && slimefunItem.getId().equals(slimefunLocationData.getId())) {
+                                        world.dropItem(locationData.getLocation(), ItemStackUtil.cloneItem(slimefunItem.getItem(), 1));
+                                    }
+                                }
+                                for(Player player : playerList) {
+                                    if(locationData instanceof SlimefunLocationData slimefunLocationData) {
+                                        player.sendMessage(rangeLimitHandler.message.replace("{1}", slimefunLocationData.getSlimefunItem().getItemName()));
+                                    }
+                                    player.sendMessage(rangeLimitHandler.message);
+                                }
+                            }
+                        }
+                    });
                     return false;
                 }
+            }
+            return true;
+        };
+    }
 
-                @Override
-                public void tick(Block b, SlimefunItem item, Config data) {
-                    if (!AntiAccelerationUtil.isAccelerated(data) && PerformanceLimitUtil.charge(data)) {
-                        this.runnableLockFactory.waitThenRun(() -> blockTicker.tick(b, item, data), b.getLocation());
-                    }
-                }
+    @Nonnull
+    public static Consumer<LocationData> functionRangeLimitAfter(@Nonnull RangeLimitHandler rangeLimitHandler) {
+        return locationData -> rangeLimitHandler.locationList.add(locationData.getLocation());
+    }
 
-                @Override
-                public void uniqueTick() {
-                    blockTicker.uniqueTick();
-                }
-            };
-        } else if (forceAsync && antiAcceleration && !performanceLimit) {
-            return new BlockTicker() {
-                private final RunnableLockFactory<Location> runnableLockFactory = FinalTech.getLocationRunnableFactory();
+    @Nonnull
+    public static Runnable functionRangeLimitUnique(@Nonnull RangeLimitHandler rangeLimitHandler) {
+        return () -> {
+            List<Location> tempLocationList = rangeLimitHandler.lastLocationList;
+            rangeLimitHandler.lastLocationList = rangeLimitHandler.locationList;
+            rangeLimitHandler.locationList = tempLocationList;
+            rangeLimitHandler.locationList.clear();
+        };
+    }
 
-                @Override
-                public boolean isSynchronized() {
-                    return false;
-                }
+    public static class RangeLimitHandler {
+        private List<Location> lastLocationList = new ArrayList<>();
+        private List<Location> locationList = new ArrayList<>();
 
-                @Override
-                public void tick(Block b, SlimefunItem item, Config data) {
-                    if (!AntiAccelerationUtil.isAccelerated(data)) {
-                        this.runnableLockFactory.waitThenRun(() -> blockTicker.tick(b, item, data), b.getLocation());
-                    }
-                }
+        private final Random random;
 
-                @Override
-                public void uniqueTick() {
-                    blockTicker.uniqueTick();
-                }
-            };
-        } else if (forceAsync && !antiAcceleration && performanceLimit) {
-            return new BlockTicker() {
-                private final RunnableLockFactory<Location> runnableLockFactory = FinalTech.getLocationRunnableFactory();
+        private final int range;
+        private final int mulRange;
+        private final boolean dropSelf;
+        private final String message;
 
-                @Override
-                public boolean isSynchronized() {
-                    return false;
-                }
+        public RangeLimitHandler(int range, int mulRange, boolean dropSelf, @Nonnull String message) {
+            this.range = range;
+            this.mulRange = mulRange;
+            this.dropSelf = dropSelf;
+            this.message = message;
 
-                @Override
-                public void tick(Block b, SlimefunItem item, Config data) {
-                    if (PerformanceLimitUtil.charge(data)) {
-                        this.runnableLockFactory.waitThenRun(() -> blockTicker.tick(b, item, data), b.getLocation());
-                    }
-                }
-
-                @Override
-                public void uniqueTick() {
-                    blockTicker.uniqueTick();
-                }
-            };
-        } else if (forceAsync && !antiAcceleration && !performanceLimit) {
-            return new BlockTicker() {
-                private final RunnableLockFactory<Location> runnableLockFactory = FinalTech.getLocationRunnableFactory();
-
-                @Override
-                public boolean isSynchronized() {
-                    return false;
-                }
-
-                @Override
-                public void tick(Block b, SlimefunItem item, Config data) {
-                    this.runnableLockFactory.waitThenRun(() -> blockTicker.tick(b, item, data), b.getLocation());
-                }
-
-                @Override
-                public void uniqueTick() {
-                    blockTicker.uniqueTick();
-                }
-            };
-        } else if (!forceAsync && antiAcceleration && performanceLimit) {
-            return new BlockTicker() {
-                @Override
-                public boolean isSynchronized() {
-                    return blockTicker.isSynchronized();
-                }
-
-                @Override
-                public void tick(Block b, SlimefunItem item, Config data) {
-                    if (!AntiAccelerationUtil.isAccelerated(data) && PerformanceLimitUtil.charge(data)) {
-                        blockTicker.tick(b, item, data);
-                    }
-                }
-
-                @Override
-                public void uniqueTick() {
-                    blockTicker.uniqueTick();
-                }
-            };
-        } else if (!forceAsync && antiAcceleration && !performanceLimit) {
-            return new BlockTicker() {
-                @Override
-                public boolean isSynchronized() {
-                    return blockTicker.isSynchronized();
-                }
-
-                @Override
-                public void tick(Block b, SlimefunItem item, Config data) {
-                    if (!AntiAccelerationUtil.isAccelerated(data)) {
-                        blockTicker.tick(b, item, data);
-                    }
-                }
-
-                @Override
-                public void uniqueTick() {
-                    blockTicker.uniqueTick();
-                }
-            };
-        } else if (!forceAsync && !antiAcceleration && performanceLimit) {
-            return new BlockTicker() {
-                @Override
-                public boolean isSynchronized() {
-                    return blockTicker.isSynchronized();
-                }
-
-                @Override
-                public void tick(Block b, SlimefunItem item, Config data) {
-                    if (PerformanceLimitUtil.charge(data)) {
-                        blockTicker.tick(b, item, data);
-                    }
-                }
-
-                @Override
-                public void uniqueTick() {
-                    blockTicker.uniqueTick();
-                }
-            };
-        } else {
-            return blockTicker;
+            this.random = new Random();
         }
     }
 }
