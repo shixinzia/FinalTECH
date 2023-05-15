@@ -24,7 +24,7 @@ public class ConfigSaveActionEvent extends Event {
 
     private final String id;
 
-    public ConfigSaveActionEvent(boolean async, Location location, String id) {
+    public ConfigSaveActionEvent(boolean async, @Nonnull Location location, @Nonnull String id) {
         super(async);
 
         Validate.notNull(location, "The location cannot be null!");
