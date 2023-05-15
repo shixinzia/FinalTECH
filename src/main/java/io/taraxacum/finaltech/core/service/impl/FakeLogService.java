@@ -12,16 +12,15 @@ import javax.annotation.Nullable;
 /**
  * It will do nothing.
  * @author Final_ROOT
- * @since 2.5
  */
 public class FakeLogService implements LogService {
     @Override
-    public void addItem(@Nonnull String itemId, @Nonnull String sourceId, @Nonnull LogSourceType logSourceType, @Nullable Player player, @Nonnull Location location, @Nonnull Plugin plugin) {
+    public void addItem(@Nonnull String itemId, int amount, @Nonnull String sourceId, @Nonnull LogSourceType logSourceType, @Nullable Player player, @Nonnull Location location, @Nonnull Plugin plugin) {
 
     }
 
     @Override
-    public void subItem(@Nonnull String itemId, @Nonnull String sourceId, @Nonnull LogSourceType logSourceType, @Nullable Player player, @Nonnull Location location, @Nonnull Plugin plugin) {
+    public void subItem(@Nonnull String itemId, int amount, @Nonnull String sourceId, @Nonnull LogSourceType logSourceType, @Nullable Player player, @Nonnull Location location, @Nonnull Plugin plugin) {
 
     }
 

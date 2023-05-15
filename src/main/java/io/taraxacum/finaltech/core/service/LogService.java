@@ -12,7 +12,6 @@ import javax.annotation.Nullable;
  * Log service is for recording and tracing the amount change of items.
  * It will be used to analysed whether an item duplication bug is exploited.
  * @author Final_ROOT
- * @since 2.5
  */
 public interface LogService {
 
@@ -23,7 +22,7 @@ public interface LogService {
      * @param location where the item is generated
      * @param plugin who do this?
      */
-    void addItem(@Nonnull String itemId, @Nonnull String sourceId, @Nonnull LogSourceType logSourceType, @Nullable Player player, @Nonnull Location location, @Nonnull Plugin plugin);
+    void addItem(@Nonnull String itemId, int amount, @Nonnull String sourceId, @Nonnull LogSourceType logSourceType, @Nullable Player player, @Nonnull Location location, @Nonnull Plugin plugin);
 
     /**
      * @param itemId the id of item to be consumed
@@ -32,7 +31,7 @@ public interface LogService {
      * @param location where the item is consumed
      * @param plugin who do this?
      */
-    void subItem(@Nonnull String itemId, @Nonnull String sourceId, @Nonnull LogSourceType logSourceType, @Nullable Player player, @Nonnull Location location, @Nonnull Plugin plugin);
+    void subItem(@Nonnull String itemId, int amount, @Nonnull String sourceId, @Nonnull LogSourceType logSourceType, @Nullable Player player, @Nonnull Location location, @Nonnull Plugin plugin);
 
     /**
      * @param itemId the id of item
