@@ -1,14 +1,17 @@
 package io.taraxacum.finaltech.util;
 
+import io.taraxacum.libs.plugin.dto.LocationData;
 import io.taraxacum.libs.plugin.dto.ServerRunnableLockFactory;
+import io.taraxacum.libs.plugin.interfaces.LocationDataService;
+import io.taraxacum.libs.plugin.util.InventoryUtil;
 import io.taraxacum.libs.plugin.util.ItemStackUtil;
 import io.taraxacum.libs.plugin.dto.InvWithSlots;
 import io.taraxacum.common.util.JavaUtil;
 import io.taraxacum.libs.plugin.dto.ItemWrapper;
 import io.taraxacum.finaltech.core.dto.CargoDTO;
 import io.taraxacum.finaltech.core.dto.SimpleCargoDTO;
-import io.taraxacum.finaltech.core.helper.*;
-import me.mrCookieSlime.Slimefun.api.BlockStorage;
+import io.taraxacum.finaltech.core.option.*;
+import io.taraxacum.libs.slimefun.service.SlimefunLocationDataService;
 import me.mrCookieSlime.Slimefun.api.inventory.BlockMenu;
 import me.mrCookieSlime.Slimefun.api.item_transport.ItemTransportFlow;
 import org.bukkit.Location;
@@ -49,11 +52,11 @@ public class CargoUtil {
     }
     public static Future<Integer> doCargoStrongSymmetry(@Nonnull CargoDTO cargoDTO) {
         if (cargoDTO.getJavaPlugin().getServer().isPrimaryThread()) {
-            InvWithSlots inputMap = CargoUtil.getInvWithSlots(cargoDTO.getInputBlock(), cargoDTO.getInputSize(), cargoDTO.getInputOrder());
+            InvWithSlots inputMap = CargoUtil.getInvWithSlots(cargoDTO.getLocationDataService(), cargoDTO.getInputBlock(), cargoDTO.getInputSize(), cargoDTO.getInputOrder());
             if (inputMap == null) {
                 return ZERO_FUTURE;
             }
-            InvWithSlots outputMap = CargoUtil.getInvWithSlots(cargoDTO.getOutputBlock(), cargoDTO.getOutputSize(), cargoDTO.getOutputOrder());
+            InvWithSlots outputMap = CargoUtil.getInvWithSlots(cargoDTO.getLocationDataService(), cargoDTO.getOutputBlock(), cargoDTO.getOutputSize(), cargoDTO.getOutputOrder());
             if (outputMap == null) {
                 return ZERO_FUTURE;
             }
@@ -63,11 +66,11 @@ public class CargoUtil {
             return futureTask;
         } else {
             cargoDTO.getJavaPlugin().getServer().getScheduler().runTask(cargoDTO.getJavaPlugin(), () -> {
-                InvWithSlots inputMap = CargoUtil.getInvWithSlots(cargoDTO.getInputBlock(), cargoDTO.getInputSize(), cargoDTO.getInputOrder());
+                InvWithSlots inputMap = CargoUtil.getInvWithSlots(cargoDTO.getLocationDataService(), cargoDTO.getInputBlock(), cargoDTO.getInputSize(), cargoDTO.getInputOrder());
                 if (inputMap == null) {
                     return;
                 }
-                InvWithSlots outputMap = CargoUtil.getInvWithSlots(cargoDTO.getOutputBlock(), cargoDTO.getOutputSize(), cargoDTO.getOutputOrder());
+                InvWithSlots outputMap = CargoUtil.getInvWithSlots(cargoDTO.getLocationDataService(), cargoDTO.getOutputBlock(), cargoDTO.getOutputSize(), cargoDTO.getOutputOrder());
                 if (outputMap == null) {
                     return;
                 }
@@ -78,11 +81,11 @@ public class CargoUtil {
     }
     public static Future<Integer> doCargoWeakSymmetry(@Nonnull CargoDTO cargoDTO) {
         if (cargoDTO.getJavaPlugin().getServer().isPrimaryThread()) {
-            InvWithSlots inputMap = CargoUtil.getInvWithSlots(cargoDTO.getInputBlock(), cargoDTO.getInputSize(), cargoDTO.getInputOrder());
+            InvWithSlots inputMap = CargoUtil.getInvWithSlots(cargoDTO.getLocationDataService(), cargoDTO.getInputBlock(), cargoDTO.getInputSize(), cargoDTO.getInputOrder());
             if (inputMap == null) {
                 return ZERO_FUTURE;
             }
-            InvWithSlots outputMap = CargoUtil.getInvWithSlots(cargoDTO.getOutputBlock(), cargoDTO.getOutputSize(), cargoDTO.getOutputOrder());
+            InvWithSlots outputMap = CargoUtil.getInvWithSlots(cargoDTO.getLocationDataService(), cargoDTO.getOutputBlock(), cargoDTO.getOutputSize(), cargoDTO.getOutputOrder());
             if (outputMap == null) {
                 return ZERO_FUTURE;
             }
@@ -92,11 +95,11 @@ public class CargoUtil {
             return futureTask;
         } else {
             cargoDTO.getJavaPlugin().getServer().getScheduler().runTask(cargoDTO.getJavaPlugin(), () -> {
-                InvWithSlots inputMap = CargoUtil.getInvWithSlots(cargoDTO.getInputBlock(), cargoDTO.getInputSize(), cargoDTO.getInputOrder());
+                InvWithSlots inputMap = CargoUtil.getInvWithSlots(cargoDTO.getLocationDataService(), cargoDTO.getInputBlock(), cargoDTO.getInputSize(), cargoDTO.getInputOrder());
                 if (inputMap == null) {
                     return;
                 }
-                InvWithSlots outputMap = CargoUtil.getInvWithSlots(cargoDTO.getOutputBlock(), cargoDTO.getOutputSize(), cargoDTO.getOutputOrder());
+                InvWithSlots outputMap = CargoUtil.getInvWithSlots(cargoDTO.getLocationDataService(), cargoDTO.getOutputBlock(), cargoDTO.getOutputSize(), cargoDTO.getOutputOrder());
                 if (outputMap == null) {
                     return;
                 }
@@ -115,13 +118,13 @@ public class CargoUtil {
             InvWithSlots inputMap;
             InvWithSlots outputMap;
             // Just get inputMap.
-            inputMap = CargoUtil.getInvWithSlots(cargoDTO.getInputBlock(), cargoDTO.getInputSize(), cargoDTO.getInputOrder());
-            if (BlockStorage.hasInventory(cargoDTO.getOutputBlock())) {
+            inputMap = CargoUtil.getInvWithSlots(cargoDTO.getLocationDataService(), cargoDTO.getInputBlock(), cargoDTO.getInputSize(), cargoDTO.getInputOrder());
+            if (cargoDTO.getLocationDataService().getInventory(cargoDTO.getOutputBlock().getLocation()) != null) {
                 outputMap = null;
             } else {
                 if (cargoDTO.getOutputBlock().getState() instanceof InventoryHolder) {
                     // Output Inventory is vanilla container.
-                    outputMap = CargoUtil.getInvWithSlots(cargoDTO.getOutputBlock(), cargoDTO.getOutputSize(), cargoDTO.getOutputOrder());
+                    outputMap = CargoUtil.getInvWithSlots(cargoDTO.getLocationDataService(), cargoDTO.getOutputBlock(), cargoDTO.getOutputSize(), cargoDTO.getOutputOrder());
                     if (outputMap == null) {
                         return ZERO_FUTURE;
                     }
@@ -139,13 +142,13 @@ public class CargoUtil {
                 InvWithSlots inputMap;
                 InvWithSlots outputMap;
                 // Just get inputMap.
-                inputMap = CargoUtil.getInvWithSlots(cargoDTO.getInputBlock(), cargoDTO.getInputSize(), cargoDTO.getInputOrder());
-                if (BlockStorage.hasInventory(cargoDTO.getOutputBlock())) {
+                inputMap = CargoUtil.getInvWithSlots(cargoDTO.getLocationDataService(), cargoDTO.getInputBlock(), cargoDTO.getInputSize(), cargoDTO.getInputOrder());
+                if (cargoDTO.getLocationDataService().getInventory(cargoDTO.getOutputBlock().getLocation()) != null) {
                     outputMap = null;
                 } else {
                     if (cargoDTO.getOutputBlock().getState() instanceof InventoryHolder) {
                         // Output Inventory is vanilla container.
-                        outputMap = CargoUtil.getInvWithSlots(cargoDTO.getOutputBlock(), cargoDTO.getOutputSize(), cargoDTO.getOutputOrder());
+                        outputMap = CargoUtil.getInvWithSlots(cargoDTO.getLocationDataService(), cargoDTO.getOutputBlock(), cargoDTO.getOutputSize(), cargoDTO.getOutputOrder());
                         if (outputMap == null) {
                             return;
                         }
@@ -169,13 +172,13 @@ public class CargoUtil {
             InvWithSlots inputMap;
             InvWithSlots outputMap;
             // Just get outputMap.
-            outputMap = CargoUtil.getInvWithSlots(cargoDTO.getOutputBlock(), cargoDTO.getOutputSize(), cargoDTO.getOutputOrder());
-            if (BlockStorage.hasInventory(cargoDTO.getInputBlock())) {
+            outputMap = CargoUtil.getInvWithSlots(cargoDTO.getLocationDataService(), cargoDTO.getOutputBlock(), cargoDTO.getOutputSize(), cargoDTO.getOutputOrder());
+            if (cargoDTO.getLocationDataService().getInventory(cargoDTO.getInputBlock().getLocation()) != null) {
                 inputMap = null;
             } else {
                 if (cargoDTO.getInputBlock().getState() instanceof InventoryHolder) {
                     // Input Inventory is vanilla container.
-                    inputMap = CargoUtil.getInvWithSlots(cargoDTO.getInputBlock(), cargoDTO.getInputSize(), cargoDTO.getInputOrder());
+                    inputMap = CargoUtil.getInvWithSlots(cargoDTO.getLocationDataService(), cargoDTO.getInputBlock(), cargoDTO.getInputSize(), cargoDTO.getInputOrder());
                     if (inputMap == null) {
                         return ZERO_FUTURE;
                     }
@@ -193,13 +196,13 @@ public class CargoUtil {
                 InvWithSlots inputMap;
                 InvWithSlots outputMap;
                 // Just get outputMap.
-                outputMap = CargoUtil.getInvWithSlots(cargoDTO.getOutputBlock(), cargoDTO.getOutputSize(), cargoDTO.getOutputOrder());
-                if (BlockStorage.hasInventory(cargoDTO.getInputBlock())) {
+                outputMap = CargoUtil.getInvWithSlots(cargoDTO.getLocationDataService(), cargoDTO.getOutputBlock(), cargoDTO.getOutputSize(), cargoDTO.getOutputOrder());
+                if (cargoDTO.getLocationDataService().getInventory(cargoDTO.getInputBlock().getLocation()) != null) {
                     inputMap = null;
                 } else {
                     if (cargoDTO.getInputBlock().getState() instanceof InventoryHolder) {
                         // Input Inventory is vanilla container.
-                        inputMap = CargoUtil.getInvWithSlots(cargoDTO.getInputBlock(), cargoDTO.getInputSize(), cargoDTO.getInputOrder());
+                        inputMap = CargoUtil.getInvWithSlots(cargoDTO.getLocationDataService(), cargoDTO.getInputBlock(), cargoDTO.getInputSize(), cargoDTO.getInputOrder());
                         if (inputMap == null) {
                             return;
                         }
@@ -233,7 +236,7 @@ public class CargoUtil {
         Inventory outputInv = simpleCargoDTO.getOutputMap().getInventory();
         int[] outputSlots = simpleCargoDTO.getOutputMap().getSlots();
 
-        List<ItemWrapper> filterItemList = MachineUtil.getItemList(simpleCargoDTO.getFilterInv(), simpleCargoDTO.getFilterSlots());
+        List<ItemWrapper> filterItemList = InventoryUtil.getItemList(simpleCargoDTO.getFilterInv(), simpleCargoDTO.getFilterSlots());
 
         boolean nonnull = CargoLimit.VALUE_NONNULL.equals(simpleCargoDTO.getCargoLimit());
         boolean stack = !nonnull && CargoLimit.VALUE_STACK.equals(simpleCargoDTO.getCargoLimit());
@@ -267,10 +270,9 @@ public class CargoUtil {
                         typeItem = new ItemWrapper(ItemStackUtil.cloneItem(inputItem), inputItemWrapper.getItemMeta());
                     }
                     count = Math.min(inputItem.getAmount(), cargoNumber);
-                    outputItem = inputItem.clone();
-                    outputItem.setAmount(count);
-                    outputInv.setItem(outputSlots[i], outputItem);
+                    outputInv.setItem(outputSlots[i], inputItem);
                     outputItem = outputInv.getItem(outputSlots[i]);
+                    outputItem.setAmount(count);
                     inputItem.setAmount(inputItem.getAmount() - count);
                 } else {
                     continue;
@@ -309,7 +311,7 @@ public class CargoUtil {
             return 0;
         }
 
-        List<ItemWrapper> filterItemList = MachineUtil.getItemList(simpleCargoDTO.getFilterInv(), simpleCargoDTO.getFilterSlots());
+        List<ItemWrapper> filterItemList = InventoryUtil.getItemList(simpleCargoDTO.getFilterInv(), simpleCargoDTO.getFilterSlots());
 
         boolean nonnull = CargoLimit.VALUE_NONNULL.equals(simpleCargoDTO.getCargoLimit());
         boolean stack = !nonnull && CargoLimit.VALUE_STACK.equals(simpleCargoDTO.getCargoLimit());
@@ -343,10 +345,9 @@ public class CargoUtil {
                         typeItem = new ItemWrapper(ItemStackUtil.cloneItem(inputItem), inputItemWrapper.getItemMeta());
                     }
                     count = Math.min(inputItem.getAmount(), cargoNumber);
-                    outputItem = inputItem.clone();
-                    outputItem.setAmount(count);
-                    outputInv.setItem(outputSlots[i % outputSlots.length], outputItem);
+                    outputInv.setItem(outputSlots[i % outputSlots.length], inputItem);
                     outputItem = outputInv.getItem(outputSlots[i % outputSlots.length]);
+                    outputItem.setAmount(count);
                     inputItem.setAmount(inputItem.getAmount() - count);
                 } else {
                     continue;
@@ -381,7 +382,7 @@ public class CargoUtil {
         int[] inputSlots = simpleCargoDTO.getInputMap().getSlots();
 
         List<ItemWrapper> skipItemList = new ArrayList<>(inputSlots.length);
-        List<ItemWrapper> filterItemList = MachineUtil.getItemList(simpleCargoDTO.getFilterInv(), simpleCargoDTO.getFilterSlots());
+        List<ItemWrapper> filterItemList = InventoryUtil.getItemList(simpleCargoDTO.getFilterInv(), simpleCargoDTO.getFilterSlots());
 
         // If output block is a slimefun machine
         boolean dynamicOutputBlock = simpleCargoDTO.getOutputBlock() != null && simpleCargoDTO.getOutputMap() == null;
@@ -425,7 +426,7 @@ public class CargoUtil {
                     }
                 }
                 if (outputMap == null) {
-                    outputMap = CargoUtil.getInvWithSlots(simpleCargoDTO.getOutputBlock(), simpleCargoDTO.getOutputSize(), simpleCargoDTO.getOutputOrder(), inputItem);
+                    outputMap = CargoUtil.getInvWithSlots(simpleCargoDTO.getLocationDataService(), simpleCargoDTO.getOutputBlock(), simpleCargoDTO.getOutputSize(), simpleCargoDTO.getOutputOrder(), inputItem);
                     if (outputMap == null) {
                         continue;
                     }
@@ -443,9 +444,9 @@ public class CargoUtil {
                             typeItem = new ItemWrapper(ItemStackUtil.cloneItem(inputItem), inputItemWrapper.getItemMeta());
                         }
                         int count = Math.min(inputItem.getAmount(), cargoNumber);
-                        outputItem = ItemStackUtil.cloneItem(inputItem);
+                        outputInv.setItem(outputSlot, inputItem);
+                        outputItem = outputInv.getItem(outputSlot);
                         outputItem.setAmount(count);
-                        outputInv.setItem(outputSlot, outputItem);
                         inputItem.setAmount(inputItem.getAmount() - count);
                         cargoNumber -= count;
                         number += count;
@@ -497,7 +498,7 @@ public class CargoUtil {
         int[] outputSlots = simpleCargoDTO.getOutputMap().getSlots();
 
         List<ItemWrapper> skipItemList = new ArrayList<>(simpleCargoDTO.getOutputMap().getSlots().length);
-        List<ItemWrapper> filterList = MachineUtil.getItemList(simpleCargoDTO.getFilterInv(), simpleCargoDTO.getFilterSlots());
+        List<ItemWrapper> filterList = InventoryUtil.getItemList(simpleCargoDTO.getFilterInv(), simpleCargoDTO.getFilterSlots());
 
         boolean dynamicInputBlock = simpleCargoDTO.getInputBlock() != null && simpleCargoDTO.getInputMap() == null;
         List<ItemWrapper> searchItemList = new ArrayList<>(SEARCH_MAP_LIMIT);
@@ -543,7 +544,7 @@ public class CargoUtil {
             if (dynamicInputBlock) {
                 if (outputItemWrapper == null) {
                     if (nullItemInputMap == null) {
-                        nullItemInputMap = CargoUtil.getInvWithSlots(simpleCargoDTO.getInputBlock(), simpleCargoDTO.getInputSize(), simpleCargoDTO.getInputOrder());
+                        nullItemInputMap = CargoUtil.getInvWithSlots(simpleCargoDTO.getLocationDataService(), simpleCargoDTO.getInputBlock(), simpleCargoDTO.getInputSize(), simpleCargoDTO.getInputOrder());
                     }
                     inputMap = nullItemInputMap;
                     newInputMap = false;
@@ -557,7 +558,7 @@ public class CargoUtil {
                         }
                     }
                     if (inputMap == null) {
-                        inputMap = CargoUtil.getInvWithSlots(simpleCargoDTO.getInputBlock(), simpleCargoDTO.getInputSize(), simpleCargoDTO.getInputOrder(), outputItem);
+                        inputMap = CargoUtil.getInvWithSlots(simpleCargoDTO.getLocationDataService(), simpleCargoDTO.getInputBlock(), simpleCargoDTO.getInputSize(), simpleCargoDTO.getInputOrder(), outputItem);
                         if (inputMap == null) {
                             continue;
                         }
@@ -585,10 +586,9 @@ public class CargoUtil {
                         typeItem = new ItemWrapper(inputItem, inputItemWrapper.getItemMeta());
                     }
                     int count = Math.min(inputItem.getAmount(), cargoNumber);
-                    outputItem = inputItem.clone();
-                    outputItem.setAmount(count);
-                    outputInv.setItem(outputSlot, outputItem);
+                    outputInv.setItem(outputSlot, inputItem);
                     outputItem = outputInv.getItem(outputSlot);
+                    outputItem.setAmount(count);
                     outputItemWrapper = finalItemWrapper;
                     outputItemWrapper.newWrap(outputItem, inputItemWrapper.getItemMeta());
                     inputItem.setAmount(inputItem.getAmount() - count);
@@ -648,95 +648,32 @@ public class CargoUtil {
     }
 
     @Nullable
-    public static InvWithSlots getInvWithSlots(@Nonnull Block block, @Nonnull String size, @Nonnull String order) {
-        return CargoUtil.getInvWithSlots(block, size, order, ItemStackUtil.AIR);
+    public static InvWithSlots getInvWithSlots(@Nonnull LocationDataService locationDataService, @Nonnull Block block, @Nonnull String size, @Nonnull String order) {
+        return CargoUtil.getInvWithSlots(locationDataService, block, size, order, ItemStackUtil.AIR);
     }
-    @Nullable
-    public static InvWithSlots getInvWithSlots(@Nonnull Block block, @Nonnull String size, @Nonnull String order, @Nonnull ItemStack item) {
-        Inventory inventory = null;
-        int[] slots = null;
 
-        if (BlockStorage.hasInventory(block)) {
-            BlockMenu blockMenu = BlockStorage.getInventory(block);
-            inventory = blockMenu.toInventory();
-            int[] insert;
-            int[] withdraw;
-            int i;
-            switch (size) {
-                case SlotSearchSize.VALUE_INPUTS_ONLY:
-                    if (ItemStackUtil.isItemNull(item)) {
-                        slots = blockMenu.getPreset().getSlotsAccessedByItemTransport(ItemTransportFlow.INSERT);
-                        if (slots.length == 0) {
-                            slots = blockMenu.getPreset().getSlotsAccessedByItemTransport(blockMenu, ItemTransportFlow.INSERT, ItemStackUtil.AIR);
-                        }
-                    } else {
-                        slots = blockMenu.getPreset().getSlotsAccessedByItemTransport(blockMenu, ItemTransportFlow.INSERT, item);
-                    }
-                    break;
-                case SlotSearchSize.VALUE_OUTPUTS_ONLY:
-                    if (ItemStackUtil.isItemNull(item)) {
-                        slots = blockMenu.getPreset().getSlotsAccessedByItemTransport(ItemTransportFlow.WITHDRAW);
-                        if (slots.length == 0) {
-                            slots = blockMenu.getPreset().getSlotsAccessedByItemTransport(blockMenu, ItemTransportFlow.WITHDRAW, ItemStackUtil.AIR);
-                        }
-                    } else {
-                        slots = blockMenu.getPreset().getSlotsAccessedByItemTransport(blockMenu, ItemTransportFlow.WITHDRAW, item);
-                    }
-                    break;
-                case SlotSearchSize.VALUE_INPUTS_AND_OUTPUTS:
-                    if (ItemStackUtil.isItemNull(item)) {
-                        insert = blockMenu.getPreset().getSlotsAccessedByItemTransport(ItemTransportFlow.INSERT);
-                        if (insert.length == 0) {
-                            insert = blockMenu.getPreset().getSlotsAccessedByItemTransport(blockMenu, ItemTransportFlow.INSERT, ItemStackUtil.AIR);
-                        }
-                        withdraw = blockMenu.getPreset().getSlotsAccessedByItemTransport(ItemTransportFlow.WITHDRAW);
-                        if (withdraw.length == 0) {
-                            withdraw = blockMenu.getPreset().getSlotsAccessedByItemTransport(blockMenu, ItemTransportFlow.WITHDRAW, ItemStackUtil.AIR);
-                        }
-                    } else {
-                        insert = blockMenu.getPreset().getSlotsAccessedByItemTransport(blockMenu, ItemTransportFlow.INSERT, item);
-                        withdraw = blockMenu.getPreset().getSlotsAccessedByItemTransport(blockMenu, ItemTransportFlow.WITHDRAW, item);
-                    }
-                    slots = new int[insert.length + withdraw.length];
-                    i = 0;
-                    for (; i < insert.length; i++) {
-                        slots[i] = insert[i];
-                    }
-                    System.arraycopy(withdraw, 0, slots, i, withdraw.length);
-                    break;
-                case SlotSearchSize.VALUE_OUTPUTS_AND_INPUTS:
-                    if (ItemStackUtil.isItemNull(item)) {
-                        insert = blockMenu.getPreset().getSlotsAccessedByItemTransport(ItemTransportFlow.INSERT);
-                        if (insert.length == 0) {
-                            insert = blockMenu.getPreset().getSlotsAccessedByItemTransport(blockMenu, ItemTransportFlow.INSERT, ItemStackUtil.AIR);
-                        }
-                        withdraw = blockMenu.getPreset().getSlotsAccessedByItemTransport(ItemTransportFlow.WITHDRAW);
-                        if (withdraw.length == 0) {
-                            withdraw = blockMenu.getPreset().getSlotsAccessedByItemTransport(blockMenu, ItemTransportFlow.WITHDRAW, ItemStackUtil.AIR);
-                        }
-                    } else {
-                        insert = blockMenu.getPreset().getSlotsAccessedByItemTransport(blockMenu, ItemTransportFlow.INSERT, item);
-                        withdraw = blockMenu.getPreset().getSlotsAccessedByItemTransport(blockMenu, ItemTransportFlow.WITHDRAW, item);
-                    }
-                    slots = new int[insert.length + withdraw.length];
-                    i = 0;
-                    for (; i < withdraw.length; i++) {
-                        slots[i] = withdraw[i];
-                    }
-                    System.arraycopy(insert, 0, slots, i, insert.length);
-                    break;
-                default:
-                    slots = new int[0];
+    @Nullable
+    public static InvWithSlots getInvWithSlots(@Nonnull LocationDataService locationDataService, @Nonnull Block block, @Nonnull String size, @Nonnull String order, @Nonnull ItemStack itemStack) {
+        Location location = block.getLocation();
+        Inventory inventory = locationDataService.getInventory(block.getLocation());
+        int[] slots = null;
+        if (inventory != null) {
+            if(locationDataService instanceof SlimefunLocationDataService slimefunLocationDataService) {
+                BlockMenu blockMenu = slimefunLocationDataService.getBlockMenu(location);
+                if(blockMenu != null) {
+                    InvWithSlots invWithSlots = CargoUtil.calByBlockMenu(blockMenu, size, itemStack);
+                    inventory = invWithSlots.inventory();
+                    slots = invWithSlots.slots();
+                }
+            } else {
+                slots = JavaUtil.generateInts(inventory.getSize());
             }
-        } else {
+        }
+        if (inventory == null) {
             BlockState blockState = block.getState();
             if (blockState instanceof InventoryHolder inventoryHolder) {
                 inventory = inventoryHolder.getInventory();
-                slots = new int[inventory.getSize()];
-                // TODO:
-                for (int i = 0; i < slots.length; i++) {
-                    slots[i] = i;
-                }
+                slots = JavaUtil.generateInts(inventory.getSize());
             }
         }
 
@@ -746,12 +683,79 @@ public class CargoUtil {
         return CargoUtil.calInvWithSlots(inventory, slots, order);
     }
 
-    @Nullable
-    public static Inventory getVanillaInventory(@Nonnull Block block) {
-        if (block.getState() instanceof InventoryHolder inventoryHolder) {
-            return inventoryHolder.getInventory();
+    @Nonnull
+    public static InvWithSlots calByBlockMenu(@Nonnull BlockMenu blockMenu, @Nonnull String size, @Nullable ItemStack itemStack) {
+        Inventory inventory = blockMenu.toInventory();
+        int[] slots;
+        int[] insert;
+        int[] withdraw;
+        int i;
+        switch (size) {
+            case SlotSearchSize.VALUE_INPUTS_ONLY -> {
+                if (ItemStackUtil.isItemNull(itemStack)) {
+                    slots = blockMenu.getPreset().getSlotsAccessedByItemTransport(ItemTransportFlow.INSERT);
+                    if (slots.length == 0) {
+                        slots = blockMenu.getPreset().getSlotsAccessedByItemTransport(blockMenu, ItemTransportFlow.INSERT, ItemStackUtil.AIR);
+                    }
+                } else {
+                    slots = blockMenu.getPreset().getSlotsAccessedByItemTransport(blockMenu, ItemTransportFlow.INSERT, itemStack);
+                }
+            }
+            case SlotSearchSize.VALUE_OUTPUTS_ONLY -> {
+                if (ItemStackUtil.isItemNull(itemStack)) {
+                    slots = blockMenu.getPreset().getSlotsAccessedByItemTransport(ItemTransportFlow.WITHDRAW);
+                    if (slots.length == 0) {
+                        slots = blockMenu.getPreset().getSlotsAccessedByItemTransport(blockMenu, ItemTransportFlow.WITHDRAW, ItemStackUtil.AIR);
+                    }
+                } else {
+                    slots = blockMenu.getPreset().getSlotsAccessedByItemTransport(blockMenu, ItemTransportFlow.WITHDRAW, itemStack);
+                }
+            }
+            case SlotSearchSize.VALUE_INPUTS_AND_OUTPUTS -> {
+                if (ItemStackUtil.isItemNull(itemStack)) {
+                    insert = blockMenu.getPreset().getSlotsAccessedByItemTransport(ItemTransportFlow.INSERT);
+                    if (insert.length == 0) {
+                        insert = blockMenu.getPreset().getSlotsAccessedByItemTransport(blockMenu, ItemTransportFlow.INSERT, ItemStackUtil.AIR);
+                    }
+                    withdraw = blockMenu.getPreset().getSlotsAccessedByItemTransport(ItemTransportFlow.WITHDRAW);
+                    if (withdraw.length == 0) {
+                        withdraw = blockMenu.getPreset().getSlotsAccessedByItemTransport(blockMenu, ItemTransportFlow.WITHDRAW, ItemStackUtil.AIR);
+                    }
+                } else {
+                    insert = blockMenu.getPreset().getSlotsAccessedByItemTransport(blockMenu, ItemTransportFlow.INSERT, itemStack);
+                    withdraw = blockMenu.getPreset().getSlotsAccessedByItemTransport(blockMenu, ItemTransportFlow.WITHDRAW, itemStack);
+                }
+                slots = new int[insert.length + withdraw.length];
+                i = 0;
+                for (; i < insert.length; i++) {
+                    slots[i] = insert[i];
+                }
+                System.arraycopy(withdraw, 0, slots, i, withdraw.length);
+            }
+            case SlotSearchSize.VALUE_OUTPUTS_AND_INPUTS -> {
+                if (ItemStackUtil.isItemNull(itemStack)) {
+                    insert = blockMenu.getPreset().getSlotsAccessedByItemTransport(ItemTransportFlow.INSERT);
+                    if (insert.length == 0) {
+                        insert = blockMenu.getPreset().getSlotsAccessedByItemTransport(blockMenu, ItemTransportFlow.INSERT, ItemStackUtil.AIR);
+                    }
+                    withdraw = blockMenu.getPreset().getSlotsAccessedByItemTransport(ItemTransportFlow.WITHDRAW);
+                    if (withdraw.length == 0) {
+                        withdraw = blockMenu.getPreset().getSlotsAccessedByItemTransport(blockMenu, ItemTransportFlow.WITHDRAW, ItemStackUtil.AIR);
+                    }
+                } else {
+                    insert = blockMenu.getPreset().getSlotsAccessedByItemTransport(blockMenu, ItemTransportFlow.INSERT, itemStack);
+                    withdraw = blockMenu.getPreset().getSlotsAccessedByItemTransport(blockMenu, ItemTransportFlow.WITHDRAW, itemStack);
+                }
+                slots = new int[insert.length + withdraw.length];
+                i = 0;
+                for (; i < withdraw.length; i++) {
+                    slots[i] = withdraw[i];
+                }
+                System.arraycopy(insert, 0, slots, i, insert.length);
+            }
+            default -> slots = new int[0];
         }
-        return null;
+        return new InvWithSlots(inventory, slots);
     }
 
     @Nonnull
@@ -777,20 +781,17 @@ public class CargoUtil {
         return new InvWithSlots(inventory, slots);
     }
 
-    @Nonnull
-    public static InvWithSlots calInvWithSlots(@Nonnull Inventory inventory, @Nonnull String order) {
-        int[] slots = new int[inventory.getSize()];
-        // TODO:
-        for (int i = 0; i < slots.length; i++) {
-            slots[i] = i;
-        }
-        return CargoUtil.calInvWithSlots(inventory, slots, order);
+    @Nullable
+    public static Inventory getVanillaInventory(@Nonnull Block block) {
+        return block.getState() instanceof InventoryHolder inventoryHolder ? inventoryHolder.getInventory() : null;
     }
 
-    public static boolean hasInventory(@Nonnull Block block) {
-        if (BlockStorage.hasInventory(block)) {
-            return true;
-        }
-        return block.getState() instanceof InventoryHolder;
+    @Nonnull
+    public static InvWithSlots calInvWithSlots(@Nonnull Inventory inventory, @Nonnull String order) {
+        return CargoUtil.calInvWithSlots(inventory, JavaUtil.generateInts(inventory.getSize()), order);
+    }
+
+    public static boolean hasInventory(@Nonnull LocationDataService locationDataService, @Nonnull Location location) {
+        return locationDataService.getInventory(location) != null || location.getBlock().getState() instanceof InventoryHolder;
     }
 }
