@@ -9,6 +9,7 @@ import javax.annotation.Nonnull;
  * @author Final_ROOT
  * @since 2.4
  */
+@Deprecated
 public class BlockStorageConfigUtil {
     public static boolean isEmptyConfig(@Nonnull Config config) {
         return config.getString(ConstantTableUtil.CONFIG_ID) == null;
