@@ -1,11 +1,8 @@
 package io.taraxacum.finaltech.util;
 
-import io.taraxacum.common.util.StringNumberUtil;
 import io.taraxacum.finaltech.FinalTech;
 import io.taraxacum.libs.plugin.util.ItemStackUtil;
 import io.taraxacum.libs.plugin.util.TextUtil;
-import me.mrCookieSlime.CSCoreLibPlugin.Configuration.Config;
-import me.mrCookieSlime.Slimefun.api.BlockStorage;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.NamespacedKey;
@@ -27,6 +24,13 @@ import java.util.*;
 // TODO: abstract as lib
 public class LocationUtil {
     private static final NamespacedKey KEY = new NamespacedKey(FinalTech.getInstance(), "location");
+
+    public static double getClosestDistance(@Nonnull Location location1, @Nonnull Location location2) {
+        double x = Math.abs(location1.getX() - location2.getX());
+        double y = Math.abs(location1.getY() - location2.getY());
+        double z = Math.abs(location1.getZ() - location2.getZ());
+        return Math.min(x, Math.min(y, z));
+    }
 
     public static double getManhattanDistance(@Nonnull Location location1, @Nonnull Location location2) {
         return Math.abs(location1.getX() - location2.getX()) + Math.abs(location1.getY() - location2.getY()) + Math.abs(location1.getZ() - location2.getZ());
