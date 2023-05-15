@@ -97,7 +97,7 @@ public class MatrixCraftingTableMenu extends AbstractManualMachineMenu{
                 }
             }
 
-            BasicCraft basicCraft = BasicCraft.doCraft(slimefunItemList, blockMenu.toInventory(), MatrixCraftingTableMenu.this.getInputSlot());
+            BasicCraft basicCraft = BasicCraft.doCraftBySlimefunItem(slimefunItemList, inventory, this.getInputSlot());
             if (basicCraft != null) {
                 ItemStack existedItem = blockMenu.getItemInSlot(MatrixCraftingTableMenu.this.getOutputSlot()[0]);
                 ItemStack outputItemStack = basicCraft.getMatchItem() instanceof SimpleValidItem simpleValidItem ? simpleValidItem.getValidItem() : basicCraft.getMatchItem().getRecipeOutput();
@@ -132,7 +132,7 @@ public class MatrixCraftingTableMenu extends AbstractManualMachineMenu{
             }
         }
 
-        BasicCraft basicCraft = BasicCraft.doCraft(slimefunItemList, inventory, this.getInputSlot());
+        BasicCraft basicCraft = BasicCraft.doCraftBySlimefunItem(slimefunItemList, inventory, this.getInputSlot());
 
         if (basicCraft != null) {
             slimefunItem = basicCraft.getMatchItem();

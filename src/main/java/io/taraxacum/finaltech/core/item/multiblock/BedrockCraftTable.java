@@ -11,9 +11,11 @@ import io.taraxacum.finaltech.core.interfaces.RecipeItem;
 import io.taraxacum.finaltech.setup.FinalTechRecipeTypes;
 import io.taraxacum.finaltech.util.LocationUtil;
 import io.taraxacum.finaltech.util.RecipeUtil;
+import io.taraxacum.libs.plugin.util.ItemStackUtil;
 import io.taraxacum.libs.slimefun.dto.BasicCraft;
 import io.taraxacum.libs.slimefun.dto.RecipeTypeRegistry;
 import io.taraxacum.libs.slimefun.interfaces.SimpleValidItem;
+import io.taraxacum.libs.slimefun.interfaces.ValidItem;
 import org.bukkit.Sound;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
@@ -54,15 +56,36 @@ public class BedrockCraftTable extends AbstractMultiBlockItem implements RecipeI
             if(targetOutputLocationBlock.getType().isAir()) {
                 Inventory inventory = inventoryHolder.getInventory();
                 int[] slots = JavaUtil.generateInts(inventory.getSize());
-                BasicCraft basicCraft = BasicCraft.doCraft(RecipeTypeRegistry.getInstance().getByRecipeType(FinalTechRecipeTypes.BEDROCK_CRAFT_TABLE), inventory, slots);
-                if (basicCraft != null && basicCraft.getMatchAmount() > 0) {
-                    ItemStack outputItemStack = basicCraft.getMatchItem() instanceof SimpleValidItem simpleValidItem ? simpleValidItem.getValidItem() : basicCraft.getMatchItem().getRecipeOutput();
+                BasicCraft basicCraft = BasicCraft.doCraftBySlimefunItem(RecipeTypeRegistry.getInstance().getByRecipeType(FinalTechRecipeTypes.BEDROCK_CRAFT_TABLE), inventory, slots);
+                if (basicCraft != null) {
+                    SlimefunItem slimefunItem = basicCraft.getMatchItem();
+
+                    ItemStack existedItem;
+                    ItemStack[] itemStacks = slimefunItem.getRecipe();
+                    for (int i = 0; i < itemStacks.length; i++) {
+                        existedItem = inventory.getItem(slots[i]);
+                        if (!ItemStackUtil.isItemNull(existedItem)) {
+                            existedItem.setAmount(existedItem.getAmount() - itemStacks[i].getAmount() * basicCraft.getMatchAmount());
+                            slimefunItem = SlimefunItem.getByItem(existedItem);
+                            if(slimefunItem instanceof ValidItem) {
+                                FinalTech.getLogService().subItem(slimefunItem.getId(), itemStacks[i].getAmount() * basicCraft.getMatchAmount(), this.getId(), LogSourceType.SLIMEFUN_MACHINE, player, block.getLocation(), this.getAddon().getJavaPlugin());
+                            }
+                        }
+                    }
+
+                    ItemStack outputItemStack;
+                    slimefunItem = basicCraft.getMatchItem();
+                    if(slimefunItem instanceof SimpleValidItem simpleValidItem) {
+                        outputItemStack = simpleValidItem.getValidItem();
+                        FinalTech.getLogService().addItem(slimefunItem.getId(), outputItemStack.getAmount() * basicCraft.getMatchAmount(), this.getId(), LogSourceType.SLIMEFUN_MACHINE, player, block.getLocation(), this.getAddon().getJavaPlugin());
+                    } else {
+                        outputItemStack = basicCraft.getMatchItem().getRecipeOutput();
+                    }
                     basicCraft.setMatchAmount(Math.min(basicCraft.getMatchAmount(), outputItemStack.getMaxStackSize() / outputItemStack.getAmount()));
                     outputItemStack.setAmount(outputItemStack.getAmount() * basicCraft.getMatchAmount());
-
-                    basicCraft.consumeItem(inventory, slots);
                     block.getWorld().dropItem(LocationUtil.getCenterLocation(inventoryBlock.getRelative(directional.getFacing())), outputItemStack, droppedItem -> droppedItem.setVelocity(this.newByBlockFace(directional.getFacing())));
                     block.getWorld().playSound(block.getLocation(), Sound.ENTITY_ARROW_HIT_PLAYER, 1F, 1F);
+
                     return;
                 }
             }

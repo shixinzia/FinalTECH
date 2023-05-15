@@ -53,7 +53,7 @@ public class BasicCraft {
     }
 
     @Nullable
-    public static BasicCraft doCraft(@Nonnull List<SlimefunItem> slimefunItemList, @Nonnull Inventory inventory, int[] slots) {
+    public static BasicCraft doCraftBySlimefunItem(@Nonnull List<SlimefunItem> slimefunItemList, @Nonnull Inventory inventory, int[] slots) {
         int matchAmount;
 
         Map<Integer, ItemWrapper> indexItemMap = new HashMap<>();
