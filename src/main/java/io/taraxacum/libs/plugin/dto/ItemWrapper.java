@@ -1,6 +1,5 @@
 package io.taraxacum.libs.plugin.dto;
 
-import io.github.thebusybiscuit.slimefun4.utils.itemstack.ItemStackWrapper;
 import io.taraxacum.libs.plugin.util.ItemStackUtil;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
@@ -95,11 +94,7 @@ public class ItemWrapper {
 
     @Override
     public boolean equals(@Nonnull Object obj) {
-        if (this.itemStack instanceof ItemStackWrapper) {
-            return new ItemStack(this.itemStack).equals(obj);
-        } else {
-            return this.itemStack.equals(obj);
-        }
+        return this.itemStack.equals(obj);
     }
 
     @Nonnull
