@@ -4,6 +4,8 @@ import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItem;
 import io.github.thebusybiscuit.slimefun4.libraries.dough.items.CustomItemStack;
 import io.github.thebusybiscuit.slimefun4.utils.ChestMenuUtils;
 import io.taraxacum.finaltech.FinalTech;
+import io.taraxacum.finaltech.core.enums.LogSourceType;
+import io.taraxacum.libs.plugin.util.InventoryUtil;
 import io.taraxacum.libs.slimefun.dto.BasicCraft;
 import io.taraxacum.libs.slimefun.dto.MachineRecipeFactory;
 import io.taraxacum.finaltech.core.item.machine.AbstractMachine;
@@ -11,6 +13,7 @@ import io.taraxacum.finaltech.core.item.machine.manual.MatrixCraftingTable;
 import io.taraxacum.libs.plugin.util.ItemStackUtil;
 import io.taraxacum.libs.plugin.util.ParticleUtil;
 import io.taraxacum.libs.slimefun.interfaces.SimpleValidItem;
+import io.taraxacum.libs.slimefun.interfaces.ValidItem;
 import io.taraxacum.libs.slimefun.util.SfItemUtil;
 import me.mrCookieSlime.Slimefun.Objects.SlimefunItem.abstractItems.MachineRecipe;
 import me.mrCookieSlime.Slimefun.api.inventory.BlockMenu;
@@ -30,7 +33,7 @@ import java.util.List;
  * @author Final_ROOT
  * @since 2.0
  */
-public class MatrixCraftingTableMenu extends AbstractManualMachineMenu{
+public class MatrixCraftingTableMenu extends AbstractManualMachineMenu {
     private static final int[] BORDER = new int[] {6, 7, 8, 15, 17, 24, 25, 26};
     private static final int[] INPUT_BORDER = new int[0];
     private static final int[] OUTPUT_BORDER = new int[] {33, 34, 35, 42, 44, 51, 52, 53};
@@ -79,18 +82,19 @@ public class MatrixCraftingTableMenu extends AbstractManualMachineMenu{
     @Override
     public void newInstance(@Nonnull BlockMenu blockMenu, @Nonnull Block block) {
         super.newInstance(blockMenu, block);
+        Inventory inventory = blockMenu.toInventory();
         JavaPlugin javaPlugin = this.getSlimefunItem().getAddon().getJavaPlugin();
         blockMenu.addMenuClickHandler(PARSE_SLOT, (player, slot, item, action) -> {
             javaPlugin.getServer().getScheduler().runTaskAsynchronously(javaPlugin, () -> ParticleUtil.drawCubeByBlock(javaPlugin, Particle.WAX_OFF, 0, block));
 
+            ItemStack[] itemStacks;
             SlimefunItem slimefunItem;
-
             List<MachineRecipe> machineRecipeList = MachineRecipeFactory.getInstance().getRecipe(this.getID());
             List<SlimefunItem> slimefunItemList = new ArrayList<>(machineRecipeList.size());
             for (MachineRecipe machineRecipe : machineRecipeList) {
-                ItemStack[] output = machineRecipe.getOutput();
-                if (output.length == 1) {
-                    slimefunItem = SlimefunItem.getByItem(output[0]);
+                itemStacks = machineRecipe.getOutput();
+                if (itemStacks.length == 1) {
+                    slimefunItem = SlimefunItem.getByItem(itemStacks[0]);
                     if (slimefunItem != null) {
                         slimefunItemList.add(slimefunItem);
                     }
@@ -99,16 +103,35 @@ public class MatrixCraftingTableMenu extends AbstractManualMachineMenu{
 
             BasicCraft basicCraft = BasicCraft.doCraftBySlimefunItem(slimefunItemList, inventory, this.getInputSlot());
             if (basicCraft != null) {
-                ItemStack existedItem = blockMenu.getItemInSlot(MatrixCraftingTableMenu.this.getOutputSlot()[0]);
-                ItemStack outputItemStack = basicCraft.getMatchItem() instanceof SimpleValidItem simpleValidItem ? simpleValidItem.getValidItem() : basicCraft.getMatchItem().getRecipeOutput();
-                if (ItemStackUtil.isItemNull(existedItem) || ItemStackUtil.isItemSimilar(existedItem, outputItemStack)) {
-                    basicCraft.setMatchAmount(action.isRightClicked() || action.isShiftClicked() ? basicCraft.getMatchAmount() : 1);
-                    basicCraft.setMatchAmount(Math.min(basicCraft.getMatchAmount(), outputItemStack.getMaxStackSize() / outputItemStack.getAmount()));
-                    outputItemStack.setAmount(outputItemStack.getAmount() * basicCraft.getMatchAmount());
+                slimefunItem = basicCraft.getMatchItem();
+                boolean validOutputItem;
+                ItemStack outputItemStack;
+                if(slimefunItem instanceof SimpleValidItem simpleValidItem) {
+                    validOutputItem = true;
+                    outputItemStack = simpleValidItem.getValidItem();
+                } else {
+                    validOutputItem = false;
+                    outputItemStack = basicCraft.getMatchItem().getRecipeOutput();
+                }
+                basicCraft.setMatchAmount(action.isRightClicked() || action.isShiftClicked() ? basicCraft.getMatchAmount() : 1);
+                basicCraft.setMatchAmount(Math.min(basicCraft.getMatchAmount(), outputItemStack.getMaxStackSize() / outputItemStack.getAmount()));
+                if (InventoryUtil.tryPushAllItem(inventory, this.getOutputSlot(), basicCraft.getMatchAmount(), outputItemStack)) {
+                    if(validOutputItem) {
+                        FinalTech.getLogService().addItem(slimefunItem.getId(), outputItemStack.getAmount() * basicCraft.getMatchAmount(), this.getID(), LogSourceType.SLIMEFUN_MACHINE, player, block.getLocation(), this.getSlimefunItem().getAddon().getJavaPlugin());
+                    }
 
-                    basicCraft.consumeItem(blockMenu.toInventory(), MatrixCraftingTableMenu.this.getInputSlot());
-
-                    blockMenu.pushItem(outputItemStack, MatrixCraftingTableMenu.this.getOutputSlot());
+                    ItemStack existedItem;
+                    itemStacks = slimefunItem.getRecipe();
+                    for (int i = 0; i < itemStacks.length; i++) {
+                        existedItem = inventory.getItem(this.getInputSlot()[i]);
+                        if (!ItemStackUtil.isItemNull(existedItem)) {
+                            existedItem.setAmount(existedItem.getAmount() - itemStacks[i].getAmount() * basicCraft.getMatchAmount());
+                            slimefunItem = SlimefunItem.getByItem(existedItem);
+                            if(slimefunItem instanceof ValidItem) {
+                                FinalTech.getLogService().subItem(slimefunItem.getId(), itemStacks[i].getAmount() * basicCraft.getMatchAmount(), this.getID(), LogSourceType.SLIMEFUN_MACHINE, player, block.getLocation(), this.getSlimefunItem().getAddon().getJavaPlugin());
+                            }
+                        }
+                    }
                 }
             }
 

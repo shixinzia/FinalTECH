@@ -15,10 +15,9 @@ import io.taraxacum.finaltech.core.menu.AbstractMachineMenu;
 import io.taraxacum.finaltech.core.menu.machine.EnergyInputTableMenu;
 import io.taraxacum.finaltech.util.MachineUtil;
 import io.taraxacum.finaltech.util.RecipeUtil;
+import io.taraxacum.libs.plugin.dto.LocationData;
+import io.taraxacum.libs.plugin.util.InventoryUtil;
 import io.taraxacum.libs.plugin.util.ItemStackUtil;
-import me.mrCookieSlime.CSCoreLibPlugin.Configuration.Config;
-import me.mrCookieSlime.Slimefun.api.BlockStorage;
-import me.mrCookieSlime.Slimefun.api.inventory.BlockMenu;
 import org.bukkit.block.Block;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
@@ -28,7 +27,6 @@ import javax.annotation.Nullable;
 
 /**
  * @author Final_ROOT
- * @since 2.4
  */
 public class EnergyInputTable extends AbstractMachine implements RecipeItem {
     public EnergyInputTable(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item, @Nonnull RecipeType recipeType, @Nonnull ItemStack[] recipe) {
@@ -44,7 +42,7 @@ public class EnergyInputTable extends AbstractMachine implements RecipeItem {
     @Nonnull
     @Override
     protected BlockBreakHandler onBlockBreak() {
-        return MachineUtil.simpleBlockBreakerHandler(this);
+        return MachineUtil.simpleBlockBreakerHandler(FinalTech.getLocationDataService(), this);
     }
 
     @Nullable
@@ -54,15 +52,14 @@ public class EnergyInputTable extends AbstractMachine implements RecipeItem {
     }
 
     @Override
-    protected void tick(@Nonnull Block block, @Nonnull SlimefunItem slimefunItem, @Nonnull Config config) {
-        BlockMenu blockMenu = BlockStorage.getInventory(block.getLocation());
-        Inventory inventory = blockMenu.toInventory();
+    protected void tick(@Nonnull Block block, @Nonnull SlimefunItem slimefunItem, @Nonnull LocationData locationData) {
+        Inventory inventory = FinalTech.getLocationDataService().getInventory(locationData);
 
-        if(MachineUtil.isEmpty(inventory, this.getInputSlot())) {
+        if(inventory == null || InventoryUtil.isEmpty(inventory, this.getInputSlot())) {
             return;
         }
 
-        ItemStack energyStorageItem = blockMenu.getItemInSlot(this.getOutputSlot()[0]);
+        ItemStack energyStorageItem = inventory.getItem(this.getOutputSlot()[0]);
         if(ItemStackUtil.isItemNull(energyStorageItem) || energyStorageItem.getAmount() > 1 || !(SlimefunItem.getByItem(energyStorageItem) instanceof PortableEnergyStorage portableEnergyStorage)) {
             return;
         }
@@ -71,7 +68,7 @@ public class EnergyInputTable extends AbstractMachine implements RecipeItem {
 
         boolean update = false;
         for(int slot : this.getInputSlot()) {
-            ItemStack itemStack = blockMenu.getItemInSlot(slot);
+            ItemStack itemStack = inventory.getItem(slot);
             if(SlimefunItem.getByItem(itemStack) instanceof EnergyCard energyCard) {
                 String cardEnergy = energyCard.getEnergy();
                 energy = StringNumberUtil.add(energy, StringNumberUtil.mul(cardEnergy, String.valueOf(itemStack.getAmount())));

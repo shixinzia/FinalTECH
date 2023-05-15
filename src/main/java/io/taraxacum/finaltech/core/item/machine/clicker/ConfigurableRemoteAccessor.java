@@ -9,14 +9,12 @@ import io.taraxacum.finaltech.core.menu.AbstractMachineMenu;
 import io.taraxacum.finaltech.core.menu.clicker.ConfigurableRemoteAccessorMenu;
 import io.taraxacum.finaltech.util.ConfigUtil;
 import io.taraxacum.finaltech.util.RecipeUtil;
-import io.taraxacum.libs.slimefun.util.SfItemUtil;
 import org.bukkit.inventory.ItemStack;
 
 import javax.annotation.Nonnull;
 
 /**
  * @author Final_ROOT
- * @since 2.2
  */
 public class ConfigurableRemoteAccessor extends AbstractClickerMachine implements RecipeItem {
     private final int range = ConfigUtil.getOrDefaultItemSetting(16, this, "range");

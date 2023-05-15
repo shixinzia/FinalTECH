@@ -7,6 +7,7 @@ import io.github.thebusybiscuit.slimefun4.api.recipes.RecipeType;
 import io.github.thebusybiscuit.slimefun4.core.handlers.BlockBreakHandler;
 import io.github.thebusybiscuit.slimefun4.core.handlers.BlockPlaceHandler;
 import io.taraxacum.finaltech.FinalTech;
+import io.taraxacum.finaltech.core.enums.LogSourceType;
 import io.taraxacum.finaltech.core.interfaces.RecipeItem;
 import io.taraxacum.finaltech.core.item.unusable.ReplaceableCard;
 import io.taraxacum.finaltech.core.menu.AbstractMachineMenu;
@@ -14,13 +15,13 @@ import io.taraxacum.finaltech.core.menu.machine.AutoItemDismantleTableMenu;
 import io.taraxacum.finaltech.util.ConfigUtil;
 import io.taraxacum.finaltech.util.MachineUtil;
 import io.taraxacum.finaltech.util.RecipeUtil;
+import io.taraxacum.libs.plugin.dto.LocationData;
+import io.taraxacum.libs.plugin.util.InventoryUtil;
 import io.taraxacum.libs.plugin.util.ItemStackUtil;
 import io.taraxacum.libs.slimefun.dto.RecipeTypeRegistry;
 import io.taraxacum.libs.slimefun.interfaces.ValidItem;
-import me.mrCookieSlime.CSCoreLibPlugin.Configuration.Config;
-import me.mrCookieSlime.Slimefun.api.BlockStorage;
-import me.mrCookieSlime.Slimefun.api.inventory.BlockMenu;
 import org.bukkit.block.Block;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
 import javax.annotation.Nonnull;
@@ -29,7 +30,6 @@ import java.util.Set;
 
 /**
  * @author Final_ROOT
- * @since 2.0
  */
 public class AutoItemDismantleTable extends AbstractMachine implements RecipeItem {
     private final Set<String> allowedRecipeType = new HashSet<>(ConfigUtil.getItemStringList(this, "allowed-recipe-type"));
@@ -49,7 +49,7 @@ public class AutoItemDismantleTable extends AbstractMachine implements RecipeIte
     @Nonnull
     @Override
     protected BlockBreakHandler onBlockBreak() {
-        return MachineUtil.simpleBlockBreakerHandler(this);
+        return MachineUtil.simpleBlockBreakerHandler(FinalTech.getLocationDataService(), this);
     }
 
     @Nonnull
@@ -59,10 +59,10 @@ public class AutoItemDismantleTable extends AbstractMachine implements RecipeIte
     }
 
     @Override
-    protected void tick(@Nonnull Block block, @Nonnull SlimefunItem slimefunItem, @Nonnull Config config) {
-        BlockMenu blockMenu = BlockStorage.getInventory(block);
-        if (MachineUtil.isEmpty(blockMenu.toInventory(), this.getOutputSlot())) {
-            ItemStack itemStack = blockMenu.getItemInSlot(this.getInputSlot()[0]);
+    protected void tick(@Nonnull Block block, @Nonnull SlimefunItem slimefunItem, @Nonnull LocationData locationData) {
+        Inventory inventory = FinalTech.getLocationDataService().getInventory(locationData);
+        if (inventory != null && InventoryUtil.isEmpty(inventory, this.getOutputSlot())) {
+            ItemStack itemStack = inventory.getItem(this.getInputSlot()[0]);
             SlimefunItem sfItem = SlimefunItem.getByItem(itemStack);
             if (sfItem != null && this.calAllowed(sfItem) && itemStack.getAmount() >= sfItem.getRecipeOutput().getAmount()) {
                 boolean verify;
@@ -79,17 +79,21 @@ public class AutoItemDismantleTable extends AbstractMachine implements RecipeIte
                         }
                     }
                     itemStack.setAmount(itemStack.getAmount() - sfItem.getRecipeOutput().getAmount() * amount);
+                    if(sfItem instanceof ValidItem) {
+                        FinalTech.getLogService().subItem(sfItem.getId(), sfItem.getRecipeOutput().getAmount() * amount, this.getId(), LogSourceType.SLIMEFUN_MACHINE, null, block.getLocation(), this.getAddon().getJavaPlugin());
+                    }
                     for (int i = 0; i < this.getOutputSlot().length && i < sfItem.getRecipe().length; i++) {
                         if (!ItemStackUtil.isItemNull(sfItem.getRecipe()[i])) {
                             ItemStack outputItem;
                             ReplaceableCard replaceableCard = RecipeUtil.getReplaceableCard(sfItem.getRecipe()[i]);
                             if (replaceableCard != null && replaceableCard.getExtraSourceMaterial() != null) {
-                                outputItem = ItemStackUtil.cloneItem(replaceableCard.getItem());
+                                outputItem = replaceableCard.getItem();
                             } else {
-                                outputItem = ItemStackUtil.cloneItem(sfItem.getRecipe()[i]);
+                                outputItem = sfItem.getRecipe()[i];
                             }
+                            inventory.setItem(this.getOutputSlot()[i], outputItem);
+                            outputItem = inventory.getItem(this.getOutputSlot()[i]);
                             outputItem.setAmount(outputItem.getAmount() * amount);
-                            blockMenu.replaceExistingItem(this.getOutputSlot()[i], outputItem);
                         }
                     }
                 }

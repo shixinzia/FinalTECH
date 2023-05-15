@@ -6,24 +6,22 @@ import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItemStack;
 import io.github.thebusybiscuit.slimefun4.api.recipes.RecipeType;
 import io.github.thebusybiscuit.slimefun4.core.handlers.BlockBreakHandler;
 import io.github.thebusybiscuit.slimefun4.core.handlers.BlockPlaceHandler;
-import io.taraxacum.common.util.JavaUtil;
 import io.taraxacum.finaltech.FinalTech;
+import io.taraxacum.finaltech.core.enums.LogSourceType;
 import io.taraxacum.finaltech.setup.FinalTechItems;
 import io.taraxacum.finaltech.util.ConfigUtil;
 import io.taraxacum.libs.plugin.dto.ItemWrapper;
 import io.taraxacum.finaltech.core.interfaces.RecipeItem;
 import io.taraxacum.finaltech.core.menu.AbstractMachineMenu;
 import io.taraxacum.finaltech.core.menu.machine.OrderedDustFactoryStoneMenu;
+import io.taraxacum.libs.plugin.dto.LocationData;
+import io.taraxacum.libs.plugin.util.InventoryUtil;
 import io.taraxacum.libs.plugin.util.ItemStackUtil;
 import io.taraxacum.finaltech.util.MachineUtil;
 import io.taraxacum.finaltech.util.BlockTickerUtil;
 import io.taraxacum.finaltech.util.RecipeUtil;
-import me.mrCookieSlime.CSCoreLibPlugin.Configuration.Config;
-import me.mrCookieSlime.Slimefun.api.BlockStorage;
-import me.mrCookieSlime.Slimefun.api.inventory.BlockMenu;
-import org.bukkit.Location;
 import org.bukkit.block.Block;
-import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
 import javax.annotation.Nonnull;
@@ -32,10 +30,9 @@ import java.util.Set;
 
 /**
  * @author Final_ROOT
- * @since 2.0
  */
 public class DustFactoryStone extends AbstractMachine implements RecipeItem {
-    private final double SLEEP = ConfigUtil.getOrDefaultItemSetting(4, this, "sleep");
+    private final double sleep = ConfigUtil.getOrDefaultItemSetting(4, this, "sleep");
     public DustFactoryStone(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
         super(itemGroup, item, recipeType, recipe);
     }
@@ -43,21 +40,13 @@ public class DustFactoryStone extends AbstractMachine implements RecipeItem {
     @Nonnull
     @Override
     protected BlockPlaceHandler onBlockPlace() {
-        return new BlockPlaceHandler(false) {
-            @Override
-            public void onPlayerPlace(@Nonnull BlockPlaceEvent e) {
-                Block block = e.getBlock();
-                Location location = block.getLocation();
-                Config config = BlockStorage.getLocationInfo(location);
-                BlockTickerUtil.setSleep(config, String.valueOf(DustFactoryStone.this.SLEEP * DustFactoryStone.this.SLEEP));
-            }
-        };
+        return MachineUtil.BLOCK_PLACE_HANDLER_PLACER_DENY;
     }
 
     @Nonnull
     @Override
     protected BlockBreakHandler onBlockBreak() {
-        return MachineUtil.simpleBlockBreakerHandler(this);
+        return MachineUtil.simpleBlockBreakerHandler(FinalTech.getLocationDataService(), this);
     }
 
     @Nonnull
@@ -67,23 +56,22 @@ public class DustFactoryStone extends AbstractMachine implements RecipeItem {
     }
 
     @Override
-    protected void tick(@Nonnull Block block, @Nonnull SlimefunItem slimefunItem, @Nonnull Config config) {
-        if (BlockTickerUtil.hasSleep(config)) {
-            BlockTickerUtil.subSleep(config);
+    protected void tick(@Nonnull Block block, @Nonnull SlimefunItem slimefunItem, @Nonnull LocationData locationData) {
+        if (!BlockTickerUtil.subSleep(FinalTech.getLocationDataService(), locationData)) {
             return;
         }
 
-        BlockMenu blockMenu = BlockStorage.getInventory(block);
-        if (MachineUtil.slotCount(blockMenu.toInventory(), this.getInputSlot()) != this.getInputSlot().length) {
+        Inventory inventory = FinalTech.getLocationDataService().getInventory(locationData);
+        if (inventory == null || InventoryUtil.slotCount(inventory, this.getInputSlot()) != this.getInputSlot().length) {
             return;
         }
 
         Set<Integer> amountList = new HashSet<>(this.getInputSlot().length);
-        ItemWrapper firstItem = new ItemWrapper(blockMenu.getItemInSlot(this.getInputSlot()[0]));
+        ItemWrapper firstItem = new ItemWrapper(inventory.getItem(this.getInputSlot()[0]));
         boolean allSameItem = true;
 
         for (int slot : this.getInputSlot()) {
-            ItemStack itemStack = blockMenu.getItemInSlot(slot);
+            ItemStack itemStack = inventory.getItem(slot);
             amountList.add(itemStack.getAmount());
             if (allSameItem && !ItemStackUtil.isItemSimilar(firstItem, itemStack)) {
                 allSameItem = false;
@@ -91,15 +79,19 @@ public class DustFactoryStone extends AbstractMachine implements RecipeItem {
         }
 
         for (int slot : this.getInputSlot()) {
-            blockMenu.replaceExistingItem(slot, ItemStackUtil.AIR);
+            inventory.clear(slot);
         }
 
         if (amountList.size() == this.getInputSlot().length && allSameItem) {
-            blockMenu.pushItem(FinalTechItems.ORDERED_DUST.getValidItem(), JavaUtil.shuffle(this.getOutputSlot()));
-            BlockTickerUtil.setSleep(config, String.valueOf(this.SLEEP));
+            if(InventoryUtil.tryPushAllItem(inventory, this.getOutputSlot(), FinalTechItems.ORDERED_DUST.getValidItem())) {
+                FinalTech.getLogService().addItem(FinalTechItems.ORDERED_DUST.getId(), 1, this.getId(), LogSourceType.SLIMEFUN_MACHINE, null, block.getLocation(), this.getAddon().getJavaPlugin());
+                BlockTickerUtil.setSleep(FinalTech.getLocationDataService(), locationData, this.sleep);
+            }
         } else if (Math.random() < (double)(amountList.size()) / this.getInputSlot().length) {
-            blockMenu.pushItem(FinalTechItems.UNORDERED_DUST.getValidItem(), JavaUtil.shuffle(this.getOutputSlot()));
-            BlockTickerUtil.setSleep(config, String.valueOf(this.SLEEP));
+            if(InventoryUtil.tryPushAllItem(inventory, this.getOutputSlot(), FinalTechItems.UNORDERED_DUST.getValidItem())) {
+                FinalTech.getLogService().addItem(FinalTechItems.UNORDERED_DUST.getId(), 1, this.getId(), LogSourceType.SLIMEFUN_MACHINE, null, block.getLocation(), this.getAddon().getJavaPlugin());
+                BlockTickerUtil.setSleep(FinalTech.getLocationDataService(), locationData, this.sleep);
+            }
         }
     }
 

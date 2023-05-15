@@ -9,8 +9,10 @@ import io.github.thebusybiscuit.slimefun4.utils.ChestMenuUtils;
 import io.taraxacum.finaltech.FinalTech;
 import io.taraxacum.finaltech.core.interfaces.RecipeItem;
 import io.taraxacum.finaltech.util.RecipeUtil;
+import io.taraxacum.libs.plugin.dto.LocationData;
+import io.taraxacum.libs.slimefun.dto.SlimefunLocationData;
+import io.taraxacum.libs.slimefun.service.SlimefunLocationDataService;
 import me.mrCookieSlime.CSCoreLibPlugin.general.Inventory.ChestMenu;
-import me.mrCookieSlime.Slimefun.api.BlockStorage;
 import me.mrCookieSlime.Slimefun.api.inventory.BlockMenu;
 import me.mrCookieSlime.Slimefun.api.inventory.BlockMenuPreset;
 import me.mrCookieSlime.Slimefun.api.item_transport.ItemTransportFlow;
@@ -42,41 +44,45 @@ public class MenuViewer extends UsableSlimefunItem implements RecipeItem {
 
     @Override
     protected void function(@Nonnull PlayerRightClickEvent playerRightClickEvent) {
-        playerRightClickEvent.cancel();
         Player player = playerRightClickEvent.getPlayer();
         if (!playerRightClickEvent.getClickedBlock().isEmpty()) {
             Location location = playerRightClickEvent.getClickedBlock().get().getLocation();
-            BlockMenu blockMenu = BlockStorage.getInventory(location);
-            if (blockMenu != null) {
-                BlockMenuPreset preset = blockMenu.getPreset();
-                ItemStack itemInOffHand = player.getInventory().getItemInOffHand();
-                int[] slotsAccessedByItemTransportInsert = preset.getSlotsAccessedByItemTransport(blockMenu, ItemTransportFlow.INSERT, itemInOffHand);
-                int[] slotsAccessedByItemTransportWithdraw = preset.getSlotsAccessedByItemTransport(blockMenu, ItemTransportFlow.WITHDRAW, itemInOffHand);
-                int[] viewSlot = new int[blockMenu.getContents().length];
-                for (int slot : slotsAccessedByItemTransportInsert) {
-                    if (slot >= 0 && slot < viewSlot.length) {
-                        viewSlot[slot] += INSERT_SLOT_VALUE;
+            if(FinalTech.getLocationDataService() instanceof SlimefunLocationDataService slimefunLocationDataService) {
+                LocationData locationData = slimefunLocationDataService.getLocationData(location);
+                if(locationData instanceof SlimefunLocationData slimefunLocationData) {
+                    BlockMenu blockMenu = slimefunLocationDataService.getBlockMenu(slimefunLocationData);
+                    if (blockMenu != null) {
+                        BlockMenuPreset preset = blockMenu.getPreset();
+                        ItemStack itemInOffHand = player.getInventory().getItemInOffHand();
+                        int[] slotsAccessedByItemTransportInsert = preset.getSlotsAccessedByItemTransport(blockMenu, ItemTransportFlow.INSERT, itemInOffHand);
+                        int[] slotsAccessedByItemTransportWithdraw = preset.getSlotsAccessedByItemTransport(blockMenu, ItemTransportFlow.WITHDRAW, itemInOffHand);
+                        int[] viewSlot = new int[blockMenu.getContents().length];
+                        for (int slot : slotsAccessedByItemTransportInsert) {
+                            if (slot >= 0 && slot < viewSlot.length) {
+                                viewSlot[slot] += INSERT_SLOT_VALUE;
+                            }
+                        }
+                        for (int slot : slotsAccessedByItemTransportWithdraw) {
+                            if (slot >= 0 && slot < viewSlot.length) {
+                                viewSlot[slot] += WITHDRAW_SLOT_VALUE;
+                            }
+                        }
+                        ChestMenu chestMenu = new ChestMenu(preset.getTitle());
+                        for (int slot = 0; slot < viewSlot.length; slot++) {
+                            if (viewSlot[slot] == INSERT_SLOT_VALUE) {
+                                chestMenu.addItem(slot, INPUT_ICON);
+                            } else if (viewSlot[slot] == WITHDRAW_SLOT_VALUE) {
+                                chestMenu.addItem(slot, OUTPUT_ICON);
+                            } else if (viewSlot[slot] == INSERT_AND_WITHDRAW_SLOT_VALUE) {
+                                chestMenu.addItem(slot, INPUT_AND_OUTPUT_ICON);
+                            } else {
+                                chestMenu.addItem(slot, VOID_ICON);
+                            }
+                            chestMenu.addMenuClickHandler(slot, ChestMenuUtils.getEmptyClickHandler());
+                        }
+                        chestMenu.open(player);
                     }
                 }
-                for (int slot : slotsAccessedByItemTransportWithdraw) {
-                    if (slot >= 0 && slot < viewSlot.length) {
-                        viewSlot[slot] += WITHDRAW_SLOT_VALUE;
-                    }
-                }
-                ChestMenu chestMenu = new ChestMenu(preset.getTitle());
-                for (int slot = 0; slot < viewSlot.length; slot++) {
-                    if (viewSlot[slot] == INSERT_SLOT_VALUE) {
-                        chestMenu.addItem(slot, INPUT_ICON);
-                    } else if (viewSlot[slot] == WITHDRAW_SLOT_VALUE) {
-                        chestMenu.addItem(slot, OUTPUT_ICON);
-                    } else if (viewSlot[slot] == INSERT_AND_WITHDRAW_SLOT_VALUE) {
-                        chestMenu.addItem(slot, INPUT_AND_OUTPUT_ICON);
-                    } else {
-                        chestMenu.addItem(slot, VOID_ICON);
-                    }
-                    chestMenu.addMenuClickHandler(slot, ChestMenuUtils.getEmptyClickHandler());
-                }
-                chestMenu.open(player);
             }
         }
     }

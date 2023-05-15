@@ -7,15 +7,12 @@ import io.github.thebusybiscuit.slimefun4.api.recipes.RecipeType;
 import io.taraxacum.finaltech.FinalTech;
 import io.taraxacum.libs.plugin.dto.ItemAmountWrapper;
 import io.taraxacum.finaltech.core.interfaces.RecipeItem;
-import io.taraxacum.finaltech.core.item.machine.cargo.AbstractCargo;
 import io.taraxacum.finaltech.core.menu.AbstractMachineMenu;
 import io.taraxacum.finaltech.core.menu.unit.OneLineStorageUnitMenu;
+import io.taraxacum.libs.plugin.dto.LocationData;
 import io.taraxacum.libs.plugin.util.ItemStackUtil;
 import io.taraxacum.finaltech.util.MachineUtil;
 import io.taraxacum.finaltech.util.RecipeUtil;
-import me.mrCookieSlime.CSCoreLibPlugin.Configuration.Config;
-import me.mrCookieSlime.Slimefun.api.BlockStorage;
-import me.mrCookieSlime.Slimefun.api.inventory.BlockMenu;
 import org.bukkit.block.Block;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
@@ -24,7 +21,6 @@ import javax.annotation.Nonnull;
 
 /**
  * @author Final_ROOT
- * @since 2.0
  */
 public class DistributeLeftStorageUnit extends AbstractStorageUnit implements RecipeItem {
     public DistributeLeftStorageUnit(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
@@ -38,26 +34,28 @@ public class DistributeLeftStorageUnit extends AbstractStorageUnit implements Re
     }
 
     @Override
-    protected void tick(@Nonnull Block block, @Nonnull SlimefunItem slimefunItem, @Nonnull Config config) {
-        BlockMenu blockMenu = BlockStorage.getInventory(block);
-        Inventory inventory = blockMenu.toInventory();
+    protected void tick(@Nonnull Block block, @Nonnull SlimefunItem slimefunItem, @Nonnull LocationData locationData) {
+        Inventory inventory = FinalTech.getLocationDataService().getInventory(locationData);
+        if(inventory == null) {
+            return;
+        }
         int beginSlot = 0;
         int endSlot = 0;
         int i;
         ItemAmountWrapper itemAmountWrapper = null;
         for (i = this.getInputSlot().length - 1; i >= 0; i--) {
-            if (!ItemStackUtil.isItemNull(blockMenu.getItemInSlot(i))) {
-                itemAmountWrapper = new ItemAmountWrapper(blockMenu.getItemInSlot(i));
+            if (!ItemStackUtil.isItemNull(inventory.getItem(i))) {
+                itemAmountWrapper = new ItemAmountWrapper(inventory.getItem(i));
                 beginSlot = i;
                 endSlot = i--;
                 break;
             }
         }
         for (; i >= 0; i--) {
-            if (ItemStackUtil.isItemNull(blockMenu.getItemInSlot(i))) {
+            if (ItemStackUtil.isItemNull(inventory.getItem(i))) {
                 endSlot = i;
-            } else if (ItemStackUtil.isItemSimilar(itemAmountWrapper, blockMenu.getItemInSlot(i))) {
-                itemAmountWrapper.addAmount(blockMenu.getItemInSlot(i).getAmount());
+            } else if (ItemStackUtil.isItemSimilar(itemAmountWrapper, inventory.getItem(i))) {
+                itemAmountWrapper.addAmount(inventory.getItem(i).getAmount());
                 endSlot = i;
             } else {
                 int amount = itemAmountWrapper.getAmount() / (beginSlot + 1 - endSlot);
@@ -70,7 +68,7 @@ public class DistributeLeftStorageUnit extends AbstractStorageUnit implements Re
                     itemStack.setAmount(amount + (itemAmountWrapper.getAmount() % (beginSlot + 1 - endSlot)));
                     inventory.setItem(beginSlot, itemStack);
                 }
-                itemAmountWrapper = new ItemAmountWrapper(blockMenu.getItemInSlot(i));
+                itemAmountWrapper = new ItemAmountWrapper(inventory.getItem(i));
                 beginSlot = i;
                 endSlot = i;
             }

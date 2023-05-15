@@ -4,7 +4,7 @@ import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItem;
 import io.github.thebusybiscuit.slimefun4.core.attributes.RecipeDisplayItem;
 import io.github.thebusybiscuit.slimefun4.core.guide.SlimefunGuide;
 import io.github.thebusybiscuit.slimefun4.libraries.dough.items.CustomItemStack;
-import io.taraxacum.finaltech.core.helper.Icon;
+import io.taraxacum.finaltech.core.option.Icon;
 import io.taraxacum.finaltech.core.item.unusable.ReplaceableCard;
 import io.taraxacum.libs.slimefun.dto.RandomMachineRecipe;
 import io.taraxacum.libs.slimefun.dto.MachineRecipeFactory;
@@ -84,21 +84,16 @@ public interface RecipeItem extends RecipeDisplayItem {
         this.registerRecipe(new MachineRecipe(0, input, output));
     }
 
-    @Deprecated
-    default void registerRecipe(int seconds, @Nonnull ItemStack input, @Nonnull ItemStack output) {
-        this.registerRecipe(new MachineRecipe(seconds, new ItemStack[] {input}, new ItemStack[] {output}));
-    }
-
     /**
      * register a {@link SlimefunItem} whit it's recipe as a {@link MachineRecipe}.
      * if the slimefun-item's recipe contains liquid-bucket(water bucket, lava bucket e.g.),
      * this method will also register another similar machine-recipe that replace liquid-bucket with {@link ReplaceableCard}
      */
-    default void registerRecipeInCard(int seconds, @Nonnull SlimefunItem slimefunItem) {
-        this.registerRecipeInCard(seconds, slimefunItem.getRecipe(), new ItemStack[] {slimefunItem.getRecipeOutput()});
+    default void registerRecipeInCard(@Nonnull SlimefunItem slimefunItem) {
+        this.registerRecipeInCard(slimefunItem.getRecipe(), new ItemStack[] {slimefunItem.getRecipeOutput()});
     }
 
-    default void registerRecipeInCard(int seconds, @Nonnull ItemStack[] input, @Nonnull ItemStack[] output) {
+    default void registerRecipeInCard(@Nonnull ItemStack[] input, @Nonnull ItemStack[] output) {
         List<ItemStack> inputList1 = new ArrayList<>(input.length);
         List<ItemStack> inputList2 = new ArrayList<>(input.length);
         List<ItemStack> outputList1 = new ArrayList<>(output.length);
@@ -110,12 +105,10 @@ public interface RecipeItem extends RecipeDisplayItem {
         }
         outputList2.addAll(outputList1);
         int extraRecipe = 0;
-        int inputSize = 0;
         for (ItemStack item : input) {
             if (ItemStackUtil.isItemNull(item)) {
                 continue;
             }
-            inputSize++;
             ReplaceableCard replaceableCard = RecipeUtil.getReplaceableCard(item);
             if (replaceableCard == null) {
                 inputList1.add(item);
@@ -129,17 +122,16 @@ public interface RecipeItem extends RecipeDisplayItem {
                 }
             }
         }
-        if (extraRecipe != inputSize && !outputList2.isEmpty()) {
-            this.registerRecipe(seconds, ItemStackUtil.getNoNullItemArray(ItemStackUtil.calMergeItems(inputList1)), ItemStackUtil.getNoNullItemArray(ItemStackUtil.calMergeItems(outputList1)));
-            this.registerRecipe(seconds, ItemStackUtil.getNoNullItemArray(ItemStackUtil.calMergeItems(inputList2)), ItemStackUtil.getNoNullItemArray(ItemStackUtil.calMergeItems(outputList2)));
+        if (extraRecipe > 0 && inputList1.size() != extraRecipe) {
+            this.registerRecipe(ItemStackUtil.getNoNullItemArray(ItemStackUtil.calMergeItems(inputList1)), ItemStackUtil.getNoNullItemArray(ItemStackUtil.calMergeItems(outputList1)));
+            this.registerRecipe(ItemStackUtil.getNoNullItemArray(ItemStackUtil.calMergeItems(inputList2)), ItemStackUtil.getNoNullItemArray(ItemStackUtil.calMergeItems(outputList2)));
         } else {
-            this.registerRecipe(seconds, ItemStackUtil.calMergeItems(input), ItemStackUtil.calMergeItems(output));
+            this.registerRecipe(ItemStackUtil.calMergeItems(input), ItemStackUtil.calMergeItems(output));
         }
     }
 
     /**
      * Register a {@link MachineRecipe} that will only be used to show info to player.
-     * @param item
      */
     default void registerDescriptiveRecipe(@Nonnull ItemStack item) {
         this.registerRecipe(new MachineRecipe(0, new ItemStack[] {item}, new ItemStack[] {ItemStackUtil.AIR}));
@@ -148,11 +140,11 @@ public interface RecipeItem extends RecipeDisplayItem {
         this.registerDescriptiveRecipe(new CustomItemStack(Material.BOOK, name, lore));
     }
     default void registerDescriptiveRecipe(@Nonnull ItemStack item, @Nonnull String name, @Nonnull String... lore) {
-        this.registerRecipe(0, new CustomItemStack(Material.BOOK, name, lore), item);
+        this.registerRecipe(new CustomItemStack(Material.BOOK, name, lore), item);
     }
 
     default void registerBorder() {
-        this.registerRecipe(0, Icon.BORDER_ICON, Icon.BORDER_ICON);
+        this.registerRecipe(Icon.BORDER_ICON, Icon.BORDER_ICON);
     }
 
     default void clearRecipe() {

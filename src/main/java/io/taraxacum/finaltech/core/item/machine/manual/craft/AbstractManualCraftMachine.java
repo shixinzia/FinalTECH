@@ -8,18 +8,18 @@ import io.github.thebusybiscuit.slimefun4.core.attributes.EnergyNetComponent;
 import io.github.thebusybiscuit.slimefun4.core.handlers.BlockPlaceHandler;
 import io.github.thebusybiscuit.slimefun4.core.networks.energy.EnergyNetComponentType;
 import io.github.thebusybiscuit.slimefun4.implementation.Slimefun;
+import io.taraxacum.finaltech.FinalTech;
 import io.taraxacum.finaltech.core.item.machine.manual.AbstractManualMachine;
 import io.taraxacum.finaltech.core.interfaces.RecipeItem;
 import io.taraxacum.finaltech.core.menu.manual.AbstractManualMachineMenu;
 import io.taraxacum.finaltech.core.menu.manual.ManualCraftMachineMenu;
 import io.taraxacum.finaltech.util.ConfigUtil;
+import io.taraxacum.finaltech.util.MachineUtil;
+import io.taraxacum.libs.plugin.dto.LocationData;
 import io.taraxacum.libs.slimefun.util.EnergyUtil;
-import me.mrCookieSlime.CSCoreLibPlugin.Configuration.Config;
-import me.mrCookieSlime.Slimefun.api.BlockStorage;
-import me.mrCookieSlime.Slimefun.api.inventory.BlockMenu;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
-import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
 import javax.annotation.Nonnull;
@@ -28,7 +28,6 @@ import java.util.Map;
 
 /**
  * @author Final_ROOT
- * @since 1.0
  */
 public abstract class AbstractManualCraftMachine extends AbstractManualMachine implements RecipeItem, EnergyNetComponent {
     private final Map<Location, Integer> locationCountMap = new HashMap<>();
@@ -49,13 +48,7 @@ public abstract class AbstractManualCraftMachine extends AbstractManualMachine i
     @Nonnull
     @Override
     protected BlockPlaceHandler onBlockPlace() {
-        return new BlockPlaceHandler(false) {
-            @Override
-            public void onPlayerPlace(@Nonnull BlockPlaceEvent blockPlaceEvent) {
-                // TODO remove this
-                BlockStorage.addBlockInfo(blockPlaceEvent.getBlock().getLocation(), ManualCraftMachineMenu.KEY, "0");
-            }
-        };
+        return MachineUtil.BLOCK_PLACE_HANDLER_PLACER_DENY;
     }
 
     @Nonnull
@@ -66,18 +59,18 @@ public abstract class AbstractManualCraftMachine extends AbstractManualMachine i
     }
 
     @Override
-    protected void tick(@Nonnull Block block, @Nonnull SlimefunItem slimefunItem, @Nonnull Config config) {
-        String charge = EnergyUtil.getCharge(config);
+    protected void tick(@Nonnull Block block, @Nonnull SlimefunItem slimefunItem, @Nonnull LocationData locationData) {
+        String charge = EnergyUtil.getCharge(FinalTech.getLocationDataService(), locationData);
         int intCharge = Integer.parseInt(charge) + this.charge;
         if(intCharge > this.capacity / 2) {
             intCharge /= 2;
         }
 
-        EnergyUtil.setCharge(block.getLocation(), String.valueOf(Math.min(intCharge, this.capacity)));
+        EnergyUtil.setCharge(FinalTech.getLocationDataService(), locationData, String.valueOf(Math.min(intCharge, this.capacity)));
 
-        BlockMenu blockMenu = BlockStorage.getInventory(block);
-        if(blockMenu.hasViewer()) {
-            this.setMachineMenu().updateInventory(blockMenu.toInventory(), block.getLocation());
+        Inventory inventory = FinalTech.getLocationDataService().getInventory(locationData);
+        if (inventory != null && !inventory.getViewers().isEmpty()) {
+            this.getMachineMenu().updateInventory(inventory, block.getLocation());
         }
     }
 

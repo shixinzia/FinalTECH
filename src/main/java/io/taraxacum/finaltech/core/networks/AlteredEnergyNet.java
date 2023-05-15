@@ -7,13 +7,10 @@ import io.github.thebusybiscuit.slimefun4.core.attributes.EnergyNetProvider;
 import io.github.thebusybiscuit.slimefun4.core.networks.energy.EnergyNet;
 import io.github.thebusybiscuit.slimefun4.implementation.Slimefun;
 import io.github.thebusybiscuit.slimefun4.utils.NumberUtils;
-import io.taraxacum.common.util.ReflectionUtil;
 import io.taraxacum.finaltech.FinalTech;
 import io.taraxacum.finaltech.util.ConfigUtil;
-import io.taraxacum.finaltech.util.ConstantTableUtil;
-import io.taraxacum.libs.slimefun.dto.LocationInfo;
-import me.mrCookieSlime.CSCoreLibPlugin.Configuration.Config;
-import me.mrCookieSlime.Slimefun.api.BlockStorage;
+import io.taraxacum.libs.plugin.dto.LocationData;
+import io.taraxacum.libs.slimefun.util.LocationDataUtil;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -25,7 +22,6 @@ import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * @author Final_ROOT
- * @since 2.4
  */
 public class AlteredEnergyNet extends EnergyNet {
     private final int range = ConfigUtil.getOrDefaultConfigSetting(6, "network", "energy", "range");
@@ -55,9 +51,9 @@ public class AlteredEnergyNet extends EnergyNet {
     @Nullable
     @Override
     public NetworkComponent classifyLocation(@Nonnull Location location) {
-        LocationInfo locationInfo = LocationInfo.get(location);
-        if(locationInfo != null) {
-            if(locationInfo.getSlimefunItem() instanceof EnergyNetComponent energyNetComponent) {
+        LocationData locationData = FinalTech.getLocationDataService().getLocationData(location);
+        if(locationData != null) {
+            if(LocationDataUtil.getSlimefunItem(FinalTech.getLocationDataService(), locationData) instanceof EnergyNetComponent energyNetComponent) {
                 return switch (energyNetComponent.getEnergyComponentType()) {
                     case GENERATOR, CONSUMER -> NetworkComponent.TERMINUS;
                     case CONNECTOR, CAPACITOR -> NetworkComponent.CONNECTOR;
@@ -78,14 +74,15 @@ public class AlteredEnergyNet extends EnergyNet {
         this.capacitors.remove(location);
         this.consumers.remove(location);
 
-        LocationInfo locationInfo = LocationInfo.get(location);
-        if(locationInfo != null && locationInfo.getSlimefunItem() instanceof EnergyNetComponent energyNetComponent) {
+        LocationData locationData = FinalTech.getLocationDataService().getLocationData(location);
+        if(locationData != null
+                && LocationDataUtil.getSlimefunItem(FinalTech.getLocationDataService(), locationData) instanceof EnergyNetComponent energyNetComponent) {
             switch (energyNetComponent.getEnergyComponentType()) {
                 case GENERATOR -> {
-                    if(locationInfo.getSlimefunItem() instanceof EnergyNetProvider energyNetProvider) {
+                    if(LocationDataUtil.getSlimefunItem(FinalTech.getLocationDataService(), locationData) instanceof EnergyNetProvider energyNetProvider) {
                         this.generators.put(location, energyNetProvider);
                     } else {
-                        locationInfo.getSlimefunItem().warn("This Item is marked as a GENERATOR but does not implement the interface EnergyNetProvider!");
+                        LocationDataUtil.getSlimefunItem(FinalTech.getLocationDataService(), locationData).warn("This Item is marked as a GENERATOR but does not implement the interface EnergyNetProvider!");
                     }
                 }
                 case CAPACITOR -> this.capacitors.put(location, energyNetComponent);
@@ -94,18 +91,19 @@ public class AlteredEnergyNet extends EnergyNet {
         }
     }
 
-    public Summary tick(@Nonnull Block block, @Nonnull SlimefunItem slimefunItem, @Nonnull Config config) {
+    @Nonnull
+    public Summary tick(@Nonnull Block block, @Nonnull SlimefunItem slimefunItem) throws Throwable {
         Location location = block.getLocation();
 
-        if(!regulator.equals(location)) {
-            updateHologram(block, FinalTech.getLanguageString("items", slimefunItem.getId(), "hologram", "multi-regulator"));
+        if(!this.regulator.equals(location)) {
+            this.updateHologram(block, FinalTech.getLanguageString("items", slimefunItem.getId(), "hologram", "multi-regulator"));
             return new Summary();
         }
 
         super.tick();
 
-        if(connectorNodes.isEmpty() && terminusNodes.isEmpty()) {
-            updateHologram(block, FinalTech.getLanguageString("items", slimefunItem.getId(), "hologram", "no-nodes"));
+        if(this.connectorNodes.isEmpty() && this.terminusNodes.isEmpty()) {
+            this.updateHologram(block, FinalTech.getLanguageString("items", slimefunItem.getId(), "hologram", "no-nodes"));
             return new Summary();
         }
 
@@ -119,16 +117,16 @@ public class AlteredEnergyNet extends EnergyNet {
         Iterator<Map.Entry<Location, EnergyNetComponent>> consumerIterator = this.consumers.entrySet().iterator();
         List<Location> removeList = new ArrayList<>();
 
-        Map<Location, Config> generatorConfigMap = new HashMap<>(this.generators.size());
-
         AtomicLong timestamp = new AtomicLong(Slimefun.getProfiler().newEntry());
 
         long outputEnergy = 0;
         while (consumerIterator.hasNext()) {
             Map.Entry<Location, EnergyNetComponent> consumerEntry = consumerIterator.next();
+            if(!consumerEntry.getKey().getChunk().isLoaded()) {
+                continue;
+            }
             EnergyNetComponent consumer = consumerEntry.getValue();
-            Config consumerConfig = BlockStorage.getLocationInfo(consumerEntry.getKey());
-            int consumerEnergy = consumer.getCharge(consumerEntry.getKey(), consumerConfig);
+            int consumerEnergy = consumer.getCharge(consumerEntry.getKey());
             int consumerCapacity = consumer.getCapacity();
 
             int leftEnergy = consumerCapacity - consumerEnergy;
@@ -145,22 +143,18 @@ public class AlteredEnergyNet extends EnergyNet {
 
                 while (leftEnergy > 0 && generatorIterator1.hasNext()) {
                     Map.Entry<Location, EnergyNetProvider> generatorEntry = generatorIterator1.next();
+                    if(!generatorEntry.getKey().getChunk().isLoaded()) {
+                        continue;
+                    }
                     if(GENERATED_ENERGY_MAP.containsKey(generatorEntry.getKey())) {
                         continue;
                     }
-                    Config generatorConfig;
-                    if(generatorConfigMap.containsKey(generatorEntry.getKey())) {
-                        generatorConfig = generatorConfigMap.get(generatorEntry.getKey());
-                    } else {
-                        generatorConfig = BlockStorage.getLocationInfo(generatorEntry.getKey());
-                        generatorConfigMap.put(generatorEntry.getKey(), generatorConfig);
-                    }
                     long t1 = Slimefun.getProfiler().newEntry();
-                    sourceEnergy = generatorEntry.getValue().getGeneratedOutput(generatorEntry.getKey(), generatorConfig);
+                    sourceEnergy = FinalTech.getBlockTickerService().getGeneratedOutput(generatorEntry.getValue(), generatorEntry.getKey());
                     long t2 = Slimefun.getProfiler().closeEntry(generatorEntry.getKey(), (SlimefunItem) generatorEntry.getValue(), t1);
                     timestamp.getAndAdd(t2);
-                    if(generatorEntry.getValue().willExplode(generatorEntry.getKey(), generatorConfig)) {
-                        BlockStorage.clearBlockInfo(generatorEntry.getKey());
+                    if(FinalTech.getBlockTickerService().willExplode(generatorEntry.getValue(), generatorEntry.getKey())) {
+                        FinalTech.getLocationDataService().clearLocationData(generatorEntry.getKey());
                         Location generatorLocation = generatorEntry.getKey();
                         Slimefun.runSync(() -> {
                             generatorLocation.getBlock().setType(Material.LAVA);
@@ -182,14 +176,10 @@ public class AlteredEnergyNet extends EnergyNet {
 
                 while (leftEnergy > 0 && generatorIterator2.hasNext()) {
                     Map.Entry<Location, EnergyNetProvider> generatorEntry = generatorIterator2.next();
-                    Config generatorConfig;
-                    if(generatorConfigMap.containsKey(generatorEntry.getKey())) {
-                        generatorConfig = generatorConfigMap.get(generatorEntry.getKey());
-                    } else {
-                        generatorConfig = BlockStorage.getLocationInfo(generatorEntry.getKey());
-                        generatorConfigMap.put(generatorEntry.getKey(), generatorConfig);
+                    if(!generatorEntry.getKey().getChunk().isLoaded()) {
+                        continue;
                     }
-                    sourceEnergy = generatorEntry.getValue().getCharge(generatorEntry.getKey(), generatorConfig);
+                    sourceEnergy = generatorEntry.getValue().getCharge(generatorEntry.getKey());
                     summary.generatorCapacity += generatorEntry.getValue().getCapacity();
                     if(sourceEnergy > 0) {
                         transferEnergy = Math.min(leftEnergy, sourceEnergy);
@@ -202,14 +192,10 @@ public class AlteredEnergyNet extends EnergyNet {
 
                 while (leftEnergy > 0 && capacitorIterator.hasNext()) {
                     Map.Entry<Location, EnergyNetComponent> capacitorEntry = capacitorIterator.next();
-                    Config generatorConfig;
-                    if(generatorConfigMap.containsKey(capacitorEntry.getKey())) {
-                        generatorConfig = generatorConfigMap.get(capacitorEntry.getKey());
-                    } else {
-                        generatorConfig = BlockStorage.getLocationInfo(capacitorEntry.getKey());
-                        generatorConfigMap.put(capacitorEntry.getKey(), generatorConfig);
+                    if(!capacitorEntry.getKey().getChunk().isLoaded()) {
+                        continue;
                     }
-                    sourceEnergy = capacitorEntry.getValue().getCharge(capacitorEntry.getKey(), generatorConfig);
+                    sourceEnergy = capacitorEntry.getValue().getCharge(capacitorEntry.getKey());
                     summary.capacitorCapacity += capacitorEntry.getValue().getCapacity();
                     if(sourceEnergy > 0) {
                         transferEnergy = Math.min(leftEnergy, sourceEnergy);
@@ -237,14 +223,10 @@ public class AlteredEnergyNet extends EnergyNet {
 
         while (capacitorIterator.hasNext()) {
             Map.Entry<Location, EnergyNetComponent> capacitorEntry = capacitorIterator.next();
-            Config generatorConfig;
-            if(generatorConfigMap.containsKey(capacitorEntry.getKey())) {
-                generatorConfig = generatorConfigMap.get(capacitorEntry.getKey());
-            } else {
-                generatorConfig = BlockStorage.getLocationInfo(capacitorEntry.getKey());
-                generatorConfigMap.put(capacitorEntry.getKey(), generatorConfig);
+            if(!capacitorEntry.getKey().getChunk().isLoaded()) {
+                continue;
             }
-            energy = capacitorEntry.getValue().getCharge(capacitorEntry.getKey(), generatorConfig);
+            energy = capacitorEntry.getValue().getCharge(capacitorEntry.getKey());
             capacity = capacitorEntry.getValue().getCapacity();
             summary.capacitorCapacity += capacitorEntry.getValue().getCapacity();
 
@@ -260,22 +242,15 @@ public class AlteredEnergyNet extends EnergyNet {
 
                 while (leftEnergy > 0 && generatorIterator1.hasNext()) {
                     Map.Entry<Location, EnergyNetProvider> generatorOutputEntry = generatorIterator1.next();
-                    if(GENERATED_ENERGY_MAP.containsKey(generatorOutputEntry.getKey())) {
+                    if(!generatorOutputEntry.getKey().getChunk().isLoaded() || GENERATED_ENERGY_MAP.containsKey(generatorOutputEntry.getKey())) {
                         continue;
                     }
-                    Config generatorOutputConfig;
-                    if(generatorConfigMap.containsKey(generatorOutputEntry.getKey())) {
-                        generatorOutputConfig = generatorConfigMap.get(generatorOutputEntry.getKey());
-                    } else {
-                        generatorOutputConfig = BlockStorage.getLocationInfo(generatorOutputEntry.getKey());
-                        generatorConfigMap.put(generatorOutputEntry.getKey(), generatorOutputConfig);
-                    }
                     long t1 = Slimefun.getProfiler().newEntry();
-                    sourceEnergy = generatorOutputEntry.getValue().getGeneratedOutput(generatorOutputEntry.getKey(), generatorOutputConfig);
+                    sourceEnergy = FinalTech.getBlockTickerService().getGeneratedOutput(generatorOutputEntry.getValue(), generatorOutputEntry.getKey());
                     long t2 = Slimefun.getProfiler().closeEntry(generatorOutputEntry.getKey(), (SlimefunItem) generatorOutputEntry.getValue(), t1);
                     timestamp.getAndAdd(t2);
-                    if(generatorOutputEntry.getValue().willExplode(generatorOutputEntry.getKey(), generatorOutputConfig)) {
-                        BlockStorage.clearBlockInfo(generatorOutputEntry.getKey());
+                    if(FinalTech.getBlockTickerService().willExplode(generatorOutputEntry.getValue(), generatorOutputEntry.getKey())) {
+                        FinalTech.getLocationDataService().clearLocationData(generatorOutputEntry.getKey());
                         Location generatorLocation = generatorOutputEntry.getKey();
                         Slimefun.runSync(() -> {
                             generatorLocation.getBlock().setType(Material.LAVA);
@@ -304,19 +279,11 @@ public class AlteredEnergyNet extends EnergyNet {
 
         while (generatorIterator2.hasNext()) {
             Map.Entry<Location, EnergyNetProvider> generatorEntry = generatorIterator2.next();
-            if(!generatorEntry.getValue().isChargeable()) {
+            if(!generatorEntry.getValue().isChargeable() || !generatorEntry.getKey().getChunk().isLoaded()) {
                 continue;
             }
 
-            Config generatorConfig;
-            if(generatorConfigMap.containsKey(generatorEntry.getKey())) {
-                generatorConfig = generatorConfigMap.get(generatorEntry.getKey());
-            } else {
-                generatorConfig = BlockStorage.getLocationInfo(generatorEntry.getKey());
-                generatorConfigMap.put(generatorEntry.getKey(), generatorConfig);
-            }
-
-            energy = generatorEntry.getValue().getCharge(generatorEntry.getKey(), generatorConfig);
+            energy = generatorEntry.getValue().getCharge(generatorEntry.getKey());
             capacity = generatorEntry.getValue().getCapacity();
             summary.generatorCapacity += capacity;
 
@@ -335,19 +302,12 @@ public class AlteredEnergyNet extends EnergyNet {
                     if(GENERATED_ENERGY_MAP.containsKey(generatorOutputEntry.getKey())) {
                         continue;
                     }
-                    Config generatorOutputConfig;
-                    if(generatorConfigMap.containsKey(generatorOutputEntry.getKey())) {
-                        generatorOutputConfig = generatorConfigMap.get(generatorOutputEntry.getKey());
-                    } else {
-                        generatorOutputConfig = BlockStorage.getLocationInfo(generatorOutputEntry.getKey());
-                        generatorConfigMap.put(generatorOutputEntry.getKey(), generatorOutputConfig);
-                    }
                     long t1 = Slimefun.getProfiler().newEntry();
-                    sourceEnergy = generatorOutputEntry.getValue().getGeneratedOutput(generatorOutputEntry.getKey(), generatorOutputConfig);
+                    sourceEnergy = FinalTech.getBlockTickerService().getGeneratedOutput(generatorOutputEntry.getValue(), generatorOutputEntry.getKey());
                     long t2 = Slimefun.getProfiler().closeEntry(generatorOutputEntry.getKey(), (SlimefunItem) generatorOutputEntry.getValue(), t1);
                     timestamp.getAndAdd(t2);
-                    if(generatorOutputEntry.getValue().willExplode(generatorOutputEntry.getKey(), generatorOutputConfig)) {
-                        BlockStorage.clearBlockInfo(generatorOutputEntry.getKey());
+                    if(FinalTech.getBlockTickerService().willExplode(generatorOutputEntry.getValue(), generatorOutputEntry.getKey())) {
+                        FinalTech.getLocationDataService().clearLocationData(generatorOutputEntry.getKey());
                         Location generatorLocation = generatorOutputEntry.getKey();
                         Slimefun.runSync(() -> {
                             generatorLocation.getBlock().setType(Material.LAVA);

@@ -12,6 +12,7 @@ import io.taraxacum.libs.slimefun.util.SfItemUtil;
 import org.bukkit.inventory.ItemStack;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 /**
  * @author Final_ROOT
@@ -40,7 +41,7 @@ public class OrderedDust extends UnusableSlimefunItem implements RecipeItem, Sim
     }
 
     @Override
-    public boolean verifyItem(@Nonnull ItemStack itemStack) {
+    public boolean verifyItem(@Nullable ItemStack itemStack) {
         return ItemStackUtil.isItemSimilar(itemStack, this.templateValidItem);
     }
 }

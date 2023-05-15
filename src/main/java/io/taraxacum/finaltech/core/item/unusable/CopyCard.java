@@ -10,7 +10,7 @@ import io.taraxacum.finaltech.core.interfaces.RecipeItem;
 import io.taraxacum.finaltech.setup.FinalTechItemStacks;
 import io.taraxacum.finaltech.setup.FinalTechItems;
 import io.taraxacum.libs.plugin.util.ItemStackUtil;
-import io.taraxacum.libs.plugin.util.StringItemUtil;
+import io.taraxacum.finaltech.util.StringItemUtil;
 import io.taraxacum.libs.plugin.util.TextUtil;
 import io.taraxacum.finaltech.util.ConfigUtil;
 import io.taraxacum.finaltech.util.ConstantTableUtil;
@@ -24,11 +24,11 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.List;
 
 /**
  * @author Final_ROOT
- * @since 2.0
  */
 public class CopyCard extends UnusableSlimefunItem implements RecipeItem, ValidItem {
     private final String itemLoreWithoutColor = "⌫⌧⌧⌧⌧⌧⌧⌧⌧⌧⌧⌧⌧⌧⌧⌧⌧⌧⌧⌧⌧⌧⌧⌦";
@@ -46,7 +46,7 @@ public class CopyCard extends UnusableSlimefunItem implements RecipeItem, ValidI
     }
 
     @Override
-    public boolean verifyItem(@Nonnull ItemStack itemStack) {
+    public boolean verifyItem(@Nullable ItemStack itemStack) {
         if (ItemStackUtil.isItemNull(itemStack) || !itemStack.hasItemMeta()) {
             return false;
         }

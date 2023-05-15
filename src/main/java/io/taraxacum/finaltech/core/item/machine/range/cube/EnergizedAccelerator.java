@@ -15,19 +15,18 @@ import io.taraxacum.finaltech.util.*;
 import io.taraxacum.finaltech.core.interfaces.RecipeItem;
 import io.taraxacum.finaltech.core.menu.AbstractMachineMenu;
 import io.taraxacum.finaltech.core.menu.unit.StatusMenu;
-import io.taraxacum.libs.slimefun.dto.LocationInfo;
 import io.taraxacum.finaltech.util.BlockTickerUtil;
+import io.taraxacum.libs.plugin.dto.LocationData;
 import io.taraxacum.libs.slimefun.util.EnergyUtil;
 import io.taraxacum.finaltech.util.MachineUtil;
 import io.taraxacum.libs.plugin.util.ParticleUtil;
-import me.mrCookieSlime.CSCoreLibPlugin.Configuration.Config;
+import io.taraxacum.libs.slimefun.util.LocationDataUtil;
 import me.mrCookieSlime.Slimefun.Objects.handlers.BlockTicker;
-import me.mrCookieSlime.Slimefun.api.BlockStorage;
-import me.mrCookieSlime.Slimefun.api.inventory.BlockMenu;
 import org.bukkit.Location;
 import org.bukkit.Particle;
 import org.bukkit.World;
 import org.bukkit.block.Block;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -37,7 +36,6 @@ import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * @author Final_ROOT
- * @since 2.0
  */
 public class EnergizedAccelerator extends AbstractCubeMachine implements EnergyNetComponent, RecipeItem, MenuUpdater, LocationMachine {
     private final Set<String> notAllowedId = new HashSet<>(ConfigUtil.getItemStringList(this, "not-allowed-id"));
@@ -69,29 +67,35 @@ public class EnergizedAccelerator extends AbstractCubeMachine implements EnergyN
     }
 
     @Override
-    protected void tick(@Nonnull Block block, @Nonnull SlimefunItem slimefunItem, @Nonnull Config config) {
-        Location blockLocation = block.getLocation();
-        BlockMenu blockMenu = BlockStorage.getInventory(blockLocation);
-        boolean hasViewer = blockMenu.hasViewer();
+    protected void tick(@Nonnull Block block, @Nonnull SlimefunItem slimefunItem, @Nonnull LocationData locationData) {
+        Inventory inventory = FinalTech.getLocationDataService().getInventory(locationData);
+        if(inventory == null) {
+            return;
+        }
+        boolean hasViewer = !inventory.getViewers().isEmpty();
+        Location blockLocation = locationData.getLocation();
 
-        int machineEnergy = Integer.parseInt(EnergyUtil.getCharge(config));
+        int machineEnergy = Integer.parseInt(EnergyUtil.getCharge(FinalTech.getLocationDataService(), locationData));
         if (machineEnergy == 0) {
             if(hasViewer) {
-                this.updateMenu(blockMenu, StatusMenu.STATUS_SLOT, this,
+                this.updateInv(inventory, StatusMenu.STATUS_SLOT, this,
                         String.valueOf(machineEnergy), "0", "0", "0");
             }
             return;
         }
 
         AtomicLong allCapacity = new AtomicLong(0);
-        Map<Integer, List<LocationInfo>> locationInfoMap = new HashMap<>(this.range * 3);
+        Map<Integer, List<LocationData>> locationDataMap = new HashMap<>(this.range * 3);
         int count = this.cubeFunction(block, this.range, location -> {
-            LocationInfo locationInfo = LocationInfo.get(location);
-            if(locationInfo != null && this.calAllowed(locationInfo.getSlimefunItem())) {
+            if(!location.getChunk().isLoaded()) {
+                return -1;
+            }
+            LocationData tempLocationData = FinalTech.getLocationDataService().getLocationData(location);
+            if(tempLocationData != null && this.calAllowed(LocationDataUtil.getSlimefunItem(FinalTech.getLocationDataService(), tempLocationData))) {
                 int distance = Math.abs(location.getBlockX() - blockLocation.getBlockX()) + Math.abs(location.getBlockY() - blockLocation.getBlockY()) + Math.abs(location.getBlockZ() - blockLocation.getBlockZ());
-                locationInfoMap.computeIfAbsent(distance, d -> new ArrayList<>(d * d * 4 + 2)).add(locationInfo);
-                locationInfo.cloneLocation();
-                allCapacity.getAndAdd(((EnergyNetComponent) locationInfo.getSlimefunItem()).getCapacity());
+                locationDataMap.computeIfAbsent(distance, d -> new ArrayList<>(d * d * 4 + 2)).add(tempLocationData);
+                tempLocationData.cloneLocation();
+                allCapacity.getAndAdd(((EnergyNetComponent) LocationDataUtil.getSlimefunItem(FinalTech.getLocationDataService(), tempLocationData)).getCapacity());
                 return 1;
             }
             return 0;
@@ -99,7 +103,7 @@ public class EnergizedAccelerator extends AbstractCubeMachine implements EnergyN
 
         if (count == 0 || allCapacity.get() == 0L) {
             if(hasViewer) {
-                this.updateMenu(blockMenu, StatusMenu.STATUS_SLOT, this,
+                this.updateInv(inventory, StatusMenu.STATUS_SLOT, this,
                         String.valueOf(machineEnergy), "0", "0", "0");
             }
             return;
@@ -117,22 +121,36 @@ public class EnergizedAccelerator extends AbstractCubeMachine implements EnergyN
         JavaPlugin javaPlugin = this.getAddon().getJavaPlugin();
 
         int nextEnergy;
-        List<LocationInfo> locationInfoList;
+        List<LocationData> locationDataList;
         while (machineEnergy > allCapacity.get()) {
             for (int distance = 1; distance <= this.range * 3; distance++) {
-                locationInfoList = locationInfoMap.get(distance);
-                if (locationInfoList != null) {
-                    Collections.shuffle(locationInfoList);
-                    for (LocationInfo locationInfo : locationInfoList) {
-                        BlockTicker blockTicker = locationInfo.getSlimefunItem().getBlockTicker();
-                        if (blockTicker != null && locationInfo.getId().equals(locationInfo.getConfig().getString(ConstantTableUtil.CONFIG_ID))) {
+                locationDataList = locationDataMap.get(distance);
+                if (locationDataList != null) {
+                    Collections.shuffle(locationDataList);
+                    for (LocationData tempLocationData : locationDataList) {
+                        BlockTicker blockTicker = LocationDataUtil.getSlimefunItem(FinalTech.getLocationDataService(), tempLocationData).getBlockTicker();
+                        if (blockTicker != null) {
                             if (blockTicker.isSynchronized()) {
-                                javaPlugin.getServer().getScheduler().runTask(javaPlugin, () -> blockTicker.tick(locationInfo.getLocation().getBlock(), locationInfo.getSlimefunItem(), locationInfo.getConfig()));
+                                javaPlugin.getServer().getScheduler().runTask(javaPlugin, () -> {
+                                    try {
+                                        FinalTech.getBlockTickerService().run(blockTicker, tempLocationData);
+                                    } catch (Throwable e) {
+                                        e.printStackTrace();
+                                        throw new RuntimeException(e);
+                                    }
+                                });
                             } else {
-                                BlockTickerUtil.runTask(FinalTech.getLocationRunnableFactory(), FinalTech.isAsyncSlimefunItem(locationInfo.getId()), () -> blockTicker.tick(locationInfo.getLocation().getBlock(), locationInfo.getSlimefunItem(), locationInfo.getConfig()), locationInfo.getLocation());
+                                BlockTickerUtil.runTask(FinalTech.getLocationRunnableFactory(), FinalTech.isAsyncSlimefunItem(LocationDataUtil.getId(FinalTech.getLocationDataService(), tempLocationData)), () -> {
+                                    try {
+                                        FinalTech.getBlockTickerService().run(blockTicker, tempLocationData);
+                                    } catch (Throwable e) {
+                                        e.printStackTrace();
+                                        throw new RuntimeException(e);
+                                    }
+                                }, tempLocationData.getLocation());
                             }
                             if (hasViewer) {
-                                javaPlugin.getServer().getScheduler().runTaskAsynchronously(javaPlugin, () -> ParticleUtil.drawCubeByBlock(javaPlugin, Particle.WAX_OFF, 0, locationInfo.getLocation().getBlock()));
+                                javaPlugin.getServer().getScheduler().runTaskAsynchronously(javaPlugin, () -> ParticleUtil.drawCubeByBlock(javaPlugin, Particle.WAX_OFF, 0, tempLocationData.getLocation().getBlock()));
                             }
                             accelerateTotalTime++;
                         }
@@ -152,11 +170,11 @@ public class EnergizedAccelerator extends AbstractCubeMachine implements EnergyN
         }
 
         if (accelerateRoundTime > 0) {
-            EnergyUtil.setCharge(config, machineEnergy);
+            EnergyUtil.setCharge(FinalTech.getLocationDataService(), locationData, String.valueOf(machineEnergy));
         }
 
-        if(blockMenu.hasViewer()) {
-            this.updateMenu(blockMenu, StatusMenu.STATUS_SLOT, this,
+        if(hasViewer) {
+            this.updateInv(inventory, StatusMenu.STATUS_SLOT, this,
                     String.valueOf(storedMachineEnergy),
                     String.valueOf(count),
                     String.valueOf(accelerateRoundTime),

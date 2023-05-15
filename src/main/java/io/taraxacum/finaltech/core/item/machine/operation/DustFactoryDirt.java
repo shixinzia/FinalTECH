@@ -6,22 +6,24 @@ import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItemStack;
 import io.github.thebusybiscuit.slimefun4.api.recipes.RecipeType;
 import io.github.thebusybiscuit.slimefun4.core.handlers.BlockBreakHandler;
 import io.taraxacum.finaltech.FinalTech;
+import io.taraxacum.finaltech.core.enums.LogSourceType;
 import io.taraxacum.finaltech.core.interfaces.MenuUpdater;
 import io.taraxacum.finaltech.core.interfaces.RecipeItem;
 import io.taraxacum.finaltech.core.menu.AbstractMachineMenu;
 import io.taraxacum.finaltech.core.operation.DustFactoryOperation;
 import io.taraxacum.finaltech.core.menu.limit.DustFactoryDirtMenu;
-import io.taraxacum.finaltech.util.MachineUtil;
+import io.taraxacum.libs.plugin.dto.LocationData;
+import io.taraxacum.libs.plugin.util.InventoryUtil;
 import io.taraxacum.libs.plugin.util.ItemStackUtil;
 import io.taraxacum.finaltech.util.ConfigUtil;
 import io.taraxacum.finaltech.util.RecipeUtil;
-import me.mrCookieSlime.CSCoreLibPlugin.Configuration.Config;
-import me.mrCookieSlime.Slimefun.api.BlockStorage;
+import io.taraxacum.libs.slimefun.service.SlimefunLocationDataService;
 import me.mrCookieSlime.Slimefun.api.inventory.BlockMenu;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
 import javax.annotation.Nonnull;
@@ -29,7 +31,6 @@ import java.util.List;
 
 /**
  * @author Final_ROOT
- * @since 1.0
  */
 public class DustFactoryDirt extends AbstractOperationMachine implements RecipeItem, MenuUpdater {
     public final int baseAmountDifficulty = ConfigUtil.getOrDefaultItemSetting(1024, this, "difficulty", "base", "amount");
@@ -49,9 +50,14 @@ public class DustFactoryDirt extends AbstractOperationMachine implements RecipeI
             @Override
             public void onPlayerBreak(@Nonnull BlockBreakEvent blockBreakEvent, @Nonnull ItemStack item, @Nonnull List<ItemStack> drops) {
                 Location location = blockBreakEvent.getBlock().getLocation();
-                BlockMenu blockMenu = BlockStorage.getInventory(location);
-                blockMenu.dropItems(location, DustFactoryDirt.this.getInputSlot());
-                blockMenu.dropItems(location, DustFactoryDirt.this.getOutputSlot());
+                if(FinalTech.getLocationDataService() instanceof SlimefunLocationDataService slimefunLocationDataService) {
+                    BlockMenu blockMenu = slimefunLocationDataService.getBlockMenu(location);
+                    if(blockMenu != null && blockMenu.getPreset().getID().equals(DustFactoryDirt.this.getId())) {
+                        Inventory inventory = blockMenu.toInventory();
+                        InventoryUtil.dropItems(inventory, location, DustFactoryDirt.this.getInputSlot());
+                        InventoryUtil.dropItems(inventory, location, DustFactoryDirt.this.getOutputSlot());
+                    }
+                }
 
                 DustFactoryDirt.this.getMachineProcessor().endOperation(location);
             }
@@ -65,12 +71,16 @@ public class DustFactoryDirt extends AbstractOperationMachine implements RecipeI
     }
 
     @Override
-    protected void tick(@Nonnull Block block, @Nonnull SlimefunItem slimefunItem, @Nonnull Config config) {
-        BlockMenu blockMenu = BlockStorage.getInventory(block);
+    protected void tick(@Nonnull Block block, @Nonnull SlimefunItem slimefunItem, @Nonnull LocationData locationData) {
+        Inventory inventory = FinalTech.getLocationDataService().getInventory(locationData);
+        if(inventory == null) {
+            return;
+        }
+
         DustFactoryOperation operation = (DustFactoryOperation) this.getMachineProcessor().getOperation(block);
 
         for (int slot : this.getInputSlot()) {
-            ItemStack inputItem = blockMenu.getItemInSlot(slot);
+            ItemStack inputItem = inventory.getItem(slot);
             if (ItemStackUtil.isItemNull(inputItem)) {
                 continue;
             }
@@ -88,14 +98,16 @@ public class DustFactoryDirt extends AbstractOperationMachine implements RecipeI
                 this.getMachineProcessor().startOperation(block, operation);
             }
             operation.addItem(inputItem);
+            inventory.clear(slot);
 
-            blockMenu.consumeItem(slot, inputItem.getAmount());
-
-            ItemStack operationResult = operation.getResult();
-            if (operationResult != null && MachineUtil.calMaxMatch(blockMenu.toInventory(), this.getOutputSlot(), operationResult) > 0) {
-                blockMenu.pushItem(operationResult, this.getOutputSlot());
-                this.getMachineProcessor().endOperation(block);
-                operation = null;
+            if(operation.isFinished()) {
+                ItemStack itemStack = operation.getResult();
+                SlimefunItem sfItem = SlimefunItem.getByItem(itemStack);
+                if(sfItem != null && InventoryUtil.tryPushAllItem(inventory, this.getOutputSlot(), itemStack)) {
+                    FinalTech.getLogService().addItem(sfItem.getId(), 1, this.getId(), LogSourceType.SLIMEFUN_MACHINE, null, block.getLocation(), this.getAddon().getJavaPlugin());
+                    this.getMachineProcessor().endOperation(block);
+                    operation = null;
+                }
             }
         }
 
@@ -112,8 +124,8 @@ public class DustFactoryDirt extends AbstractOperationMachine implements RecipeI
             this.getMachineProcessor().startOperation(block, operation);
         }
 
-        if (blockMenu.hasViewer()) {
-            this.updateMenu(blockMenu, DustFactoryDirtMenu.STATUS_SLOT, this,
+        if (!inventory.getViewers().isEmpty()) {
+            this.updateInv(inventory, DustFactoryDirtMenu.STATUS_SLOT, this,
                     String.valueOf(operation.getAmountCount()),
                     String.valueOf(operation.getTypeCount()),
                     String.valueOf(operation.getAmountDifficulty()),
@@ -122,15 +134,15 @@ public class DustFactoryDirt extends AbstractOperationMachine implements RecipeI
     }
 
     @Override
-    public void updateMenu(@Nonnull BlockMenu blockMenu, int slot, @Nonnull SlimefunItem slimefunItem, @Nonnull String... text) {
-        MenuUpdater.super.updateMenu(blockMenu, slot, slimefunItem, text);
+    public void updateInv(@Nonnull Inventory inventory, int slot, @Nonnull SlimefunItem slimefunItem, @Nonnull String... text) {
+        MenuUpdater.super.updateInv(inventory, slot, slimefunItem, text);
         if(text.length == 4) {
             int amountCount = Integer.parseInt(text[0]);
             int typeCount = Integer.parseInt(text[1]);
             int amountDifficulty = Integer.parseInt(text[2]);
             int typeDifficulty = Integer.parseInt(text[3]);
 
-            ItemStack itemStack = blockMenu.getItemInSlot(slot);
+            ItemStack itemStack = inventory.getItem(slot);
 
             if (amountCount == 0 && typeCount == 0) {
                 itemStack.setType(Material.RED_STAINED_GLASS_PANE);

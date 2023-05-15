@@ -15,16 +15,15 @@ import io.taraxacum.finaltech.core.menu.AbstractMachineMenu;
 import io.taraxacum.finaltech.core.menu.unit.StatusL2Menu;
 import io.taraxacum.finaltech.core.menu.unit.StatusMenu;
 import io.taraxacum.finaltech.util.*;
-import io.taraxacum.libs.slimefun.dto.LocationInfo;
+import io.taraxacum.libs.plugin.dto.LocationData;
 import io.taraxacum.libs.slimefun.util.EnergyUtil;
-import me.mrCookieSlime.CSCoreLibPlugin.Configuration.Config;
-import me.mrCookieSlime.Slimefun.api.BlockStorage;
-import me.mrCookieSlime.Slimefun.api.inventory.BlockMenu;
+import io.taraxacum.libs.slimefun.util.LocationDataUtil;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.block.data.Directional;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
 import javax.annotation.Nonnull;
@@ -54,7 +53,7 @@ public class NormalConsumableElectricityShootPile extends AbstractRangeMachine i
     @Nonnull
     @Override
     protected BlockBreakHandler onBlockBreak() {
-        return MachineUtil.simpleBlockBreakerHandler(this);
+        return MachineUtil.simpleBlockBreakerHandler(FinalTech.getLocationDataService(), this);
     }
 
     @Nullable
@@ -64,10 +63,15 @@ public class NormalConsumableElectricityShootPile extends AbstractRangeMachine i
     }
 
     @Override
-    protected void tick(@Nonnull Block block, @Nonnull SlimefunItem slimefunItem, @Nonnull Config config) {
-        BlockMenu blockMenu = BlockStorage.getInventory(block);
+    protected void tick(@Nonnull Block block, @Nonnull SlimefunItem slimefunItem, @Nonnull LocationData locationData) {
+        Inventory inventory = FinalTech.getLocationDataService().getInventory(locationData);
+        if(inventory == null) {
+            return;
+        }
+        boolean hasViewer = !inventory.getViewers().isEmpty();
+
         int digital;
-        ItemStack itemStack = blockMenu.getItemInSlot(this.getInputSlot()[0]);
+        ItemStack itemStack = inventory.getItem(this.getInputSlot()[0]);
         SlimefunItem digitalSlimefunItem = SlimefunItem.getByItem(itemStack);
         if(digitalSlimefunItem instanceof DigitalItem digitalItem) {
             digital = digitalItem.getDigit();
@@ -81,32 +85,35 @@ public class NormalConsumableElectricityShootPile extends AbstractRangeMachine i
                 AtomicInteger capacitorEnergy = new AtomicInteger(0);
                 AtomicInteger transferEnergy = new AtomicInteger(0);
 
-                LocationInfo capacitorLocationInfo = LocationInfo.get(block.getRelative(directional.getFacing().getOppositeFace()).getLocation());
-                if(capacitorLocationInfo != null && capacitorLocationInfo.getSlimefunItem() instanceof EnergyNetComponent energyNetComponent && JavaUtil.matchOnce(energyNetComponent.getEnergyComponentType(), EnergyNetComponentType.CAPACITOR, EnergyNetComponentType.GENERATOR)) {
-                    capacitorEnergy.set(Integer.parseInt(EnergyUtil.getCharge(capacitorLocationInfo.getConfig())));
+                LocationData capacitorLocationData = FinalTech.getLocationDataService().getLocationData(block.getRelative(directional.getFacing().getOppositeFace()).getLocation());
+                if(capacitorLocationData != null
+                        && LocationDataUtil.getSlimefunItem(FinalTech.getLocationDataService(), capacitorLocationData) instanceof EnergyNetComponent energyNetComponent
+                        && JavaUtil.matchOnce(energyNetComponent.getEnergyComponentType(), EnergyNetComponentType.CAPACITOR, EnergyNetComponentType.GENERATOR)) {
+                    capacitorEnergy.set(Integer.parseInt(EnergyUtil.getCharge(FinalTech.getLocationDataService(), capacitorLocationData)));
                 }
 
                 RangeMachine.RangeFunction rangeFunction = location -> {
-                    if(capacitorLocationInfo == null || capacitorEnergy.get() <= 0) {
+                    if(capacitorLocationData == null || capacitorEnergy.get() <= 0 || !location.getChunk().isLoaded()) {
                         return -1;
                     }
 
-                    LocationInfo energyComponentLocationInfo = LocationInfo.get(location);
-                    if (energyComponentLocationInfo != null && !notAllowedId.contains(energyComponentLocationInfo.getId())) {
-                        if (energyComponentLocationInfo.getSlimefunItem() instanceof EnergyNetComponent energyNetComponent && !EnergyNetComponentType.NONE.equals(energyNetComponent.getEnergyComponentType())) {
-                            int componentCapacity = energyNetComponent.getCapacity();
-                            if(componentCapacity > 0) {
-                                int componentEnergy = Integer.parseInt(EnergyUtil.getCharge(energyComponentLocationInfo.getConfig()));
-                                if (componentEnergy < componentCapacity) {
-                                    transferEnergy.set(Math.min(capacitorEnergy.get(), componentCapacity - componentEnergy));
-                                    capacitorEnergy.set(capacitorEnergy.get() - transferEnergy.get());
-                                    EnergyUtil.setCharge(energyComponentLocationInfo.getConfig(), String.valueOf(componentEnergy + transferEnergy.get()));
-                                    EnergyUtil.setCharge(capacitorLocationInfo.getConfig(), String.valueOf(capacitorEnergy.get()));
-                                }
-
-                                itemStack.setAmount(itemStack.getAmount() - 1);
-                                return -1;
+                    LocationData energyLocationData = FinalTech.getLocationDataService().getLocationData(location);
+                    if (energyLocationData != null
+                            && !notAllowedId.contains(LocationDataUtil.getId(FinalTech.getLocationDataService(), energyLocationData))
+                            && LocationDataUtil.getSlimefunItem(FinalTech.getLocationDataService(), energyLocationData) instanceof EnergyNetComponent energyNetComponent
+                            && !EnergyNetComponentType.NONE.equals(energyNetComponent.getEnergyComponentType())) {
+                        int componentCapacity = energyNetComponent.getCapacity();
+                        if(componentCapacity > 0) {
+                            int componentEnergy = Integer.parseInt(EnergyUtil.getCharge(FinalTech.getLocationDataService(), energyLocationData));
+                            if (componentEnergy < componentCapacity) {
+                                transferEnergy.set(Math.min(capacitorEnergy.get(), componentCapacity - componentEnergy));
+                                capacitorEnergy.set(capacitorEnergy.get() - transferEnergy.get());
+                                EnergyUtil.setCharge(FinalTech.getLocationDataService(), energyLocationData, String.valueOf(componentEnergy + transferEnergy.get()));
+                                EnergyUtil.setCharge(FinalTech.getLocationDataService(), capacitorLocationData, String.valueOf(capacitorEnergy.get()));
                             }
+
+                            itemStack.setAmount(itemStack.getAmount() - 1);
+                            return -1;
                         }
                     }
 
@@ -121,9 +128,11 @@ public class NormalConsumableElectricityShootPile extends AbstractRangeMachine i
                     }
                 }
 
-                this.updateMenu(blockMenu, StatusMenu.STATUS_SLOT, this,
-                        String.valueOf(capacitorEnergy.get()),
-                        String.valueOf(transferEnergy));
+                if(hasViewer) {
+                    this.updateInv(inventory, StatusMenu.STATUS_SLOT, this,
+                            String.valueOf(capacitorEnergy.get()),
+                            String.valueOf(transferEnergy));
+                }
             };
 
             BlockTickerUtil.runTask(FinalTech.getLocationRunnableFactory(), FinalTech.isAsyncSlimefunItem(this.getId()), runnable, () -> {
@@ -139,8 +148,8 @@ public class NormalConsumableElectricityShootPile extends AbstractRangeMachine i
                     return new Location[0];
                 }
             });
-        } else if (blockMenu.hasViewer()) {
-            this.updateMenu(blockMenu, StatusMenu.STATUS_SLOT, this,
+        } else if (hasViewer) {
+            this.updateInv(inventory, StatusMenu.STATUS_SLOT, this,
                     "0",
                     "0");
         }

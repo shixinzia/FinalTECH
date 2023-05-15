@@ -6,10 +6,8 @@ import io.github.thebusybiscuit.slimefun4.libraries.dough.protection.Interaction
 import io.github.thebusybiscuit.slimefun4.utils.ChestMenuUtils;
 import io.taraxacum.finaltech.FinalTech;
 import io.taraxacum.finaltech.core.item.machine.AbstractMachine;
-import io.taraxacum.finaltech.core.helper.Icon;
-import io.taraxacum.finaltech.util.ConstantTableUtil;
-import io.taraxacum.libs.slimefun.dto.LocationInfo;
-import me.mrCookieSlime.Slimefun.api.BlockStorage;
+import io.taraxacum.finaltech.core.option.Icon;
+import io.taraxacum.libs.plugin.dto.LocationData;
 import me.mrCookieSlime.Slimefun.api.inventory.BlockMenu;
 import me.mrCookieSlime.Slimefun.api.inventory.BlockMenuPreset;
 import me.mrCookieSlime.Slimefun.api.inventory.DirtyChestMenu;
@@ -22,11 +20,12 @@ import org.bukkit.inventory.ItemStack;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Should use with {@link AbstractMachine}
  * @author Final_ROOT
- * @since 1.0
  */
 public abstract class AbstractMachineMenu extends BlockMenuPreset {
     @Nonnull
@@ -64,12 +63,14 @@ public abstract class AbstractMachineMenu extends BlockMenuPreset {
 
         if(FinalTech.getDataLossFix()) {
             Location location = block.getLocation();
-            LocationInfo locationInfo = LocationInfo.get(block.getLocation());
-            if(locationInfo == null && this.slimefunItem.getItem().getType().equals(block.getType())) {
+            LocationData locationData = FinalTech.getLocationDataService().getLocationData(location);
+            if(locationData == null && this.slimefunItem.getItem().getType().equals(block.getType())) {
                 FinalTech.logger().warning("Data Loss Fix For " + FinalTech.getInstance().getName() + ": location " + location + " seems loss its data. There should be " + this.slimefunItem.getId());
 
                 // TODO
-                BlockStorage.addBlockInfo(location, ConstantTableUtil.CONFIG_ID, this.slimefunItem.getId());
+                Map<String, Object> map = new HashMap<>();
+                map.put("id", this.getID());
+                FinalTech.getLocationDataService().createLocationData(location, map);
                 FinalTech.logger().info("Data Loss Fix For " + FinalTech.getInstance().getName() + ": added location info to location: " + location);
             }
         }

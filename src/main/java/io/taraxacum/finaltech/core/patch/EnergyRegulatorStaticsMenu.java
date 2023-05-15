@@ -3,7 +3,7 @@ package io.taraxacum.finaltech.core.patch;
 import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItem;
 import io.github.thebusybiscuit.slimefun4.libraries.dough.items.CustomItemStack;
 import io.github.thebusybiscuit.slimefun4.utils.ChestMenuUtils;
-import io.taraxacum.finaltech.core.helper.Icon;
+import io.taraxacum.finaltech.core.option.Icon;
 import io.taraxacum.finaltech.core.menu.AbstractMachineMenu;
 import me.mrCookieSlime.Slimefun.api.inventory.BlockMenu;
 import org.bukkit.Location;
@@ -16,7 +16,6 @@ import javax.annotation.Nonnull;
 
 /**
  * @author Final_ROOT
- * @since 2.4
  */
 public class EnergyRegulatorStaticsMenu extends AbstractMachineMenu {
     private static final int[] BORDER = new int[] {0, 1, 2, 3, 5 ,6 ,7};

@@ -1,9 +1,12 @@
 package io.taraxacum.finaltech.core.menu.clicker;
 
-import io.taraxacum.finaltech.core.helper.ForceClose;
+import io.taraxacum.finaltech.FinalTech;
+import io.taraxacum.finaltech.core.option.ForceClose;
 import io.taraxacum.finaltech.core.item.machine.clicker.AbstractClickerMachine;
+import io.taraxacum.libs.plugin.util.InventoryUtil;
 import io.taraxacum.libs.plugin.util.ItemStackUtil;
 import io.taraxacum.libs.plugin.util.ParticleUtil;
+import io.taraxacum.libs.slimefun.util.ChestMenuUtil;
 import me.mrCookieSlime.Slimefun.api.inventory.BlockMenu;
 import org.bukkit.Location;
 import org.bukkit.Particle;
@@ -17,7 +20,6 @@ import javax.annotation.Nonnull;
 
 /**
  * @author Final_ROOT
- * @since 2.2
  */
 public class ClickWorkMachineMenu extends AbstractClickerMenu {
     private static final int[] BORDER = new int[] {0, 1, 2, 3, 5, 6, 7, 8, 9, 10, 13, 16, 17};
@@ -60,27 +62,26 @@ public class ClickWorkMachineMenu extends AbstractClickerMenu {
     public void init() {
         super.init();
 
-        this.addItem(FORCE_CLOSE_SLOT, ForceClose.HELPER.defaultIcon());
+        this.addItem(FORCE_CLOSE_SLOT, ForceClose.OPTION.defaultIcon());
     }
 
     @Override
     public void newInstance(@Nonnull BlockMenu blockMenu, @Nonnull Block block) {
         super.newInstance(blockMenu, block);
 
-        Inventory inventory = blockMenu.toInventory();
         Location location = block.getLocation();
 
-        blockMenu.addMenuClickHandler(FORCE_CLOSE_SLOT, ForceClose.HELPER.getHandler(inventory, location, this.getSlimefunItem(), FORCE_CLOSE_SLOT));
+        blockMenu.addMenuClickHandler(FORCE_CLOSE_SLOT, ChestMenuUtil.warpByConsumer(ForceClose.OPTION.getHandler(FinalTech.getLocationDataService(), location, this.getSlimefunItem())));
     }
 
     @Override
-    protected void doFunction(@Nonnull BlockMenu blockMenu, @Nonnull Block block, @Nonnull Player player) {
-        ItemStack inputItem = blockMenu.getItemInSlot(INPUT_SLOT[0]);
-        ItemStack outputItem = blockMenu.getItemInSlot(OUTPUT_SLOT[0]);
+    protected void doFunction(@Nonnull Inventory inventory, @Nonnull Block block, @Nonnull Player player) {
+        ItemStack inputItem = inventory.getItem(INPUT_SLOT[0]);
+        ItemStack outputItem = inventory.getItem(OUTPUT_SLOT[0]);
         if(ItemStackUtil.isItemNull(inputItem) || !ItemStackUtil.isItemNull(outputItem)) {
-            ItemStack item = blockMenu.getItemInSlot(FORCE_CLOSE_SLOT);
-            if(ForceClose.TRUE_ICON.getType().equals(item.getType())) {
-                blockMenu.close();
+            ItemStack itemStack = inventory.getItem(FORCE_CLOSE_SLOT);
+            if(ForceClose.TRUE_ICON.getType().equals(itemStack.getType())) {
+                InventoryUtil.closeInv(inventory);
             }
         } else {
             outputItem = ItemStackUtil.cloneItem(inputItem);
@@ -89,8 +90,8 @@ public class ClickWorkMachineMenu extends AbstractClickerMenu {
             outputItem.setAmount(amount);
             inputItem.setAmount(inputItem.getAmount() - amount);
 
-            blockMenu.pushItem(outputItem, OUTPUT_SLOT);
-            blockMenu.close();
+            inventory.setItem(OUTPUT_SLOT[0], outputItem);
+            InventoryUtil.closeInv(inventory);
 
             JavaPlugin javaPlugin = this.getSlimefunItem().getAddon().getJavaPlugin();
             javaPlugin.getServer().getScheduler().runTaskAsynchronously(javaPlugin, () -> ParticleUtil.drawCubeByBlock(javaPlugin, Particle.WAX_OFF, 0, block));
@@ -99,6 +100,6 @@ public class ClickWorkMachineMenu extends AbstractClickerMenu {
 
     @Override
     protected void updateInventory(@Nonnull Inventory inventory, @Nonnull Location location) {
-        ForceClose.HELPER.checkAndUpdateIcon(inventory, location, FORCE_CLOSE_SLOT);
+        ForceClose.OPTION.checkAndUpdateIcon(inventory, FORCE_CLOSE_SLOT, FinalTech.getLocationDataService(), location);
     }
 }

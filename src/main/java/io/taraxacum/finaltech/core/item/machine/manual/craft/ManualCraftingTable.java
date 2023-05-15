@@ -28,10 +28,10 @@ public class ManualCraftingTable extends AbstractManualCraftMachine{
                 for (Map.Entry<Character, ItemStack> entry : entries) {
                     input.add(entry.getValue());
                 }
-                this.registerRecipeInCard(0, ItemStackUtil.getNoNullItemArray(input), new ItemStack[] {next.getResult()});
+                this.registerRecipeInCard(ItemStackUtil.getNoNullItemArray(input), new ItemStack[] {next.getResult()});
             } else if (next instanceof ShapelessRecipe) {
                 List<ItemStack> ingredientList = ((ShapelessRecipe) next).getIngredientList();
-                this.registerRecipeInCard(0, ItemStackUtil.getNoNullItemArray(ingredientList), new ItemStack[] {next.getResult()});
+                this.registerRecipeInCard(ItemStackUtil.getNoNullItemArray(ingredientList), new ItemStack[] {next.getResult()});
             }
         }
     }

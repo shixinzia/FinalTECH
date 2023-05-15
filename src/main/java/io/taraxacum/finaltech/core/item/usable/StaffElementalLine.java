@@ -42,7 +42,6 @@ public class StaffElementalLine extends UsableSlimefunItem implements RecipeItem
 
     @Override
     protected void function(@Nonnull PlayerRightClickEvent playerRightClickEvent) {
-        playerRightClickEvent.cancel();
         Player player = playerRightClickEvent.getPlayer();
         Location playerLocation = player.getEyeLocation();
         Location targetLocation = player.getLocation();

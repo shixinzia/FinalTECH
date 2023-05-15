@@ -4,9 +4,9 @@ import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItem;
 import io.taraxacum.finaltech.core.interfaces.DigitalItem;
 import io.taraxacum.finaltech.core.item.machine.clicker.AbstractClickerMachine;
 import io.taraxacum.finaltech.util.LocationUtil;
+import io.taraxacum.libs.plugin.util.InventoryUtil;
 import io.taraxacum.libs.plugin.util.ItemStackUtil;
 import io.taraxacum.libs.plugin.util.ParticleUtil;
-import me.mrCookieSlime.Slimefun.api.inventory.BlockMenu;
 import org.bukkit.Location;
 import org.bukkit.Particle;
 import org.bukkit.block.Block;
@@ -24,7 +24,6 @@ import java.util.List;
 
 /**
  * @author Final_ROOT
- * @since 2.2
  */
 public class ConsumableTransporterMenu extends AbstractClickerMenu {
     private static final int[] BORDER = new int[] {0, 1, 2, 3, 5, 6, 7, 8};
@@ -71,13 +70,13 @@ public class ConsumableTransporterMenu extends AbstractClickerMenu {
     }
 
     @Override
-    protected void doFunction(@Nonnull BlockMenu blockMenu, @Nonnull Block block, @Nonnull Player player) {
-        ItemStack item = blockMenu.getItemInSlot(INPUT_SLOT[0]);
+    protected void doFunction(@Nonnull Inventory inventory, @Nonnull Block block, @Nonnull Player player) {
+        ItemStack item = inventory.getItem(INPUT_SLOT[0]);
         if(!ItemStackUtil.isItemNull(item)) {
             int amount = item.getAmount();
             SlimefunItem slimefunItem = SlimefunItem.getByItem(item);
             if (slimefunItem instanceof DigitalItem digitalItem) {
-                blockMenu.close();
+                InventoryUtil.closeInv(inventory);
 
                 int digit = digitalItem.getDigit();
 

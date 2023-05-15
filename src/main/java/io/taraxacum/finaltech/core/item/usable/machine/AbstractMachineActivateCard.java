@@ -10,12 +10,13 @@ import io.github.thebusybiscuit.slimefun4.core.networks.energy.EnergyNetComponen
 import io.github.thebusybiscuit.slimefun4.libraries.dough.protection.Interaction;
 import io.taraxacum.finaltech.FinalTech;
 import io.taraxacum.finaltech.core.item.usable.UsableSlimefunItem;
+import io.taraxacum.libs.plugin.dto.LocationData;
 import io.taraxacum.libs.plugin.util.ParticleUtil;
-import io.taraxacum.finaltech.util.ConstantTableUtil;
 import io.taraxacum.finaltech.util.PermissionUtil;
-import me.mrCookieSlime.CSCoreLibPlugin.Configuration.Config;
+import io.taraxacum.libs.slimefun.dto.SlimefunLocationData;
+import io.taraxacum.libs.slimefun.service.SlimefunLocationDataService;
+import io.taraxacum.libs.slimefun.util.LocationDataUtil;
 import me.mrCookieSlime.Slimefun.Objects.handlers.BlockTicker;
-import me.mrCookieSlime.Slimefun.api.BlockStorage;
 import me.mrCookieSlime.Slimefun.api.inventory.BlockMenu;
 import org.bukkit.Location;
 import org.bukkit.Particle;
@@ -28,7 +29,6 @@ import javax.annotation.Nonnull;
 
 /**
  * @author Final_ROOT
- * @since 2.0
  */
 public abstract class AbstractMachineActivateCard extends UsableSlimefunItem {
     public AbstractMachineActivateCard(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
@@ -50,12 +50,13 @@ public abstract class AbstractMachineActivateCard extends UsableSlimefunItem {
         }
 
         Location location = block.getLocation();
-        if(!BlockStorage.hasBlockInfo(location)) {
+        LocationData locationData = FinalTech.getLocationDataService().getLocationData(location);
+        if(!(locationData instanceof SlimefunLocationData slimefunLocationData)) {
             return;
         }
 
-        Config config = BlockStorage.getLocationInfo(location);
-        if (!config.contains(ConstantTableUtil.CONFIG_ID)) {
+        String id = LocationDataUtil.getId(FinalTech.getLocationDataService(), locationData);
+        if (id == null) {
             return;
         }
 
@@ -64,9 +65,9 @@ public abstract class AbstractMachineActivateCard extends UsableSlimefunItem {
             return;
         }
 
-        if (BlockStorage.hasInventory(block)) {
-            BlockMenu blockMenu = BlockStorage.getInventory(location);
-            if (!blockMenu.canOpen(block, player)) {
+        if(FinalTech.getLocationDataService() instanceof SlimefunLocationDataService slimefunLocationDataService) {
+            BlockMenu blockMenu = slimefunLocationDataService.getBlockMenu(slimefunLocationData);
+            if (blockMenu != null && !blockMenu.canOpen(block, player)) {
                 player.sendRawMessage(FinalTech.getLanguageString("message", "no-permission", "location"));
                 return;
             }
@@ -77,8 +78,8 @@ public abstract class AbstractMachineActivateCard extends UsableSlimefunItem {
             return;
         }
 
-        SlimefunItem slimefunItem = SlimefunItem.getById(config.getString(ConstantTableUtil.CONFIG_ID));
-        if (slimefunItem == null) {
+        SlimefunItem slimefunItem = SlimefunItem.getById(id);
+        if (slimefunItem == null || FinalTech.isAntiAccelerateSlimefunItem(slimefunItem.getId())) {
             return;
         }
         BlockTicker blockTicker = slimefunItem.getBlockTicker();
@@ -117,11 +118,16 @@ public abstract class AbstractMachineActivateCard extends UsableSlimefunItem {
                 if (!AbstractMachineActivateCard.this.consume()) {
                     chargeEnergy *= playerRightClickEvent.getItem().getAmount();
                 }
-                for (int i = 0; i < time; i++) {
-                    int storedEnergy = energyNetComponent.getCharge(location);
-                    storedEnergy = chargeEnergy / 2 + storedEnergy / 2 > Integer.MAX_VALUE / 2 ? Integer.MAX_VALUE : chargeEnergy + storedEnergy;
-                    energyNetComponent.setCharge(location, Math.min(capacity, storedEnergy));
-                    blockTicker.tick(block, slimefunItem, config);
+                try {
+                    for (int i = 0; i < time; i++) {
+                        int storedEnergy = energyNetComponent.getCharge(location);
+                        storedEnergy = chargeEnergy / 2 + storedEnergy / 2 > Integer.MAX_VALUE / 2 ? Integer.MAX_VALUE : chargeEnergy + storedEnergy;
+                        energyNetComponent.setCharge(location, Math.min(capacity, storedEnergy));
+                        FinalTech.getBlockTickerService().run(blockTicker, locationData);
+                    }
+                } catch (Throwable e) {
+                    e.printStackTrace();
+                    throw new RuntimeException(e);
                 }
             };
 
@@ -142,8 +148,12 @@ public abstract class AbstractMachineActivateCard extends UsableSlimefunItem {
             javaPlugin.getServer().getScheduler().runTaskAsynchronously(javaPlugin, () -> ParticleUtil.drawCubeByBlock(javaPlugin, Particle.WAX_OFF, 0, block));
 
             Runnable runnable = () -> {
-                for (int i = 0; i < time; i++) {
-                    blockTicker.tick(block, slimefunItem, config);
+                try {
+                    for (int i = 0; i < time; i++) {
+                        FinalTech.getBlockTickerService().run(blockTicker, locationData);
+                    }
+                } catch (Throwable e) {
+                    e.printStackTrace();
                 }
             };
 
@@ -186,8 +196,6 @@ public abstract class AbstractMachineActivateCard extends UsableSlimefunItem {
     /**
      * If it can work.
      * May cost player's health or exp;
-     * @param player
-     * @return
      */
     protected abstract boolean conditionMatch(@Nonnull Player player);
 }

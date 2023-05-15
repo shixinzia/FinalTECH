@@ -58,10 +58,10 @@ public class OrderedDustFactoryStoneMenu extends AbstractMachineMenu {
 
     @Override
     public int[] getSlotsAccessedByItemTransport(ItemTransportFlow itemTransportFlow) {
-        int[] ints = JavaUtil.generateRandomInts(this.getOutputSlot().length / 2);
-        int[] result = new int[ints.length];
-        for(int i = 0; i < ints.length; i++) {
-            result[i] = this.getOutputSlot()[ints[i]];
+        int[] intArray = JavaUtil.generateRandomInts(this.getOutputSlot().length / 2);
+        int[] result = new int[intArray.length];
+        for(int i = 0; i < intArray.length; i++) {
+            result[i] = this.getOutputSlot()[intArray[i]];
         }
         return result;
     }

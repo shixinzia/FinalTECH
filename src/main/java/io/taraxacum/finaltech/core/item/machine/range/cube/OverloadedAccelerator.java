@@ -15,19 +15,18 @@ import io.taraxacum.finaltech.util.*;
 import io.taraxacum.finaltech.core.interfaces.RecipeItem;
 import io.taraxacum.finaltech.core.menu.AbstractMachineMenu;
 import io.taraxacum.finaltech.core.menu.unit.StatusMenu;
-import io.taraxacum.libs.slimefun.dto.LocationInfo;
 import io.taraxacum.finaltech.util.BlockTickerUtil;
+import io.taraxacum.libs.plugin.dto.LocationData;
 import io.taraxacum.libs.slimefun.util.EnergyUtil;
 import io.taraxacum.finaltech.util.MachineUtil;
 import io.taraxacum.libs.plugin.util.ParticleUtil;
-import me.mrCookieSlime.CSCoreLibPlugin.Configuration.Config;
+import io.taraxacum.libs.slimefun.util.LocationDataUtil;
 import me.mrCookieSlime.Slimefun.Objects.handlers.BlockTicker;
-import me.mrCookieSlime.Slimefun.api.BlockStorage;
-import me.mrCookieSlime.Slimefun.api.inventory.BlockMenu;
 import org.bukkit.Location;
 import org.bukkit.Particle;
 import org.bukkit.World;
 import org.bukkit.block.Block;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -67,18 +66,24 @@ public class OverloadedAccelerator extends AbstractCubeMachine implements Recipe
     }
 
     @Override
-    protected void tick(@Nonnull Block block, @Nonnull SlimefunItem slimefunItem, @Nonnull Config config) {
-        Location blockLocation = block.getLocation();
-        BlockMenu blockMenu = BlockStorage.getInventory(block);
-        boolean hasViewer = blockMenu.hasViewer();
+    protected void tick(@Nonnull Block block, @Nonnull SlimefunItem slimefunItem, @Nonnull LocationData locationData) {
+        Inventory inventory = FinalTech.getLocationDataService().getInventory(locationData);
+        if(inventory == null) {
+            return;
+        }
+        boolean hasViewer = !inventory.getViewers().isEmpty();
+        Location blockLocation = locationData.getLocation();
 
-        Map<Integer, List<LocationInfo>> locationInfoMap = new HashMap<>(this.range * 3);
+        Map<Integer, List<LocationData>> locationDataMap = new HashMap<>(this.range * 3);
         int count = this.cubeFunction(block, this.range, location -> {
-            LocationInfo locationInfo = LocationInfo.get(location);
-            if(locationInfo != null && this.calAllowed(locationInfo.getSlimefunItem())) {
+            if(!location.getChunk().isLoaded()) {
+                return -1;
+            }
+            LocationData tempLocationData = FinalTech.getLocationDataService().getLocationData(location);
+            if(tempLocationData != null && this.calAllowed(LocationDataUtil.getSlimefunItem(FinalTech.getLocationDataService(), tempLocationData))) {
                 int distance = Math.abs(location.getBlockX() - blockLocation.getBlockX()) + Math.abs(location.getBlockY() - blockLocation.getBlockY()) + Math.abs(location.getBlockZ() - blockLocation.getBlockZ());
-                locationInfoMap.computeIfAbsent(distance, d -> new ArrayList<>(d * d * 4 + 2)).add(locationInfo);
-                locationInfo.cloneLocation();
+                locationDataMap.computeIfAbsent(distance, d -> new ArrayList<>(d * d * 4 + 2)).add(tempLocationData);
+                tempLocationData.cloneLocation();
                 return 1;
             }
             return 0;
@@ -86,7 +91,7 @@ public class OverloadedAccelerator extends AbstractCubeMachine implements Recipe
 
         if (count == 0) {
             if(hasViewer) {
-                this.updateMenu(blockMenu, StatusMenu.STATUS_SLOT, this,
+                this.updateInv(inventory, StatusMenu.STATUS_SLOT, this,
                         "0", "0");
             }
             return;
@@ -95,57 +100,64 @@ public class OverloadedAccelerator extends AbstractCubeMachine implements Recipe
         int accelerateCount = 0;
         JavaPlugin javaPlugin = this.getAddon().getJavaPlugin();
 
-        List<LocationInfo> locationInfoList;
+        List<LocationData> locationDataList;
         for (int distance = 1; distance <= this.range * 3; distance++) {
-            locationInfoList = locationInfoMap.get(distance);
-            if (locationInfoList != null) {
-                Collections.shuffle(locationInfoList);
-                for (LocationInfo locationInfo : locationInfoList) {
-                    BlockTicker blockTicker = locationInfo.getSlimefunItem().getBlockTicker();
-                    EnergyNetComponent energyNetComponent = (EnergyNetComponent) locationInfo.getSlimefunItem();
-                    if(blockTicker != null && locationInfo.getId().equals(locationInfo.getConfig().getString(ConstantTableUtil.CONFIG_ID))) {
-                        int capacity = energyNetComponent.getCapacity();
-                        int energy = Integer.parseInt(EnergyUtil.getCharge(locationInfo.getConfig()));
-                        if (energy > capacity) {
-                            accelerateCount++;
+            locationDataList = locationDataMap.get(distance);
+            if (locationDataList != null) {
+                Collections.shuffle(locationDataList);
+                for (LocationData tempLocationData : locationDataList) {
+                    SlimefunItem sfItem = LocationDataUtil.getSlimefunItem(FinalTech.getLocationDataService(), tempLocationData);
+                    if(sfItem instanceof EnergyNetComponent energyNetComponent) {
+                        BlockTicker blockTicker = sfItem.getBlockTicker();
+                        if(blockTicker != null) {
+                            int capacity = energyNetComponent.getCapacity();
+                            int energy = Integer.parseInt(EnergyUtil.getCharge(FinalTech.getLocationDataService(), tempLocationData));
+                            if (energy > capacity) {
+                                accelerateCount++;
 
-                            Runnable runnable = () -> {
-                                Block machineBlock = locationInfo.getLocation().getBlock();
-                                int machineEnergy = energy;
-                                int currentMachineEnergy;
-                                int times = 1;
-                                while (machineEnergy >= capacity) {
-                                    blockTicker.tick(machineBlock, locationInfo.getSlimefunItem(), locationInfo.getConfig());
-                                    currentMachineEnergy = Integer.parseInt(EnergyUtil.getCharge(locationInfo.getConfig()));
-                                    if(machineEnergy == currentMachineEnergy) {
-                                        break;
+                                Runnable runnable = () -> {
+                                    Block machineBlock = tempLocationData.getLocation().getBlock();
+                                    int machineEnergy = energy;
+                                    int currentMachineEnergy;
+                                    int times = 1;
+                                    try {
+                                        while (machineEnergy >= capacity) {
+                                            FinalTech.getBlockTickerService().run(blockTicker, tempLocationData);
+                                            currentMachineEnergy = Integer.parseInt(EnergyUtil.getCharge(FinalTech.getLocationDataService(), tempLocationData));
+                                            if(machineEnergy == currentMachineEnergy) {
+                                                break;
+                                            }
+                                            machineEnergy = currentMachineEnergy - capacity * times++;
+                                            if(machineEnergy >= 0) {
+                                                EnergyUtil.setCharge(FinalTech.getLocationDataService(), tempLocationData, String.valueOf(machineEnergy));
+                                            } else {
+                                                break;
+                                            }
+                                        }
+                                    } catch (Throwable e) {
+                                        e.printStackTrace();
+                                        throw new RuntimeException(e);
                                     }
-                                    machineEnergy = currentMachineEnergy - capacity * times++;
-                                    if(machineEnergy >= 0) {
-                                        EnergyUtil.setCharge(locationInfo.getConfig(), machineEnergy);
-                                    } else {
-                                        break;
-                                    }
+                                };
+
+                                if (blockTicker.isSynchronized()) {
+                                    javaPlugin.getServer().getScheduler().runTask(javaPlugin, runnable);
+                                } else {
+                                    BlockTickerUtil.runTask(FinalTech.getLocationRunnableFactory(), FinalTech.isAsyncSlimefunItem(sfItem.getId()), runnable, tempLocationData.getLocation());
                                 }
-                            };
 
-                            if (blockTicker.isSynchronized()) {
-                                javaPlugin.getServer().getScheduler().runTask(javaPlugin, runnable);
-                            } else {
-                                BlockTickerUtil.runTask(FinalTech.getLocationRunnableFactory(), FinalTech.isAsyncSlimefunItem(locationInfo.getId()), runnable, locationInfo.getLocation());
+                                if (hasViewer) {
+                                    javaPlugin.getServer().getScheduler().runTaskAsynchronously(javaPlugin, () -> ParticleUtil.drawCubeByBlock(javaPlugin, Particle.WAX_OFF, 0, tempLocationData.getLocation().getBlock()));
+                                }
                             }
-
-                            if (hasViewer) {
-                                javaPlugin.getServer().getScheduler().runTaskAsynchronously(javaPlugin, () -> ParticleUtil.drawCubeByBlock(javaPlugin, Particle.WAX_OFF, 0, locationInfo.getLocation().getBlock()));
-                            }
-                        }
+                    }
                     }
                 }
             }
         }
 
         if(hasViewer) {
-            this.updateMenu(blockMenu, StatusMenu.STATUS_SLOT, this,
+            this.updateInv(inventory, StatusMenu.STATUS_SLOT, this,
                     String.valueOf(count),
                     String.valueOf(accelerateCount));
         }

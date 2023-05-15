@@ -12,17 +12,17 @@ import io.taraxacum.finaltech.core.interfaces.RecipeItem;
 import io.taraxacum.libs.plugin.dto.AdvancedMachineRecipe;
 import io.taraxacum.libs.plugin.dto.ItemAmountWrapper;
 import io.taraxacum.libs.plugin.dto.ItemWrapper;
+import io.taraxacum.libs.plugin.dto.LocationData;
+import io.taraxacum.libs.plugin.util.InventoryUtil;
 import io.taraxacum.libs.slimefun.dto.MachineRecipeFactory;
 import io.taraxacum.finaltech.core.item.machine.AbstractMachine;
 import io.taraxacum.finaltech.core.menu.AbstractMachineMenu;
 import io.taraxacum.finaltech.core.menu.machine.ExtractionMachineMenu;
 import io.taraxacum.libs.plugin.util.ItemStackUtil;
 import io.taraxacum.finaltech.util.MachineUtil;
-import me.mrCookieSlime.CSCoreLibPlugin.Configuration.Config;
 import me.mrCookieSlime.Slimefun.Objects.SlimefunItem.abstractItems.MachineRecipe;
-import me.mrCookieSlime.Slimefun.api.BlockStorage;
-import me.mrCookieSlime.Slimefun.api.inventory.BlockMenu;
 import org.bukkit.block.Block;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
 import javax.annotation.Nonnull;
@@ -30,7 +30,6 @@ import java.util.List;
 
 /**
  * @author Final_ROOT
- * @since 2.0
  */
 public abstract class AbstractExtractionMachine extends AbstractMachine implements RecipeItem {
     public AbstractExtractionMachine(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
@@ -46,7 +45,7 @@ public abstract class AbstractExtractionMachine extends AbstractMachine implemen
     @Nonnull
     @Override
     protected BlockBreakHandler onBlockBreak() {
-        return MachineUtil.simpleBlockBreakerHandler(this);
+        return MachineUtil.simpleBlockBreakerHandler(FinalTech.getLocationDataService(), this);
     }
 
     @Nonnull
@@ -56,14 +55,18 @@ public abstract class AbstractExtractionMachine extends AbstractMachine implemen
     }
 
     @Override
-    protected void tick(@Nonnull Block block, @Nonnull SlimefunItem slimefunItem, @Nonnull Config config) {
-        BlockMenu blockMenu = BlockStorage.getInventory(block);
-        int itemSlot = this.getInputSlot()[FinalTech.getRandom().nextInt(this.getInputSlot().length)];
-        ItemStack item = blockMenu.getItemInSlot(itemSlot);
-        if (ItemStackUtil.isItemNull(item)) {
+    protected void tick(@Nonnull Block block, @Nonnull SlimefunItem slimefunItem, @Nonnull LocationData locationData) {
+        Inventory inventory = FinalTech.getLocationDataService().getInventory(locationData);
+        if(inventory == null) {
             return;
         }
-        ItemWrapper itemWrapper = new ItemWrapper(item);
+        int itemSlot = this.getInputSlot()[FinalTech.getRandom().nextInt(this.getInputSlot().length)];
+        ItemStack itemStack = inventory.getItem(itemSlot);
+        if (ItemStackUtil.isItemNull(itemStack)) {
+            return;
+        }
+
+        ItemWrapper itemWrapper = new ItemWrapper(itemStack);
         int matchAmount = 0;
         ItemAmountWrapper[] outputItems = null;
         List<AdvancedMachineRecipe> advancedRecipeList = MachineRecipeFactory.getInstance().getAdvancedRecipe(this.getId());
@@ -76,12 +79,7 @@ public abstract class AbstractExtractionMachine extends AbstractMachine implemen
         }
 
         if (outputItems != null) {
-            matchAmount = Math.min(matchAmount, MachineUtil.calMaxMatch(blockMenu.toInventory(), this.getOutputSlot(), outputItems));
-            if (matchAmount > 0) {
-                for (ItemStack outputItem : ItemStackUtil.calEnlargeItemArray(outputItems, matchAmount)) {
-                    blockMenu.pushItem(outputItem, this.getOutputSlot());
-                }
-            }
+            InventoryUtil.tryPushItem(inventory, this.getOutputSlot(), matchAmount, outputItems);
         }
     }
 

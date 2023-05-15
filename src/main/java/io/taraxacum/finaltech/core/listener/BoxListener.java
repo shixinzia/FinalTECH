@@ -3,7 +3,6 @@ package io.taraxacum.finaltech.core.listener;
 import io.github.thebusybiscuit.slimefun4.api.player.PlayerProfile;
 import io.github.thebusybiscuit.slimefun4.api.researches.Research;
 import io.taraxacum.finaltech.FinalTech;
-import io.taraxacum.finaltech.core.item.unusable.Box;
 import io.taraxacum.finaltech.setup.FinalTechItems;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -27,7 +26,6 @@ public class BoxListener implements Listener {
     public BoxListener(double height) {
         this.height = height;
     }
-
 
     @EventHandler
     public void onPlayerDeath(PlayerDeathEvent playerDeathEvent) {

@@ -2,10 +2,12 @@ package io.taraxacum.finaltech.core.menu.limit;
 
 import io.github.thebusybiscuit.slimefun4.utils.ChestMenuUtils;
 import io.github.thebusybiscuit.slimefun4.utils.itemstack.ItemStackWrapper;
+import io.taraxacum.finaltech.FinalTech;
 import io.taraxacum.finaltech.core.item.machine.AbstractMachine;
 import io.taraxacum.finaltech.core.menu.AbstractMachineMenu;
 import io.taraxacum.libs.plugin.util.ItemStackUtil;
-import io.taraxacum.finaltech.core.helper.MachineMaxStack;
+import io.taraxacum.finaltech.core.option.MachineMaxStack;
+import io.taraxacum.libs.slimefun.util.ChestMenuUtil;
 import me.mrCookieSlime.Slimefun.api.inventory.BlockMenu;
 import me.mrCookieSlime.Slimefun.api.inventory.DirtyChestMenu;
 import me.mrCookieSlime.Slimefun.api.item_transport.ItemTransportFlow;
@@ -20,7 +22,6 @@ import java.util.ArrayList;
 
 /**
  * @author Final_ROOT
- * @since 2.0
  */
 public abstract class AbstractLimitMachineMenu extends AbstractMachineMenu {
     private final int MACHINE_MAX_STACK_SLOT = 13;
@@ -39,10 +40,9 @@ public abstract class AbstractLimitMachineMenu extends AbstractMachineMenu {
     @Override
     public void newInstance(@Nonnull BlockMenu blockMenu, @Nonnull Block block) {
         super.newInstance(blockMenu, block);
-        Inventory inventory = blockMenu.toInventory();
         Location location = block.getLocation();
 
-        blockMenu.addMenuClickHandler(this.getMachineMaxStackSlot(), MachineMaxStack.HELPER.getHandler(inventory, location, this.getSlimefunItem(), this.getMachineMaxStackSlot()));
+        blockMenu.addMenuClickHandler(this.getMachineMaxStackSlot(), ChestMenuUtil.warpByConsumer(MachineMaxStack.OPTION.getHandler(FinalTech.getLocationDataService(), location, this.getSlimefunItem())));
     }
 
     @Override
@@ -91,10 +91,10 @@ public abstract class AbstractLimitMachineMenu extends AbstractMachineMenu {
 
     @Override
     protected void updateInventory(@Nonnull Inventory inventory, @Nonnull Location location) {
-        MachineMaxStack.HELPER.checkOrSetBlockStorage(location);
-        String quantity = MachineMaxStack.HELPER.getOrDefaultValue(location);
+        MachineMaxStack.OPTION.checkOrSetDefault(FinalTech.getLocationDataService(), location);
+        String quantity = MachineMaxStack.OPTION.getOrDefaultValue(FinalTech.getLocationDataService(), location);
         ItemStack item = inventory.getItem(this.getMachineMaxStackSlot());
-        MachineMaxStack.HELPER.setIcon(item, quantity);
+        MachineMaxStack.OPTION.updateLore(item, quantity);
     }
 
     public int getMachineMaxStackSlot() {

@@ -7,21 +7,20 @@ import io.github.thebusybiscuit.slimefun4.api.recipes.RecipeType;
 import io.github.thebusybiscuit.slimefun4.core.handlers.BlockBreakHandler;
 import io.github.thebusybiscuit.slimefun4.core.handlers.BlockPlaceHandler;
 import io.github.thebusybiscuit.slimefun4.libraries.dough.items.CustomItemStack;
+import io.taraxacum.finaltech.FinalTech;
 import io.taraxacum.libs.plugin.dto.AdvancedMachineRecipe;
 import io.taraxacum.libs.plugin.dto.ItemWrapper;
+import io.taraxacum.libs.plugin.dto.LocationData;
 import io.taraxacum.libs.slimefun.dto.RandomMachineRecipe;
 import io.taraxacum.finaltech.core.interfaces.RecipeItem;
 import io.taraxacum.libs.slimefun.dto.MachineRecipeFactory;
-import io.taraxacum.finaltech.core.helper.Icon;
+import io.taraxacum.finaltech.core.option.Icon;
 import io.taraxacum.finaltech.core.item.machine.AbstractMachine;
 import io.taraxacum.finaltech.core.menu.AbstractMachineMenu;
 import io.taraxacum.finaltech.core.menu.machine.ConversionMachineMenu;
 import io.taraxacum.libs.plugin.util.ItemStackUtil;
 import io.taraxacum.finaltech.util.MachineUtil;
-import me.mrCookieSlime.CSCoreLibPlugin.Configuration.Config;
 import me.mrCookieSlime.Slimefun.Objects.SlimefunItem.abstractItems.MachineRecipe;
-import me.mrCookieSlime.Slimefun.api.BlockStorage;
-import me.mrCookieSlime.Slimefun.api.inventory.BlockMenu;
 import org.bukkit.block.Block;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
@@ -31,7 +30,6 @@ import java.util.List;
 
 /**
  * @author Final_ROOT
- * @since 2.0
  */
 public abstract class AbstractConversionMachine extends AbstractMachine implements RecipeItem {
     public AbstractConversionMachine(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
@@ -47,7 +45,7 @@ public abstract class AbstractConversionMachine extends AbstractMachine implemen
     @Nonnull
     @Override
     protected BlockBreakHandler onBlockBreak() {
-        return MachineUtil.simpleBlockBreakerHandler(this);
+        return MachineUtil.simpleBlockBreakerHandler(FinalTech.getLocationDataService(), this);
     }
 
     @Nonnull
@@ -57,21 +55,29 @@ public abstract class AbstractConversionMachine extends AbstractMachine implemen
     }
 
     @Override
-    protected void tick(@Nonnull Block block, @Nonnull SlimefunItem slimefunItem, @Nonnull Config config) {
-        BlockMenu blockMenu = BlockStorage.getInventory(block);
-        Inventory inventory = blockMenu.toInventory();
+    protected void tick(@Nonnull Block block, @Nonnull SlimefunItem slimefunItem, @Nonnull LocationData locationData) {
+        Inventory inventory = FinalTech.getLocationDataService().getInventory(locationData);
+        if(inventory == null) {
+            return;
+        }
+        boolean hasViewer = !inventory.getViewers().isEmpty();
+
         List<AdvancedMachineRecipe> advancedMachineRecipeList = MachineRecipeFactory.getInstance().getAdvancedRecipe(this.getId());
-        int quantityModule = Icon.updateQuantityModule(blockMenu, ConversionMachineMenu.MODULE_SLOT, ConversionMachineMenu.STATUS_SLOT);
+        int quantityModule = Icon.updateQuantityModule(inventory, hasViewer, ConversionMachineMenu.MODULE_SLOT, ConversionMachineMenu.STATUS_SLOT);
         ItemWrapper itemWrapper = new ItemWrapper();
         for (int slot : this.getInputSlot()) {
-            ItemStack item = inventory.getItem(slot);
-            if (ItemStackUtil.isItemNull(item) || item.getAmount() > quantityModule) {
+            ItemStack itemStack = inventory.getItem(slot);
+            if (ItemStackUtil.isItemNull(itemStack) || itemStack.getAmount() > quantityModule) {
                 continue;
             }
-            itemWrapper.newWrap(item);
+            itemWrapper.newWrap(itemStack);
             for (AdvancedMachineRecipe advancedMachineRecipe : advancedMachineRecipeList) {
                 if (ItemStackUtil.isItemSimilar(itemWrapper, advancedMachineRecipe.getInput()[0])) {
-                    inventory.setItem(slot, ItemStackUtil.cloneItem(advancedMachineRecipe.getOutput()[0].getItemStack(), item.getAmount()));
+                    int amount = itemStack.getAmount();
+                    inventory.setItem(slot, advancedMachineRecipe.getOutput()[0].getItemStack());
+                    ItemStack outputItemStack = inventory.getItem(slot);
+                    outputItemStack.setAmount(amount);
+                    break;
                 }
             }
         }

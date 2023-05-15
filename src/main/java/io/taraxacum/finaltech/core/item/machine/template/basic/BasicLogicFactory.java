@@ -8,7 +8,6 @@ import org.bukkit.inventory.ItemStack;
 
 /**
  * @author Final_ROOT
- * @since 2.0
  */
 public class BasicLogicFactory extends AbstractBasicMachine {
     public BasicLogicFactory(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
@@ -17,6 +16,6 @@ public class BasicLogicFactory extends AbstractBasicMachine {
 
     @Override
     public void registerDefaultRecipes() {
-        this.registerRecipe(new ItemStack[]{FinalTechItemStacks.LOGIC_FALSE, FinalTechItemStacks.LOGIC_TRUE, FinalTechItemStacks.BUG}, new ItemStack[]{FinalTechItemStacks.ENTROPY});
+        this.registerRecipe(new ItemStack[] {FinalTechItemStacks.LOGIC_FALSE, FinalTechItemStacks.LOGIC_TRUE, FinalTechItemStacks.BUG}, new ItemStack[]{FinalTechItemStacks.ENTROPY});
     }
 }

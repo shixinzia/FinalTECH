@@ -3,7 +3,7 @@ package io.taraxacum.finaltech.core.menu.unit;
 import io.github.thebusybiscuit.slimefun4.utils.ChestMenuUtils;
 import io.taraxacum.finaltech.core.item.machine.AbstractMachine;
 import io.taraxacum.finaltech.core.menu.AbstractMachineMenu;
-import io.taraxacum.finaltech.core.helper.Icon;
+import io.taraxacum.finaltech.core.option.Icon;
 import org.bukkit.Location;
 import org.bukkit.inventory.Inventory;
 

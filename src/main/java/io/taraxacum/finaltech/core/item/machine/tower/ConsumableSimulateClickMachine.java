@@ -15,16 +15,16 @@ import io.taraxacum.finaltech.util.ConfigUtil;
 import io.taraxacum.finaltech.util.LocationUtil;
 import io.taraxacum.finaltech.util.MachineUtil;
 import io.taraxacum.finaltech.util.RecipeUtil;
+import io.taraxacum.libs.plugin.dto.LocationData;
 import io.taraxacum.libs.plugin.util.ItemStackUtil;
-import io.taraxacum.libs.slimefun.dto.LocationInfo;
-import io.taraxacum.libs.slimefun.util.BlockStorageConfigUtil;
-import me.mrCookieSlime.CSCoreLibPlugin.Configuration.Config;
-import me.mrCookieSlime.Slimefun.api.BlockStorage;
+import io.taraxacum.libs.slimefun.service.SlimefunLocationDataService;
+import io.taraxacum.libs.slimefun.util.LocationDataUtil;
 import me.mrCookieSlime.Slimefun.api.inventory.BlockMenu;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -35,7 +35,6 @@ import java.util.Set;
 
 /**
  * @author Final_ROOT
- * @since 2.2
  */
 public class ConsumableSimulateClickMachine extends AbstractTower implements RecipeItem {
     private final Set<String> notAllowedId = new HashSet<>(ConfigUtil.getItemStringList(this, "not-allowed-id"));
@@ -54,7 +53,7 @@ public class ConsumableSimulateClickMachine extends AbstractTower implements Rec
     @Nonnull
     @Override
     protected BlockBreakHandler onBlockBreak() {
-        return MachineUtil.simpleBlockBreakerHandler(this);
+        return MachineUtil.simpleBlockBreakerHandler(FinalTech.getLocationDataService(), this);
     }
 
     @Nullable
@@ -64,11 +63,15 @@ public class ConsumableSimulateClickMachine extends AbstractTower implements Rec
     }
 
     @Override
-    protected void tick(@Nonnull Block block, @Nonnull SlimefunItem slimefunItem, @Nonnull Config config) {
-        Location location = block.getLocation();
-        BlockMenu blockMenu = BlockStorage.getInventory(block);
+    protected void tick(@Nonnull Block block, @Nonnull SlimefunItem slimefunItem, @Nonnull LocationData locationData) {
+        Inventory inventory = FinalTech.getLocationDataService().getInventory(locationData);
+        if(inventory == null) {
+            return;
+        }
 
-        ItemStack itemStack = blockMenu.getItemInSlot(this.getInputSlot()[0]);
+        Location location = locationData.getLocation();
+
+        ItemStack itemStack = inventory.getItem(this.getInputSlot()[0]);
 
         if (ItemStackUtil.isItemNull(itemStack)) {
             return;
@@ -82,21 +85,23 @@ public class ConsumableSimulateClickMachine extends AbstractTower implements Rec
 
         if(digit > 0) {
             location.setY(location.getY() - 1);
+            LocationData tempLocationData = FinalTech.getLocationDataService().getLocationData(location);
 
-            LocationInfo locationInfo = LocationInfo.get(location);
-            if(locationInfo != null && !this.notAllowedId.contains(locationInfo.getId())) {
+            if(tempLocationData != null && !this.notAllowedId.contains(LocationDataUtil.getId(FinalTech.getLocationDataService(), tempLocationData))) {
                 itemStack.setAmount(itemStack.getAmount() - 1);
 
                 double range = digit * this.rangeRate;
 
                 JavaPlugin javaPlugin = this.getAddon().getJavaPlugin();
                 javaPlugin.getServer().getScheduler().runTask(javaPlugin, () -> {
-                    BlockMenu targetBlockMenu = BlockStorage.getInventory(location);
-                    if(targetBlockMenu != null) {
-                        Block targetBlock = location.getBlock();
-                        for (Entity entity : location.getWorld().getNearbyEntities(LocationUtil.getCenterLocation(targetBlock), range, range, range, entity -> entity instanceof Player)) {
-                            if(targetBlockMenu.canOpen(targetBlock, (Player) entity)) {
-                                targetBlockMenu.open((Player) entity);
+                    if(FinalTech.getLocationDataService() instanceof SlimefunLocationDataService slimefunLocationDataService) {
+                        BlockMenu blockMenu = slimefunLocationDataService.getBlockMenu(location);
+                        if(blockMenu != null) {
+                            Block targetBlock = location.getBlock();
+                            for (Entity entity : location.getWorld().getNearbyEntities(LocationUtil.getCenterLocation(targetBlock), range, range, range, entity -> entity instanceof Player)) {
+                                if(blockMenu.canOpen(targetBlock, (Player) entity)) {
+                                    blockMenu.open((Player) entity);
+                                }
                             }
                         }
                     }

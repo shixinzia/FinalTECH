@@ -24,7 +24,6 @@ public class PotionEffectDilator extends UsableSlimefunItem implements RecipeIte
 
     @Override
     protected void function(@Nonnull PlayerRightClickEvent playerRightClickEvent) {
-        playerRightClickEvent.cancel();
         Player player = playerRightClickEvent.getPlayer();
         for (PotionEffect potionEffect : player.getActivePotionEffects()) {
             if (potionEffect.getAmplifier() >= 1) {

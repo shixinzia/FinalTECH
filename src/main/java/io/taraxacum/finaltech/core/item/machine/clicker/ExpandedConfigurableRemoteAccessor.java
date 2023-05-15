@@ -9,7 +9,6 @@ import io.taraxacum.finaltech.core.menu.AbstractMachineMenu;
 import io.taraxacum.finaltech.core.menu.clicker.ExpandedConfigurableRemoteAccessorMenu;
 import io.taraxacum.finaltech.util.ConfigUtil;
 import io.taraxacum.finaltech.util.RecipeUtil;
-import io.taraxacum.libs.slimefun.util.SfItemUtil;
 import org.bukkit.inventory.ItemStack;
 
 import javax.annotation.Nonnull;

@@ -8,29 +8,25 @@ import io.github.thebusybiscuit.slimefun4.core.handlers.BlockBreakHandler;
 import io.github.thebusybiscuit.slimefun4.core.handlers.BlockPlaceHandler;
 import io.taraxacum.finaltech.FinalTech;
 import io.taraxacum.finaltech.core.interfaces.LocationMachine;
-import io.taraxacum.finaltech.util.RecipeUtil;
+import io.taraxacum.finaltech.util.*;
+import io.taraxacum.libs.plugin.dto.LocationData;
+import io.taraxacum.libs.plugin.util.InventoryUtil;
 import io.taraxacum.libs.slimefun.dto.AdvancedCraft;
 import io.taraxacum.libs.plugin.dto.AdvancedMachineRecipe;
 import io.taraxacum.libs.plugin.dto.LocationRecipeRegistry;
-import io.taraxacum.finaltech.core.helper.Icon;
+import io.taraxacum.finaltech.core.option.Icon;
 import io.taraxacum.finaltech.core.menu.AbstractMachineMenu;
 import io.taraxacum.finaltech.core.interfaces.RecipeItem;
 import io.taraxacum.finaltech.core.menu.cargo.AdvancedAutoCraftMenu;
 import io.taraxacum.libs.plugin.dto.InvWithSlots;
 import io.taraxacum.libs.plugin.util.ItemStackUtil;
-import io.taraxacum.finaltech.util.MachineUtil;
-import io.taraxacum.finaltech.util.CargoUtil;
-import io.taraxacum.finaltech.core.helper.SlotSearchOrder;
-import io.taraxacum.finaltech.core.helper.SlotSearchSize;
-import io.taraxacum.finaltech.util.ConstantTableUtil;
-import io.taraxacum.libs.slimefun.util.BlockStorageConfigUtil;
-import me.mrCookieSlime.CSCoreLibPlugin.Configuration.Config;
-import me.mrCookieSlime.Slimefun.api.BlockStorage;
-import me.mrCookieSlime.Slimefun.api.inventory.BlockMenu;
+import io.taraxacum.finaltech.core.option.SlotSearchOrder;
+import io.taraxacum.finaltech.core.option.SlotSearchSize;
+import io.taraxacum.libs.slimefun.util.LocationDataUtil;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
-import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
 import javax.annotation.Nonnull;
@@ -38,7 +34,6 @@ import java.util.List;
 
 /**
  * @author Final_ROOT
- * @since 2.0
  */
 public class AdvancedAutoCraft extends AbstractFaceMachine implements RecipeItem, LocationMachine {
     public AdvancedAutoCraft(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
@@ -48,19 +43,13 @@ public class AdvancedAutoCraft extends AbstractFaceMachine implements RecipeItem
     @Nonnull
     @Override
     protected BlockPlaceHandler onBlockPlace() {
-        return new BlockPlaceHandler(false) {
-            @Override
-            public void onPlayerPlace(@Nonnull BlockPlaceEvent blockPlaceEvent) {
-                SlotSearchSize.INPUT_HELPER.checkOrSetBlockStorage(blockPlaceEvent.getBlock().getLocation());
-                SlotSearchSize.OUTPUT_HELPER.checkOrSetBlockStorage(blockPlaceEvent.getBlock().getLocation());
-            }
-        };
+        return MachineUtil.BLOCK_PLACE_HANDLER_PLACER_DENY;
     }
 
     @Nonnull
     @Override
     protected BlockBreakHandler onBlockBreak() {
-        return MachineUtil.simpleBlockBreakerHandler(this, AdvancedAutoCraftMenu.PARSE_ITEM_SLOT, AdvancedAutoCraftMenu.MODULE_SLOT);
+        return MachineUtil.simpleBlockBreakerHandler(FinalTech.getLocationDataService(), this, AdvancedAutoCraftMenu.PARSE_ITEM_SLOT, AdvancedAutoCraftMenu.MODULE_SLOT);
     }
 
     @Nonnull
@@ -70,9 +59,13 @@ public class AdvancedAutoCraft extends AbstractFaceMachine implements RecipeItem
     }
 
     @Override
-    protected void tick(@Nonnull Block block, @Nonnull SlimefunItem slimefunItem, @Nonnull Config config) {
+    protected void tick(@Nonnull Block block, @Nonnull SlimefunItem slimefunItem, @Nonnull LocationData locationData) {
         Location location = block.getLocation();
-        BlockMenu blockMenu = BlockStorage.getInventory(location);
+        Inventory inventory = FinalTech.getLocationDataService().getInventory(locationData);
+        if(inventory == null) {
+            return;
+        }
+        boolean hasViewer = !inventory.getViewers().isEmpty();
 
         AdvancedMachineRecipe machineRecipe = LocationRecipeRegistry.getInstance().getRecipe(location);
         if (machineRecipe == null) {
@@ -80,42 +73,45 @@ public class AdvancedAutoCraft extends AbstractFaceMachine implements RecipeItem
         }
 
         Block containerBlock = block.getRelative(BlockFace.DOWN);
-        Config containerConfig = BlockStorage.getLocationInfo(containerBlock.getLocation());
-        if (BlockStorageConfigUtil.isEmptyConfig(containerConfig) || !BlockStorage.hasInventory(containerBlock)) {
+        LocationData containerLocationData = FinalTech.getLocationDataService().getLocationData(containerBlock.getLocation());
+        if (containerLocationData == null) {
+            return;
+        }
+        Inventory containerInventory = FinalTech.getLocationDataService().getInventory(containerLocationData);
+        if(containerInventory == null) {
             return;
         }
 
-        String containerId =containerConfig.getString(ConstantTableUtil.CONFIG_ID);
+        String containerId = LocationDataUtil.getId(FinalTech.getLocationDataService(), containerLocationData);
         if (containerId != null) {
             Runnable runnable = () -> {
-                InvWithSlots inputMap = CargoUtil.getInvWithSlots(containerBlock, SlotSearchSize.INPUT_HELPER.getOrDefaultValue(config), SlotSearchOrder.VALUE_ASCENT);
-                InvWithSlots outputMap = CargoUtil.getInvWithSlots(containerBlock, SlotSearchSize.OUTPUT_HELPER.getOrDefaultValue(config), SlotSearchOrder.VALUE_ASCENT);
+                LocationData tempLocationData = FinalTech.getLocationDataService().getLocationData(containerLocationData.getLocation());
+                if(tempLocationData == null || !containerId.equals(LocationDataUtil.getId(FinalTech.getLocationDataService(), tempLocationData))) {
+                    return;
+                }
+
+                InvWithSlots inputMap = CargoUtil.getInvWithSlots(FinalTech.getLocationDataService(), containerBlock, SlotSearchSize.INPUT_OPTION.getOrDefaultValue(FinalTech.getLocationDataService(), containerLocationData), SlotSearchOrder.VALUE_ASCENT);
+                InvWithSlots outputMap = CargoUtil.getInvWithSlots(FinalTech.getLocationDataService(), containerBlock, SlotSearchSize.OUTPUT_OPTION.getOrDefaultValue(FinalTech.getLocationDataService(), containerLocationData), SlotSearchOrder.VALUE_ASCENT);
                 if (inputMap == null || outputMap == null || inputMap.getSlots().length == 0 || outputMap.getSlots().length == 0) {
                     return;
                 }
 
-                BlockMenu containerMenu = BlockStorage.getInventory(containerBlock);
                 int[] inputSlots = inputMap.getSlots();
                 int[] outputSlots = outputMap.getSlots();
 
-                int quantity = Icon.updateQuantityModule(blockMenu, AdvancedAutoCraftMenu.MODULE_SLOT, AdvancedAutoCraftMenu.STATUS_SLOT);
+                int quantity = Icon.updateQuantityModule(inventory, hasViewer, AdvancedAutoCraftMenu.MODULE_SLOT, AdvancedAutoCraftMenu.STATUS_SLOT);
 
-                AdvancedCraft craft = AdvancedCraft.craftAsc(containerMenu.toInventory(), inputSlots, List.of(machineRecipe), quantity, 0);
+                AdvancedCraft craft = AdvancedCraft.craftAsc(containerInventory, inputSlots, List.of(machineRecipe), quantity, 0);
                 if (craft != null) {
-                    craft.setMatchCount(Math.min(craft.getMatchCount(), MachineUtil.calMaxMatch(containerMenu.toInventory(), outputSlots, craft.getOutputItemList())));
-                    if (craft.getMatchCount() > 0) {
-                        craft.consumeItem(containerMenu.toInventory());
-                        for (ItemStack itemStack : craft.calMachineRecipe(0).getOutput()) {
-                            containerMenu.pushItem(itemStack, outputSlots);
-                        }
+                    int matchCount = InventoryUtil.tryPushItem(containerInventory, outputSlots, craft.getMatchCount(), craft.getOutputItemList());
+                    if (matchCount > 0) {
+                        craft.setMatchCount(matchCount);
+                        craft.consumeItem(containerInventory);
                     }
                 }
             };
-            if (FinalTech.isAsyncSlimefunItem(containerId)) {
-                FinalTech.getLocationRunnableFactory().waitThenRun(runnable, block.getLocation(), containerBlock.getLocation());
-            } else {
-                runnable.run();
-            }
+
+            BlockTickerUtil.runTask(FinalTech.getLocationRunnableFactory(), FinalTech.isAsyncSlimefunItem(containerId), runnable, containerBlock.getLocation());
         }
     }
 

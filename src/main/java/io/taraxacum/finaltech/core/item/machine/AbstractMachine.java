@@ -1,5 +1,6 @@
 package io.taraxacum.finaltech.core.item.machine;
 
+import com.xzavier0722.mc.plugin.slimefun4.storage.controller.SlimefunBlockData;
 import io.github.thebusybiscuit.slimefun4.api.items.ItemGroup;
 import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItem;
 import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItemStack;
@@ -9,6 +10,9 @@ import io.github.thebusybiscuit.slimefun4.core.handlers.BlockPlaceHandler;
 import io.taraxacum.finaltech.FinalTech;
 import io.taraxacum.finaltech.core.item.AbstractMySlimefunItem;
 import io.taraxacum.finaltech.core.menu.AbstractMachineMenu;
+import io.taraxacum.libs.slimefun.dto.LocationBlockStorageData;
+import io.taraxacum.libs.plugin.dto.LocationData;
+import io.taraxacum.libs.slimefun.dto.LocationDatabaseData;
 import me.mrCookieSlime.CSCoreLibPlugin.Configuration.Config;
 import me.mrCookieSlime.Slimefun.Objects.handlers.BlockTicker;
 import org.bukkit.block.Block;
@@ -19,7 +23,6 @@ import javax.annotation.Nullable;
 
 /**
  * @author Final_ROOT
- * @since 1.0
  */
 // TODO: Optimization
 public abstract class AbstractMachine extends AbstractMySlimefunItem {
@@ -32,6 +35,7 @@ public abstract class AbstractMachine extends AbstractMySlimefunItem {
     @Override
     public void preRegister() {
         super.preRegister();
+
         this.addItemHandler(this.onBlockBreak());
         this.addItemHandler(this.onBlockPlace());
         this.menu = this.setMachineMenu();
@@ -50,9 +54,16 @@ public abstract class AbstractMachine extends AbstractMySlimefunItem {
                     return false;
                 }
 
-                @Override
-                public void tick(Block b, SlimefunItem item, Config data) {
-                    AbstractMachine.this.tick(b, item, data);
+                public void tick(Block block, SlimefunItem slimefunItem, Config data) {
+                    this.tick(block, slimefunItem, new LocationBlockStorageData(block.getLocation(), data, slimefunItem.getId(), slimefunItem));
+                }
+
+                public void tick(Block block, SlimefunItem slimefunItem, SlimefunBlockData slimefunBlockData) {
+                    this.tick(block, slimefunItem, new LocationDatabaseData(block.getLocation(), slimefunBlockData));
+                }
+
+                public void tick(Block block, SlimefunItem slimefunItem, LocationData locationData) {
+                    AbstractMachine.this.tick(block, slimefunItem, locationData);
                 }
 
                 @Override
@@ -68,9 +79,16 @@ public abstract class AbstractMachine extends AbstractMySlimefunItem {
                     return AbstractMachine.this.isSynchronized();
                 }
 
-                @Override
-                public void tick(Block b, SlimefunItem item, Config data) {
-                    AbstractMachine.this.tick(b, item, data);
+                public void tick(Block block, SlimefunItem slimefunItem, Config data) {
+                    this.tick(block, slimefunItem, new LocationBlockStorageData(block.getLocation(), data, slimefunItem.getId(), slimefunItem));
+                }
+
+                public void tick(Block block, SlimefunItem slimefunItem, SlimefunBlockData slimefunBlockData) {
+                    this.tick(block, slimefunItem, new LocationDatabaseData(block.getLocation(), slimefunBlockData));
+                }
+
+                public void tick(Block block, SlimefunItem slimefunItem, LocationData locationData) {
+                    AbstractMachine.this.tick(block, slimefunItem, locationData);
                 }
 
                 @Override
@@ -108,7 +126,9 @@ public abstract class AbstractMachine extends AbstractMySlimefunItem {
     @Nullable
     protected abstract AbstractMachineMenu setMachineMenu();
 
-    protected abstract void tick(@Nonnull Block block, @Nonnull SlimefunItem slimefunItem, @Nonnull Config config);
+    protected void tick(@Nonnull Block block, @Nonnull SlimefunItem slimefunItem, @Nonnull LocationData locationData) {
+
+    }
 
     protected abstract boolean isSynchronized();
 }

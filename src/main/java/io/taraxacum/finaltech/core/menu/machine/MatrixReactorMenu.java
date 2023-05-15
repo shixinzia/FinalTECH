@@ -6,7 +6,7 @@ import io.taraxacum.finaltech.core.menu.AbstractMachineMenu;
 import io.taraxacum.finaltech.setup.FinalTechItemStacks;
 import io.taraxacum.finaltech.setup.FinalTechItems;
 import io.taraxacum.libs.plugin.util.ItemStackUtil;
-import io.taraxacum.finaltech.core.helper.Icon;
+import io.taraxacum.finaltech.core.option.Icon;
 import me.mrCookieSlime.Slimefun.api.inventory.BlockMenu;
 import me.mrCookieSlime.Slimefun.api.inventory.DirtyChestMenu;
 import me.mrCookieSlime.Slimefun.api.item_transport.ItemTransportFlow;
@@ -86,6 +86,7 @@ public class MatrixReactorMenu extends AbstractMachineMenu {
 
         this.addItem(ORDERED_DUST_SLOT, ORDERED_DUST_ICON);
         this.addMenuClickHandler(ORDERED_DUST_SLOT, ChestMenuUtils.getEmptyClickHandler());
+
         this.addItem(UNORDERED_DUST_SLOT, UNORDERED_DUST_ICON);
         this.addMenuClickHandler(UNORDERED_DUST_SLOT, ChestMenuUtils.getEmptyClickHandler());
 

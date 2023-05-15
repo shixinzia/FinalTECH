@@ -9,25 +9,20 @@ import io.github.thebusybiscuit.slimefun4.core.handlers.BlockPlaceHandler;
 import io.github.thebusybiscuit.slimefun4.implementation.Slimefun;
 import io.taraxacum.common.util.JavaUtil;
 import io.taraxacum.finaltech.FinalTech;
+import io.taraxacum.finaltech.util.*;
+import io.taraxacum.libs.plugin.dto.LocationData;
 import io.taraxacum.libs.plugin.util.ItemStackUtil;
 import io.taraxacum.libs.plugin.util.ParticleUtil;
 import io.taraxacum.finaltech.core.interfaces.RecipeItem;
 import io.taraxacum.finaltech.core.dto.CargoDTO;
 import io.taraxacum.finaltech.core.menu.AbstractMachineMenu;
 import io.taraxacum.finaltech.core.menu.cargo.LocationTransferMenu;
-import io.taraxacum.finaltech.core.helper.*;
-import io.taraxacum.finaltech.util.PermissionUtil;
-import io.taraxacum.finaltech.util.RecipeUtil;
-import io.taraxacum.finaltech.util.CargoUtil;
-import io.taraxacum.finaltech.util.LocationUtil;
-import io.taraxacum.finaltech.util.MachineUtil;
-import me.mrCookieSlime.CSCoreLibPlugin.Configuration.Config;
-import me.mrCookieSlime.Slimefun.api.BlockStorage;
-import me.mrCookieSlime.Slimefun.api.inventory.BlockMenu;
+import io.taraxacum.finaltech.core.option.*;
 import org.bukkit.Location;
 import org.bukkit.Particle;
 import org.bukkit.block.Block;
 import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -55,9 +50,10 @@ public class LocationTransfer extends AbstractCargo implements RecipeItem {
             public void onPlayerPlace(@Nonnull BlockPlaceEvent blockPlaceEvent) {
                 Block block = blockPlaceEvent.getBlock();
                 Location location = block.getLocation();
-
-                CargoMode.HELPER.checkOrSetBlockStorage(location);
-                CargoOrder.HELPER.checkOrSetBlockStorage(location);
+                LocationData locationData = FinalTech.getLocationDataService().getLocationData(location);
+                if(locationData != null) {
+                    FinalTech.getLocationDataService().setLocationData(locationData, ConstantTableUtil.CONFIG_UUID, blockPlaceEvent.getPlayer().getUniqueId().toString());
+                }
             }
         };
     }
@@ -65,7 +61,7 @@ public class LocationTransfer extends AbstractCargo implements RecipeItem {
     @Nonnull
     @Override
     protected BlockBreakHandler onBlockBreak() {
-        return MachineUtil.simpleBlockBreakerHandler(this, LocationTransferMenu.LOCATION_RECORDER_SLOT);
+        return MachineUtil.simpleBlockBreakerHandler(FinalTech.getLocationDataService(), this, LocationTransferMenu.LOCATION_RECORDER_SLOT);
     }
 
     @Nonnull
@@ -75,13 +71,16 @@ public class LocationTransfer extends AbstractCargo implements RecipeItem {
     }
 
     @Override
-    protected void tick(@Nonnull Block block, @Nonnull SlimefunItem slimefunItem, @Nonnull Config config) {
-        BlockMenu blockMenu = BlockStorage.getInventory(block);
+    protected void tick(@Nonnull Block block, @Nonnull SlimefunItem slimefunItem, @Nonnull LocationData locationData) {
+        Inventory inventory = FinalTech.getLocationDataService().getInventory(locationData);
+        if(inventory == null) {
+            return;
+        }
         Location location = block.getLocation();
         JavaPlugin javaPlugin = this.getAddon().getJavaPlugin();
-        boolean drawParticle = blockMenu.hasViewer() || RouteShow.VALUE_TRUE.equals(RouteShow.HELPER.getOrDefaultValue(config));
+        boolean drawParticle = !inventory.getViewers().isEmpty() || RouteShow.VALUE_TRUE.equals(RouteShow.OPTION.getOrDefaultValue(FinalTech.getLocationDataService(), locationData));
 
-        ItemStack locationRecorder = blockMenu.getItemInSlot(LocationTransferMenu.LOCATION_RECORDER_SLOT);
+        ItemStack locationRecorder = inventory.getItem(LocationTransferMenu.LOCATION_RECORDER_SLOT);
         if (ItemStackUtil.isItemNull(locationRecorder)) {
             return;
         }
@@ -91,18 +90,18 @@ public class LocationTransfer extends AbstractCargo implements RecipeItem {
         }
         Block targetBlock = targetLocation.getBlock();
 
-        if (!PermissionUtil.checkOfflinePermission(locationRecorder, targetLocation)) {
+        if (!targetLocation.getChunk().isLoaded() || !PermissionUtil.checkOfflinePermission(locationRecorder, targetLocation)) {
             return;
         }
 
-        String slotSearchSize = SlotSearchSize.HELPER.defaultValue();
-        String slotSearchOrder = SlotSearchOrder.HELPER.defaultValue();
+        String slotSearchSize = SlotSearchSize.OPTION.defaultValue();
+        String slotSearchOrder = SlotSearchOrder.OPTION.defaultValue();
 
         CargoDTO cargoDTO = new CargoDTO();
         cargoDTO.setJavaPlugin(this.addon.getJavaPlugin());
 
         boolean positive;
-        if (CargoOrder.VALUE_POSITIVE.equals(CargoOrder.HELPER.getOrDefaultValue(config))) {
+        if (CargoOrder.VALUE_POSITIVE.equals(CargoOrder.OPTION.getOrDefaultValue(FinalTech.getLocationDataService(), locationData))) {
             cargoDTO.setInputBlock(block);
             cargoDTO.setInputSize(SlotSearchSize.VALUE_INPUTS_ONLY);
             cargoDTO.setInputOrder(SlotSearchOrder.VALUE_ASCENT);
@@ -133,13 +132,13 @@ public class LocationTransfer extends AbstractCargo implements RecipeItem {
             }
         }
 
-        cargoDTO.setCargoNumber(Integer.parseInt(CargoNumber.HELPER.defaultValue()));
-        cargoDTO.setCargoLimit(CargoLimit.HELPER.defaultValue());
+        cargoDTO.setCargoNumber(Integer.parseInt(CargoNumber.OPTION.defaultValue()));
+        cargoDTO.setCargoLimit(CargoLimit.OPTION.defaultValue());
         cargoDTO.setCargoFilter(CargoFilter.VALUE_BLACK);
-        cargoDTO.setFilterInv(blockMenu.toInventory());
+        cargoDTO.setFilterInv(inventory);
         cargoDTO.setFilterSlots(new int[0]);
 
-        CargoUtil.doCargo(cargoDTO, CargoMode.HELPER.getOrDefaultValue(config));
+        CargoUtil.doCargo(cargoDTO, CargoMode.OPTION.getOrDefaultValue(FinalTech.getLocationDataService(), locationData));
     }
 
     @Override

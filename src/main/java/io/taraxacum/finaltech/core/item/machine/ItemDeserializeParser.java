@@ -10,17 +10,16 @@ import io.github.thebusybiscuit.slimefun4.implementation.Slimefun;
 import io.taraxacum.common.util.StringNumberUtil;
 import io.taraxacum.finaltech.FinalTech;
 import io.taraxacum.finaltech.core.interfaces.RecipeItem;
-import io.taraxacum.finaltech.core.item.unusable.CopyCard;
 import io.taraxacum.finaltech.core.menu.AbstractMachineMenu;
 import io.taraxacum.finaltech.core.menu.machine.ItemDeserializeParserMenu;
 import io.taraxacum.finaltech.setup.FinalTechItems;
+import io.taraxacum.libs.plugin.dto.ItemAmountWrapper;
+import io.taraxacum.libs.plugin.dto.LocationData;
+import io.taraxacum.libs.plugin.util.InventoryUtil;
 import io.taraxacum.libs.plugin.util.ItemStackUtil;
 import io.taraxacum.finaltech.util.MachineUtil;
-import io.taraxacum.libs.plugin.util.StringItemUtil;
+import io.taraxacum.finaltech.util.StringItemUtil;
 import io.taraxacum.finaltech.util.RecipeUtil;
-import me.mrCookieSlime.CSCoreLibPlugin.Configuration.Config;
-import me.mrCookieSlime.Slimefun.api.BlockStorage;
-import me.mrCookieSlime.Slimefun.api.inventory.BlockMenu;
 import org.bukkit.block.Block;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
@@ -49,7 +48,7 @@ public class ItemDeserializeParser extends AbstractMachine implements RecipeItem
     @Nonnull
     @Override
     protected BlockBreakHandler onBlockBreak() {
-        return MachineUtil.simpleBlockBreakerHandler(this);
+        return MachineUtil.simpleBlockBreakerHandler(FinalTech.getLocationDataService(), this);
     }
 
     @Nonnull
@@ -59,14 +58,13 @@ public class ItemDeserializeParser extends AbstractMachine implements RecipeItem
     }
 
     @Override
-    protected void tick(@Nonnull Block block, @Nonnull SlimefunItem slimefunItem, @Nonnull Config config) {
-        BlockMenu blockMenu = BlockStorage.getInventory(block);
-        Inventory inventory = blockMenu.toInventory();
-        if(MachineUtil.slotCount(inventory, this.getOutputSlot()) == this.getOutputSlot().length) {
+    protected void tick(@Nonnull Block block, @Nonnull SlimefunItem slimefunItem, @Nonnull LocationData locationData) {
+        Inventory inventory = FinalTech.getLocationDataService().getInventory(locationData);
+        if(inventory == null || InventoryUtil.slotCount(inventory, this.getOutputSlot()) == this.getOutputSlot().length) {
             return;
         }
         for (int slot : this.getInputSlot()) {
-            ItemStack itemStack = blockMenu.getItemInSlot(slot);
+            ItemStack itemStack = inventory.getItem(slot);
             if (FinalTechItems.COPY_CARD.verifyItem(itemStack)) {
                 ItemMeta itemMeta = itemStack.getItemMeta();
                 ItemStack stringItem = StringItemUtil.parseItemInCard(itemMeta);
@@ -81,19 +79,8 @@ public class ItemDeserializeParser extends AbstractMachine implements RecipeItem
                     if(amount <= 0) {
                         return;
                     }
-                    int count;
-                    for(int outputSlot : this.getOutputSlot()) {
-                        if(!ItemStackUtil.isItemNull(blockMenu.getItemInSlot(outputSlot))) {
-                            continue;
-                        }
-                        count = Math.min(amount, stringItem.getMaxStackSize());
-                        stringItem.setAmount(count);
-                        blockMenu.pushItem(stringItem, outputSlot);
-                        amount -= count;
-                        if(amount == 0) {
-                            break;
-                        }
-                    }
+
+                    InventoryUtil.tryPushItem(inventory, this.getOutputSlot(), amount, new ItemAmountWrapper(stringItem, 1));
                 }
             }
         }

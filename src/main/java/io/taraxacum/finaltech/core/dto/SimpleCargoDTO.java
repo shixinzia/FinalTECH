@@ -1,10 +1,11 @@
 package io.taraxacum.finaltech.core.dto;
 
 import io.taraxacum.libs.plugin.dto.InvWithSlots;
-import io.taraxacum.finaltech.core.helper.CargoFilter;
-import io.taraxacum.finaltech.core.helper.CargoLimit;
-import io.taraxacum.finaltech.core.helper.SlotSearchOrder;
-import io.taraxacum.finaltech.core.helper.SlotSearchSize;
+import io.taraxacum.finaltech.core.option.CargoFilter;
+import io.taraxacum.finaltech.core.option.CargoLimit;
+import io.taraxacum.finaltech.core.option.SlotSearchOrder;
+import io.taraxacum.finaltech.core.option.SlotSearchSize;
+import io.taraxacum.libs.plugin.interfaces.LocationDataService;
 import me.mrCookieSlime.Slimefun.api.inventory.BlockMenu;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
@@ -16,6 +17,8 @@ import org.bukkit.inventory.Inventory;
  * @since 2.0
  */
 public class SimpleCargoDTO {
+
+    private LocationDataService locationDataService;
 
     private InvWithSlots inputMap;
 
@@ -58,7 +61,8 @@ public class SimpleCargoDTO {
 
     }
 
-    public SimpleCargoDTO(InvWithSlots inputMap, Block inputBlock, String inputSize, String inputOrder, InvWithSlots outputMap, Block outputBlock, String outputSize, String outputOrder, int cargoNumber, String cargoLimit, String cargoFilter, Inventory filterInv, int[] filterSlots) {
+    public SimpleCargoDTO(LocationDataService locationDataService, InvWithSlots inputMap, Block inputBlock, String inputSize, String inputOrder, InvWithSlots outputMap, Block outputBlock, String outputSize, String outputOrder, int cargoNumber, String cargoLimit, String cargoFilter, Inventory filterInv, int[] filterSlots) {
+        this.locationDataService = locationDataService;
         this.inputMap = inputMap;
         this.inputBlock = inputBlock;
         this.inputSize = inputSize;
@@ -75,6 +79,7 @@ public class SimpleCargoDTO {
     }
 
     public SimpleCargoDTO(CargoDTO cargoDTO, InvWithSlots inputMap, InvWithSlots outputMap) {
+        this.locationDataService = cargoDTO.getLocationDataService();
         this.inputBlock = cargoDTO.getInputBlock();
         this.inputSize = cargoDTO.getInputSize();
         this.inputOrder = cargoDTO.getInputOrder();
@@ -89,6 +94,14 @@ public class SimpleCargoDTO {
 
         this.inputMap = inputMap;
         this.outputMap = outputMap;
+    }
+
+    public LocationDataService getLocationDataService() {
+        return locationDataService;
+    }
+
+    public void setLocationDataService(LocationDataService locationDataService) {
+        this.locationDataService = locationDataService;
     }
 
     public InvWithSlots getInputMap() {

@@ -38,8 +38,6 @@ public class MagicHypnotic extends UsableSlimefunItem implements RecipeItem {
      */
     @Override
     protected void function(@Nonnull PlayerRightClickEvent playerRightClickEvent) {
-        playerRightClickEvent.cancel();
-
         Player player = playerRightClickEvent.getPlayer();
         PotionEffectType[] allPotionEffectType = PotionEffectType.values();
         PotionEffectType randomPotionEffectType = allPotionEffectType[FinalTech.getRandom().nextInt(allPotionEffectType.length)];

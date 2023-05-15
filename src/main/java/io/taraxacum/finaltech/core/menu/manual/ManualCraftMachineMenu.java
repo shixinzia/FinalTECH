@@ -3,7 +3,10 @@ package io.taraxacum.finaltech.core.menu.manual;
 import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItem;
 import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItemStack;
 import io.github.thebusybiscuit.slimefun4.libraries.dough.items.CustomItemStack;
+import io.taraxacum.common.util.JavaUtil;
 import io.taraxacum.finaltech.FinalTech;
+import io.taraxacum.libs.plugin.dto.LocationData;
+import io.taraxacum.libs.plugin.util.InventoryUtil;
 import io.taraxacum.libs.plugin.util.ItemStackUtil;
 import io.taraxacum.libs.plugin.util.ParticleUtil;
 import io.taraxacum.libs.slimefun.dto.AdvancedCraft;
@@ -11,12 +14,8 @@ import io.taraxacum.libs.plugin.dto.AdvancedMachineRecipe;
 import io.taraxacum.libs.plugin.dto.ItemAmountWrapper;
 import io.taraxacum.libs.slimefun.dto.MachineRecipeFactory;
 import io.taraxacum.finaltech.core.item.machine.manual.craft.AbstractManualCraftMachine;
-import io.taraxacum.finaltech.util.ConstantTableUtil;
-import io.taraxacum.finaltech.util.MachineUtil;
 import io.taraxacum.libs.slimefun.util.EnergyUtil;
-import me.mrCookieSlime.CSCoreLibPlugin.Configuration.Config;
 import me.mrCookieSlime.CSCoreLibPlugin.general.Inventory.ClickAction;
-import me.mrCookieSlime.Slimefun.api.BlockStorage;
 import me.mrCookieSlime.Slimefun.api.inventory.BlockMenu;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -28,8 +27,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import javax.annotation.Nonnull;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 /**
  * @author Final_ROOT
@@ -97,7 +95,7 @@ public class ManualCraftMachineMenu extends AbstractManualMachineMenu {
         super.newInstance(blockMenu, block);
         Inventory inventory = blockMenu.toInventory();
         Location location = blockMenu.getLocation();
-        Config config = BlockStorage.getLocationInfo(location);
+        LocationData locationData = FinalTech.getLocationDataService().getLocationData(location);
         JavaPlugin javaPlugin = this.getSlimefunItem().getAddon().getJavaPlugin();
 
         blockMenu.addMenuOpeningHandler((player -> {
@@ -114,7 +112,7 @@ public class ManualCraftMachineMenu extends AbstractManualMachineMenu {
             }
 
             javaPlugin.getServer().getScheduler().runTaskAsynchronously(javaPlugin, () -> ParticleUtil.drawCubeByBlock(javaPlugin, Particle.WAX_OFF, 0, block));
-            MachineUtil.stockSlots(inventory, INPUT_SLOT);
+            InventoryUtil.stockSlots(inventory, this.getInputSlot());
             return false;
         })));
 
@@ -127,7 +125,7 @@ public class ManualCraftMachineMenu extends AbstractManualMachineMenu {
 
                 javaPlugin.getServer().getScheduler().runTaskAsynchronously(javaPlugin, () -> ParticleUtil.drawCubeByBlock(javaPlugin, Particle.WAX_OFF, 0, block));
 
-                config.setValue(KEY, config.getString(KEY_L[finalSlotP]));
+                FinalTech.getLocationDataService().setLocationData(locationData, KEY, FinalTech.getLocationDataService().getLocationData(locationData, KEY_L[finalSlotP]));
                 ManualCraftMachineMenu.this.updateInventory(inventory, location);
                 return false;
             });
@@ -142,7 +140,7 @@ public class ManualCraftMachineMenu extends AbstractManualMachineMenu {
 
                 javaPlugin.getServer().getScheduler().runTaskAsynchronously(javaPlugin, () -> ParticleUtil.drawCubeByBlock(javaPlugin, Particle.WAX_OFF, 0, block));
 
-                config.setValue(KEY, config.getString(KEY_R[finalSlotP]));
+                FinalTech.getLocationDataService().setLocationData(locationData, KEY, FinalTech.getLocationDataService().getLocationData(locationData, KEY_R[finalSlotP]));
                 ManualCraftMachineMenu.this.updateInventory(inventory, location);
                 return false;
             });
@@ -155,11 +153,11 @@ public class ManualCraftMachineMenu extends AbstractManualMachineMenu {
 
             javaPlugin.getServer().getScheduler().runTaskAsynchronously(javaPlugin, () -> ParticleUtil.drawCubeByBlock(javaPlugin, Particle.WAX_OFF, 0, block));
 
-            int offset = Integer.parseInt(BlockStorage.getLocationInfo(block.getLocation(), KEY));
+            int offset = Integer.parseInt(FinalTech.getLocationDataService().getLocationData(locationData, KEY));
             int length = MachineRecipeFactory.getInstance().getRecipe(this.getID()).size();
             offset = (offset + length - 1) % length;
-            config.setValue(KEY, String.valueOf(offset));
-            config.setValue(KEY_ORDER, ORDER_VALUE_DESC);
+            FinalTech.getLocationDataService().setLocationData(locationData, KEY, String.valueOf(offset));
+            FinalTech.getLocationDataService().setLocationData(locationData, KEY_ORDER, ORDER_VALUE_DESC);
             ManualCraftMachineMenu.this.updateInventory(inventory, location);
             return false;
         }));
@@ -171,11 +169,11 @@ public class ManualCraftMachineMenu extends AbstractManualMachineMenu {
 
             javaPlugin.getServer().getScheduler().runTaskAsynchronously(javaPlugin, () -> ParticleUtil.drawCubeByBlock(javaPlugin, Particle.WAX_OFF, 0, block));
 
-            int offset = Integer.parseInt(BlockStorage.getLocationInfo(block.getLocation(), KEY));
+            int offset = Integer.parseInt(FinalTech.getLocationDataService().getLocationData(locationData, KEY));
             int length = MachineRecipeFactory.getInstance().getAdvancedRecipe(this.getID()).size();
             offset = (offset + 1) % length;
-            config.setValue(KEY, String.valueOf(offset));
-            config.setValue(KEY_ORDER, ORDER_VALUE_ASC);
+            FinalTech.getLocationDataService().setLocationData(locationData, KEY, String.valueOf(offset));
+            FinalTech.getLocationDataService().setLocationData(locationData, KEY_ORDER, ORDER_VALUE_ASC);
             ManualCraftMachineMenu.this.updateInventory(inventory, location);
             return false;
         }));
@@ -186,8 +184,8 @@ public class ManualCraftMachineMenu extends AbstractManualMachineMenu {
 
             javaPlugin.getServer().getScheduler().runTaskAsynchronously(javaPlugin, () -> ParticleUtil.drawCubeByBlock(javaPlugin, Particle.WAX_OFF, 0, block));
 
-            int offset = config.contains(KEY) ? Integer.parseInt(config.getString(KEY)) : 0;
-            ManualCraftMachineMenu.this.doFunction(blockMenu, clickAction, player, offset);
+            int offset = FinalTech.getLocationDataService().getLocationData(locationData, KEY) != null ? Integer.parseInt(FinalTech.getLocationDataService().getLocationData(locationData, KEY)) : 0;
+            ManualCraftMachineMenu.this.doFunction(inventory, location, clickAction, player, offset);
             return false;
         }));
         for (int slotP = 0; slotP < CRAFT_L_SLOT.length; slotP++) {
@@ -198,8 +196,8 @@ public class ManualCraftMachineMenu extends AbstractManualMachineMenu {
                 }
 
                 javaPlugin.getServer().getScheduler().runTaskAsynchronously(javaPlugin, () -> ParticleUtil.drawCubeByBlock(javaPlugin, Particle.WAX_OFF, 0, block));
-                int offset = config.contains(KEY_L[fSlotP]) ? Integer.parseInt(config.getString(KEY_L[fSlotP])) : 0;
-                ManualCraftMachineMenu.this.doFunction(blockMenu, clickAction, player, offset);
+                int offset = FinalTech.getLocationDataService().getLocationData(locationData, KEY_L[fSlotP]) != null ? Integer.parseInt(FinalTech.getLocationDataService().getLocationData(locationData, KEY_L[fSlotP])) : 0;
+                ManualCraftMachineMenu.this.doFunction(inventory, location, clickAction, player, offset);
                 return false;
             });
         }
@@ -212,8 +210,8 @@ public class ManualCraftMachineMenu extends AbstractManualMachineMenu {
 
                 javaPlugin.getServer().getScheduler().runTaskAsynchronously(javaPlugin, () -> ParticleUtil.drawCubeByBlock(javaPlugin, Particle.WAX_OFF, 0, block));
 
-                int offset = config.contains(KEY_R[fSlotP]) ? Integer.parseInt(config.getString(KEY_R[fSlotP])) : 0;
-                ManualCraftMachineMenu.this.doFunction(blockMenu, clickAction, player, offset);
+                int offset = FinalTech.getLocationDataService().getLocationData(locationData, KEY_R[fSlotP]) != null ? Integer.parseInt(FinalTech.getLocationDataService().getLocationData(locationData, KEY_R[fSlotP])) : 0;
+                ManualCraftMachineMenu.this.doFunction(inventory, location, clickAction, player, offset);
                 return false;
             });
         }
@@ -246,54 +244,61 @@ public class ManualCraftMachineMenu extends AbstractManualMachineMenu {
 
     @Override
     public void updateInventory(@Nonnull Inventory inventory, @Nonnull Location location) {
-        Config config = BlockStorage.getLocationInfo(location);
-        String charge = EnergyUtil.getCharge(location);
+        LocationData locationData = FinalTech.getLocationDataService().getLocationData(location);
+        String charge = EnergyUtil.getCharge(FinalTech.getLocationDataService(), locationData);
         int intCharge = Integer.parseInt(charge);
 
         AdvancedCraft craft = null;
-        String order = config.getString(KEY_ORDER);
-        int offset = config.contains(KEY) ? Integer.parseInt(config.getString(KEY)) : 0;
+        String order = FinalTech.getLocationDataService().getLocationData(locationData, KEY_ORDER);
+        List<AdvancedMachineRecipe> advancedMachineRecipeList = MachineRecipeFactory.getInstance().getAdvancedRecipe(this.getID());
+        int offset = Integer.parseInt(JavaUtil.getFirstNotNull(FinalTech.getLocationDataService().getLocationData(locationData, KEY), "0"));
         if (order == null || ORDER_VALUE_ASC.equals(order)) {
-            craft = AdvancedCraft.craftAsc(inventory, INPUT_SLOT, MachineRecipeFactory.getInstance().getAdvancedRecipe(this.getID()), 3456, offset);
+            craft = AdvancedCraft.craftAsc(inventory, this.getInputSlot(), advancedMachineRecipeList, this.getInputSlot().length, offset);
         } else if (ORDER_VALUE_DESC.equals(order)) {
-            craft = AdvancedCraft.craftDesc(inventory, INPUT_SLOT, MachineRecipeFactory.getInstance().getAdvancedRecipe(this.getID()), 3456, offset);
+            craft = AdvancedCraft.craftDesc(inventory, this.getInputSlot(), advancedMachineRecipeList, this.getInputSlot().length, offset);
         }
 
         if (craft != null) {
-            config.setValue(KEY, String.valueOf(craft.getOffset()));
-            ItemStack item = ItemStackUtil.cloneItem(craft.getOutputItemList()[0].getItemStack());
-            ItemStackUtil.addLoreToLast(item, FinalTech.getLanguageManager().replaceString(FinalTech.getLanguageString("items", "ManualCraftMachine", "match-item", "lore"), String.valueOf(Math.min(intCharge, craft.getMatchCount()))));
-            inventory.setItem(STATUS_SLOT, item);
+            offset = craft.getOffset();
+            FinalTech.getLocationDataService().setLocationData(locationData, KEY, String.valueOf(craft.getOffset()));
+            ItemStack itemStack = ItemStackUtil.cloneItem(craft.getOutputItemList()[0].getItemStack());
+            ItemStackUtil.addLoreToLast(itemStack, FinalTech.getLanguageManager().replaceString(FinalTech.getLanguageString("items", "ManualCraftMachine", "match-item", "lore"),
+                    String.valueOf(Math.min(intCharge, craft.getMatchCount()))));
+            inventory.setItem(STATUS_SLOT, itemStack);
+
             int offsetR = offset + 1;
             for (int i = 0; i < STATUS_R_SLOT.length; i++) {
-                craft = AdvancedCraft.craftAsc(inventory, INPUT_SLOT, MachineRecipeFactory.getInstance().getAdvancedRecipe(this.getID()), 3456, offsetR);
+                craft = AdvancedCraft.craftAsc(inventory, this.getInputSlot(), advancedMachineRecipeList, this.getInputSlot().length, offsetR);
                 if (craft != null) {
-                    config.setValue(KEY_R[i], String.valueOf(craft.getOffset()));
+                    FinalTech.getLocationDataService().setLocationData(locationData, KEY_R[i], String.valueOf(craft.getOffset()));
                     offsetR = craft.getOffset() + 1;
-                    item = ItemStackUtil.cloneItem(craft.getOutputItemList()[0].getItemStack());
-                    ItemStackUtil.addLoreToLast(item, FinalTech.getLanguageManager().replaceString(FinalTech.getLanguageString("items", "ManualCraftMachine", "match-item", "lore"), String.valueOf(Math.min(intCharge, craft.getMatchCount()))));
-                    inventory.setItem(STATUS_R_SLOT[i], item);
+                    itemStack = ItemStackUtil.cloneItem(craft.getOutputItemList()[0].getItemStack());
+                    ItemStackUtil.addLoreToLast(itemStack, FinalTech.getLanguageManager().replaceString(FinalTech.getLanguageString("items", "ManualCraftMachine", "match-item", "lore"),
+                            String.valueOf(Math.min(intCharge, craft.getMatchCount()))));
+                    inventory.setItem(STATUS_R_SLOT[i], itemStack);
                 } else {
-                    config.setValue(KEY_R[i], null);
+                    FinalTech.getLocationDataService().setLocationData(locationData, KEY_R[i], null);
                     inventory.setItem(STATUS_R_SLOT[i], STATUS_ICON);
                 }
             }
+
             int offsetL = offset - 1;
             for (int i = 0; i < STATUS_L_SLOT.length; i++) {
-                craft = AdvancedCraft.craftDesc(inventory, INPUT_SLOT, MachineRecipeFactory.getInstance().getAdvancedRecipe(this.getID()), 3456, offsetL);
+                craft = AdvancedCraft.craftDesc(inventory, this.getInputSlot(), advancedMachineRecipeList, 3456, offsetL);
                 if (craft != null) {
-                    config.setValue(KEY_L[i], String.valueOf(craft.getOffset()));
+                    FinalTech.getLocationDataService().setLocationData(locationData, KEY_L[i], String.valueOf(craft.getOffset()));
                     offsetL = craft.getOffset() - 1;
-                    item = ItemStackUtil.cloneItem(craft.getOutputItemList()[0].getItemStack());
-                    ItemStackUtil.addLoreToLast(item, FinalTech.getLanguageManager().replaceString(FinalTech.getLanguageString("items", "ManualCraftMachine", "match-item", "lore"), String.valueOf(Math.min(intCharge, craft.getMatchCount()))));
-                    inventory.setItem(STATUS_L_SLOT[i], item);
+                    itemStack = ItemStackUtil.cloneItem(craft.getOutputItemList()[0].getItemStack());
+                    ItemStackUtil.addLoreToLast(itemStack, FinalTech.getLanguageManager().replaceString(FinalTech.getLanguageString("items", "ManualCraftMachine", "match-item", "lore"),
+                            String.valueOf(Math.min(intCharge, craft.getMatchCount()))));
+                    inventory.setItem(STATUS_L_SLOT[i], itemStack);
                 } else {
-                    config.setValue(KEY_L[i], null);
+                    FinalTech.getLocationDataService().setLocationData(locationData, KEY_L[i], null);
                     inventory.setItem(STATUS_L_SLOT[i], STATUS_ICON);
                 }
             }
         } else {
-            config.setValue(KEY, "0");
+            FinalTech.getLocationDataService().setLocationData(locationData, KEY, "0");
             inventory.setItem(STATUS_SLOT, STATUS_ICON);
             for (int slot : STATUS_R_SLOT) {
                 inventory.setItem(slot, STATUS_ICON);
@@ -303,37 +308,39 @@ public class ManualCraftMachineMenu extends AbstractManualMachineMenu {
             }
         }
 
-        config.setValue(KEY_ORDER, null);
+        FinalTech.getLocationDataService().setLocationData(locationData, KEY_ORDER, null);
 
         for(int slot : CRAFT_L_SLOT) {
             ItemStack item = inventory.getItem(slot);
             if(!ItemStackUtil.isItemNull(item)) {
-                ItemStackUtil.setLore(item, FinalTech.getLanguageManager().replaceStringList(FinalTech.getLanguageStringList("items", "ManualCraftMachine", "craft-icon", "lore"), charge));
+                ItemStackUtil.setLore(item, FinalTech.getLanguageManager().replaceStringList(FinalTech.getLanguageStringList("items", "ManualCraftMachine", "craft-icon", "lore"),
+                        charge));
             }
         }
 
         for(int slot : CRAFT_R_SLOT) {
             ItemStack item = inventory.getItem(slot);
             if(!ItemStackUtil.isItemNull(item)) {
-                ItemStackUtil.setLore(item, FinalTech.getLanguageManager().replaceStringList(FinalTech.getLanguageStringList("items", "ManualCraftMachine", "craft-icon", "lore"), charge));
+                ItemStackUtil.setLore(item, FinalTech.getLanguageManager().replaceStringList(FinalTech.getLanguageStringList("items", "ManualCraftMachine", "craft-icon", "lore"),
+                        charge));
             }
         }
 
         ItemStack item = inventory.getItem(CRAFT_SLOT);
         if(!ItemStackUtil.isItemNull(item)) {
-            ItemStackUtil.setLore(item, FinalTech.getLanguageManager().replaceStringList(FinalTech.getLanguageStringList("items", "ManualCraftMachine", "craft-icon", "lore"), charge));
+            ItemStackUtil.setLore(item, FinalTech.getLanguageManager().replaceStringList(FinalTech.getLanguageStringList("items", "ManualCraftMachine", "craft-icon", "lore"),
+                    charge));
         }
     }
 
-    public void doFunction(@Nonnull BlockMenu blockMenu, @Nonnull ClickAction clickAction, @Nonnull Player player, int offset) {
-        Inventory inventory = blockMenu.toInventory();
-        Location location = blockMenu.getLocation();
-        int charge = Integer.parseInt(EnergyUtil.getCharge(location));
+    public void doFunction(@Nonnull Inventory inventory, @Nonnull Location location, @Nonnull ClickAction clickAction, @Nonnull Player player, int offset) {
+        LocationData locationData = FinalTech.getLocationDataService().getLocationData(location);
+        int charge = Integer.parseInt(EnergyUtil.getCharge(FinalTech.getLocationDataService(), locationData));
         if(charge == 0) {
             return;
         }
 
-        if (MachineUtil.slotCount(inventory, OUTPUT_SLOT) == OUTPUT_SLOT.length) {
+        if (InventoryUtil.slotCount(inventory, this.getOutputSlot()) == this.getOutputSlot().length) {
             return;
         }
 
@@ -358,11 +365,10 @@ public class ManualCraftMachineMenu extends AbstractManualMachineMenu {
 
         quantity = Math.min(quantity, charge / this.manualCraftMachine.getConsume());
 
-        List<AdvancedMachineRecipe> advancedRecipe = MachineRecipeFactory.getInstance().getAdvancedRecipe(this.getID());
-        List<AdvancedMachineRecipe> targetAdvancedRecipe = new ArrayList<>(List.of(advancedRecipe.get(offset % advancedRecipe.size())));
+        List<AdvancedMachineRecipe> advancedMachineRecipeList = MachineRecipeFactory.getInstance().getAdvancedRecipe(this.getID());
+        List<AdvancedMachineRecipe> targetAdvancedRecipeList = List.of(advancedMachineRecipeList.get(offset % advancedMachineRecipeList.size()));
 
-        AdvancedCraft craft;
-        craft = AdvancedCraft.craftAsc(blockMenu.toInventory(), INPUT_SLOT, targetAdvancedRecipe, quantity, 0);
+        AdvancedCraft craft = AdvancedCraft.craftAsc(inventory, this.getInputSlot(), targetAdvancedRecipeList, quantity, 0);
 
         if (craft == null) {
             return;
@@ -376,27 +382,29 @@ public class ManualCraftMachineMenu extends AbstractManualMachineMenu {
             }
         }
 
-        craft.setMatchCount(Math.min(craft.getMatchCount(), MachineUtil.calMaxMatch(inventory, OUTPUT_SLOT, craft.getOutputItemList())));
-        if (craft.getMatchCount() == 0) {
-            return;
-        }
-        if (advancedRecipe.get(craft.getOffset()).isRandomOutput()) {
-            craft.setMatchCount(Math.min(craft.getMatchCount(), (OUTPUT_SLOT.length - MachineUtil.slotCount(inventory, OUTPUT_SLOT)) * ConstantTableUtil.ITEM_MAX_STACK));
+        if (advancedMachineRecipeList.get(craft.getOffset()).isRandomOutput()) {
+            craft.setMatchCount(Math.min(craft.getMatchCount(), (this.getOutputSlot().length - InventoryUtil.slotCount(inventory, this.getOutputSlot())) * inventory.getMaxStackSize()));
         }
 
-        AdvancedMachineRecipe advancedMachineRecipe = MachineRecipeFactory.getInstance().getAdvancedRecipe(this.getID()).get(craft.getOffset());
+        AdvancedMachineRecipe advancedMachineRecipe = advancedMachineRecipeList.get(craft.getOffset());
         if (advancedMachineRecipe.getOutputs().length > 1) {
             craft.setMatchCount(Math.min(64, craft.getMatchCount()));
         }
 
-        craft.consumeItem(blockMenu.toInventory());
-        for (ItemStack item : craft.calMachineRecipe(0).getOutput()) {
-            blockMenu.pushItem(item, OUTPUT_SLOT);
+        craft.setMatchCount(Math.min(craft.getMatchCount(), InventoryUtil.calMaxMatch(inventory, this.getOutputSlot(), craft.getOutputItemList())));
+        if (craft.getMatchCount() == 0) {
+            return;
         }
 
-        EnergyUtil.setCharge(location, String.valueOf(charge - craft.getMatchCount() * this.manualCraftMachine.getConsume()));
+        int pushAmount = InventoryUtil.tryPushItem(inventory, this.getOutputSlot(), craft.getMatchCount(), craft.getOutputItemList());
+        if(pushAmount > 0) {
+            craft.setMatchCount(pushAmount);
+            craft.consumeItem(inventory);
+        }
 
-        this.updateInventory(inventory, blockMenu.getLocation());
+        EnergyUtil.setCharge(FinalTech.getLocationDataService(), locationData, String.valueOf(charge - craft.getMatchCount() * this.manualCraftMachine.getConsume()));
+
+        this.updateInventory(inventory, location);
     }
 
     private boolean verifyCount(@Nonnull Location location) {

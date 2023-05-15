@@ -38,7 +38,6 @@ public class PotionEffectPurifier extends UsableSlimefunItem implements RecipeIt
      */
     @Override
     protected void function(@Nonnull PlayerRightClickEvent playerRightClickEvent) {
-        playerRightClickEvent.cancel();
         Player player = playerRightClickEvent.getPlayer();
         if (player.isSneaking()) {
             Location location = player.getLocation();

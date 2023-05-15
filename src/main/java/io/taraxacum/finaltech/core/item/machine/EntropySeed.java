@@ -13,10 +13,9 @@ import io.taraxacum.finaltech.core.item.machine.range.point.EquivalentConcept;
 import io.taraxacum.finaltech.core.menu.AbstractMachineMenu;
 import io.taraxacum.finaltech.setup.FinalTechItemStacks;
 import io.taraxacum.finaltech.util.ConfigUtil;
-import io.taraxacum.finaltech.util.ConstantTableUtil;
 import io.taraxacum.finaltech.util.RecipeUtil;
-import me.mrCookieSlime.CSCoreLibPlugin.Configuration.Config;
-import me.mrCookieSlime.Slimefun.api.BlockStorage;
+import io.taraxacum.libs.plugin.dto.LocationData;
+import io.taraxacum.libs.slimefun.service.SlimefunLocationDataService;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.event.block.BlockBreakEvent;
@@ -25,6 +24,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.List;
 
 /**
@@ -48,7 +48,10 @@ public class EntropySeed extends AbstractMachine implements RecipeItem {
             @Override
             public void onPlayerPlace(@Nonnull BlockPlaceEvent e) {
                 Location location = e.getBlock().getLocation();
-                BlockStorage.addBlockInfo(location, EntropySeed.this.key, EntropySeed.this.value);
+                LocationData locationData = FinalTech.getLocationDataService().getLocationData(location);
+                if(locationData != null) {
+                    FinalTech.getLocationDataService().setLocationData(locationData, EntropySeed.this.key, EntropySeed.this.value);
+                }
             }
         };
     }
@@ -65,37 +68,38 @@ public class EntropySeed extends AbstractMachine implements RecipeItem {
         };
     }
 
-    @Nonnull
+    @Nullable
     @Override
     protected AbstractMachineMenu setMachineMenu() {
         return null;
     }
 
     @Override
-    protected void tick(@Nonnull Block block, @Nonnull SlimefunItem slimefunItem, @Nonnull Config config) {
+    protected void tick(@Nonnull Block block, @Nonnull SlimefunItem slimefunItem, @Nonnull LocationData locationData) {
         // TODO optimization
 
         Location location = block.getLocation();
-        if (config.contains(this.key) && this.value.equals(config.getString(this.key))) {
-            BlockStorage.addBlockInfo(location, this.key, null);
-            SlimefunItem sfItem = SlimefunItem.getByItem(FinalTechItemStacks.EQUIVALENT_CONCEPT);
-            if (sfItem != null) {
-                BlockStorage.clearBlockInfo(location);
-                JavaPlugin javaPlugin = this.getAddon().getJavaPlugin();
-                javaPlugin.getServer().getScheduler().runTaskLaterAsynchronously(javaPlugin, () -> {
-                    if (location.getBlock().getType().equals(EntropySeed.this.getItem().getType())) {
-                        BlockStorage.addBlockInfo(location, ConstantTableUtil.CONFIG_ID, FinalTechItemStacks.EQUIVALENT_CONCEPT.getItemId(), true);
-                        BlockStorage.addBlockInfo(location, EquivalentConcept.KEY_LIFE, String.valueOf(EntropySeed.this.equivalentConceptLife));
-                        BlockStorage.addBlockInfo(location, EquivalentConcept.KEY_RANGE, String.valueOf(EntropySeed.this.equivalentConceptRange));
-                    }
-                }, Slimefun.getTickerTask().getTickRate() + 1);
-            }
-        } else {
-            BlockStorage.clearBlockInfo(location);
+        if (this.value.equals(FinalTech.getLocationDataService().getLocationData(locationData, this.key))) {
+            FinalTech.getLocationDataService().setLocationData(locationData, this.key, null);
+            FinalTech.getLocationDataService().clearLocationData(location);
             JavaPlugin javaPlugin = this.getAddon().getJavaPlugin();
             javaPlugin.getServer().getScheduler().runTaskLaterAsynchronously(javaPlugin, () -> {
-                if (location.getBlock().getType().equals(EntropySeed.this.getItem().getType())) {
-                    BlockStorage.addBlockInfo(location, ConstantTableUtil.CONFIG_ID, FinalTechItemStacks.JUSTIFIABILITY.getItemId(), true);
+                if (location.getBlock().getType().equals(EntropySeed.this.getItem().getType())
+                        && FinalTech.getLocationDataService().getLocationData(location) == null
+                        && FinalTech.getLocationDataService() instanceof SlimefunLocationDataService slimefunLocationDataService) {
+                    LocationData tempLocationdata = slimefunLocationDataService.getOrCreateEmptyLocationData(location, FinalTechItemStacks.EQUIVALENT_CONCEPT.getItemId());
+                    FinalTech.getLocationDataService().setLocationData(tempLocationdata, EquivalentConcept.KEY_LIFE, String.valueOf(EntropySeed.this.equivalentConceptLife));
+                    FinalTech.getLocationDataService().setLocationData(tempLocationdata, EquivalentConcept.KEY_RANGE, String.valueOf(EntropySeed.this.equivalentConceptRange));
+                }
+            }, Slimefun.getTickerTask().getTickRate() + 1);
+        } else {
+            FinalTech.getLocationDataService().clearLocationData(location);
+            JavaPlugin javaPlugin = this.getAddon().getJavaPlugin();
+            javaPlugin.getServer().getScheduler().runTaskLaterAsynchronously(javaPlugin, () -> {
+                if (location.getBlock().getType().equals(EntropySeed.this.getItem().getType())
+                        && FinalTech.getLocationDataService().getLocationData(location) == null
+                        && FinalTech.getLocationDataService() instanceof SlimefunLocationDataService slimefunLocationDataService) {
+                    slimefunLocationDataService.getOrCreateEmptyLocationData(location, FinalTechItemStacks.JUSTIFIABILITY.getItemId());
                 }
             }, Slimefun.getTickerTask().getTickRate() + 1);
         }

@@ -13,10 +13,11 @@ import io.taraxacum.finaltech.core.event.EnergyDepositEvent;
 import io.taraxacum.finaltech.core.event.EnergyWithdrawEvent;
 import io.taraxacum.finaltech.util.*;
 import io.taraxacum.finaltech.core.interfaces.RecipeItem;
+import io.taraxacum.libs.plugin.dto.LocationData;
 import io.taraxacum.libs.plugin.util.ItemStackUtil;
 import io.taraxacum.libs.plugin.util.ParticleUtil;
-import io.taraxacum.libs.slimefun.dto.LocationInfo;
 import io.taraxacum.libs.slimefun.util.EnergyUtil;
+import io.taraxacum.libs.slimefun.util.LocationDataUtil;
 import org.bukkit.Location;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Particle;
@@ -52,7 +53,6 @@ public class PortableEnergyStorage extends UsableSlimefunItem implements RecipeI
      */
     @Override
     protected void function(@Nonnull PlayerRightClickEvent playerRightClickEvent) {
-        playerRightClickEvent.cancel();
         ItemStack item = playerRightClickEvent.getItem();
         if(item.getAmount() > 1) {
             return;
@@ -64,8 +64,12 @@ public class PortableEnergyStorage extends UsableSlimefunItem implements RecipeI
         if (clickedBlock.isPresent()) {
             Block block = clickedBlock.get();
             Location location = block.getLocation();
-            LocationInfo locationInfo = LocationInfo.get(location);
-            if (locationInfo != null && !this.notAllowedId.contains(locationInfo.getId()) && locationInfo.getSlimefunItem() instanceof EnergyNetComponent energyNetComponent && energyNetComponent.isChargeable() && PermissionUtil.checkPermission(playerRightClickEvent.getPlayer(), location, Interaction.INTERACT_BLOCK, Interaction.PLACE_BLOCK, Interaction.BREAK_BLOCK)) {
+            LocationData locationData = FinalTech.getLocationDataService().getLocationData(location);
+            if (locationData != null
+                    && !this.notAllowedId.contains(LocationDataUtil.getId(FinalTech.getLocationDataService(), locationData))
+                    && LocationDataUtil.getSlimefunItem(FinalTech.getLocationDataService(), locationData) instanceof EnergyNetComponent energyNetComponent
+                    && energyNetComponent.isChargeable()
+                    && PermissionUtil.checkPermission(playerRightClickEvent.getPlayer(), location, Interaction.INTERACT_BLOCK, Interaction.PLACE_BLOCK, Interaction.BREAK_BLOCK)) {
 
                 if (!playerRightClickEvent.getPlayer().isSneaking()) {
                     // charge machine
@@ -76,10 +80,10 @@ public class PortableEnergyStorage extends UsableSlimefunItem implements RecipeI
                     energyInItem = energyDepositEvent.getEnergy();
 
                     int capacity = energyNetComponent.getCapacity();
-                    String energyInMachine = EnergyUtil.getCharge(locationInfo.getConfig());
+                    String energyInMachine = EnergyUtil.getCharge(FinalTech.getLocationDataService(), locationData);
                     String charge = StringNumberUtil.min(StringNumberUtil.sub(String.valueOf(capacity), energyInMachine), energyInItem);
 
-                    EnergyUtil.setCharge(locationInfo.getConfig(), StringNumberUtil.add(energyInMachine, charge));
+                    EnergyUtil.setCharge(FinalTech.getLocationDataService(), locationData, StringNumberUtil.add(energyInMachine, charge));
                     this.setEnergy(item, StringNumberUtil.sub(energyInItem, charge));
 
                     this.updateLore(item);
@@ -90,10 +94,10 @@ public class PortableEnergyStorage extends UsableSlimefunItem implements RecipeI
 
                     EnergyWithdrawEvent energyWithdrawEvent = new EnergyWithdrawEvent(location);
                     this.getAddon().getJavaPlugin().getServer().getPluginManager().callEvent(energyWithdrawEvent);
-                    String energyInMachine = StringNumberUtil.add(EnergyUtil.getCharge(locationInfo.getConfig()), energyWithdrawEvent.getEnergy());
+                    String energyInMachine = StringNumberUtil.add(EnergyUtil.getCharge(FinalTech.getLocationDataService(), locationData), energyWithdrawEvent.getEnergy());
 
                     this.addEnergy(item, energyInMachine);
-                    EnergyUtil.setCharge(locationInfo.getConfig(), StringNumberUtil.ZERO);
+                    EnergyUtil.setCharge(FinalTech.getLocationDataService(), locationData, StringNumberUtil.ZERO);
 
                     this.updateLore(item);
 

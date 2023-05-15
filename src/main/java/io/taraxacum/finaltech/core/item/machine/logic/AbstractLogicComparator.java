@@ -6,15 +6,15 @@ import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItemStack;
 import io.github.thebusybiscuit.slimefun4.api.recipes.RecipeType;
 import io.github.thebusybiscuit.slimefun4.core.handlers.BlockBreakHandler;
 import io.github.thebusybiscuit.slimefun4.core.handlers.BlockPlaceHandler;
+import io.taraxacum.finaltech.FinalTech;
 import io.taraxacum.finaltech.core.item.machine.AbstractMachine;
 import io.taraxacum.finaltech.core.menu.AbstractMachineMenu;
 import io.taraxacum.finaltech.core.menu.machine.LogicComparatorMenu;
 import io.taraxacum.finaltech.util.MachineUtil;
-import io.taraxacum.libs.plugin.util.ItemStackUtil;
-import me.mrCookieSlime.CSCoreLibPlugin.Configuration.Config;
-import me.mrCookieSlime.Slimefun.api.BlockStorage;
-import me.mrCookieSlime.Slimefun.api.inventory.BlockMenu;
+import io.taraxacum.libs.plugin.dto.LocationData;
+import io.taraxacum.libs.plugin.util.InventoryUtil;
 import org.bukkit.block.Block;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
 import javax.annotation.Nonnull;
@@ -22,7 +22,6 @@ import javax.annotation.Nullable;
 
 /**
  * @author Final_ROOT
- * @since 2.1
  */
 public abstract class AbstractLogicComparator extends AbstractMachine {
     public AbstractLogicComparator(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item, @Nonnull RecipeType recipeType, @Nonnull ItemStack[] recipe) {
@@ -38,7 +37,7 @@ public abstract class AbstractLogicComparator extends AbstractMachine {
     @Nonnull
     @Override
     protected BlockBreakHandler onBlockBreak() {
-        return MachineUtil.simpleBlockBreakerHandler(this);
+        return MachineUtil.simpleBlockBreakerHandler(FinalTech.getLocationDataService(), this);
     }
 
     @Nonnull
@@ -48,24 +47,27 @@ public abstract class AbstractLogicComparator extends AbstractMachine {
     }
 
     @Override
-    protected void tick(@Nonnull Block block, @Nonnull SlimefunItem slimefunItem, @Nonnull Config config) {
-        BlockMenu blockMenu = BlockStorage.getInventory(block);
-
-        if(MachineUtil.slotCount(blockMenu.toInventory(), this.getOutputSlot()) == this.getOutputSlot().length) {
+    protected void tick(@Nonnull Block block, @Nonnull SlimefunItem slimefunItem, @Nonnull LocationData locationData) {
+        Inventory inventory = FinalTech.getLocationDataService().getInventory(locationData);
+        if(inventory == null) {
             return;
         }
 
-        ItemStack item1 = blockMenu.getItemInSlot(this.getInputSlot()[0]);
-        ItemStack item2 = blockMenu.getItemInSlot(this.getInputSlot()[1]);
+        if(InventoryUtil.slotCount(inventory, this.getOutputSlot()) == this.getOutputSlot().length) {
+            return;
+        }
+
+        ItemStack item1 = inventory.getItem(this.getInputSlot()[0]);
+        ItemStack item2 = inventory.getItem(this.getInputSlot()[1]);
 
         if(this.preCompare(item1, item2)) {
             if(this.compare(item1, item2)) {
-                blockMenu.pushItem(this.resultTrue(), this.getOutputSlot());
+                InventoryUtil.tryPushAllItem(inventory, this.getOutputSlot(), this.resultTrue());
             } else {
-                blockMenu.pushItem(this.resultFalse(), this.getOutputSlot());
+                InventoryUtil.tryPushAllItem(inventory, this.getOutputSlot(), this.resultFalse());
             }
             for(int slot : this.getInputSlot()) {
-                blockMenu.replaceExistingItem(slot, ItemStackUtil.AIR);
+                inventory.clear(slot);
             }
         }
     }

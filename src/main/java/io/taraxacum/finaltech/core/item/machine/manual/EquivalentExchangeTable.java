@@ -10,9 +10,11 @@ import io.github.thebusybiscuit.slimefun4.implementation.Slimefun;
 import io.taraxacum.common.util.JavaUtil;
 import io.taraxacum.common.util.StringNumberUtil;
 import io.taraxacum.finaltech.FinalTech;
+import io.taraxacum.finaltech.core.enums.LogSourceType;
 import io.taraxacum.finaltech.setup.FinalTechItems;
-import io.taraxacum.libs.plugin.dto.ItemAmountWrapper;
 import io.taraxacum.finaltech.core.interfaces.RecipeItem;
+import io.taraxacum.libs.plugin.dto.LocationData;
+import io.taraxacum.libs.plugin.util.InventoryUtil;
 import io.taraxacum.libs.slimefun.dto.ItemValueTable;
 import io.taraxacum.finaltech.core.menu.manual.AbstractManualMachineMenu;
 import io.taraxacum.finaltech.core.menu.manual.EquivalentExchangeTableMenu;
@@ -21,10 +23,9 @@ import io.taraxacum.finaltech.util.MachineUtil;
 import io.taraxacum.finaltech.util.RecipeUtil;
 import io.taraxacum.libs.slimefun.interfaces.SimpleValidItem;
 import io.taraxacum.libs.slimefun.interfaces.ValidItem;
-import me.mrCookieSlime.CSCoreLibPlugin.Configuration.Config;
-import me.mrCookieSlime.Slimefun.api.BlockStorage;
-import me.mrCookieSlime.Slimefun.api.inventory.BlockMenu;
+import org.bukkit.Location;
 import org.bukkit.block.Block;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
 import javax.annotation.Nonnull;
@@ -35,7 +36,7 @@ import java.util.List;
  * @since 2.0
  */
 public class EquivalentExchangeTable extends AbstractManualMachine implements RecipeItem {
-    private final String key = "value";
+    private final String key = "v";
 
     public EquivalentExchangeTable(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
         super(itemGroup, item, recipeType, recipe);
@@ -44,7 +45,7 @@ public class EquivalentExchangeTable extends AbstractManualMachine implements Re
     @Nonnull
     @Override
     protected BlockBreakHandler onBlockBreak() {
-        return MachineUtil.simpleBlockBreakerHandler(this, EquivalentExchangeTableMenu.PARSE_ITEM_SLOT);
+        return MachineUtil.simpleBlockBreakerHandler(FinalTech.getLocationDataService(), this, EquivalentExchangeTableMenu.PARSE_ITEM_SLOT);
     }
 
     @Nonnull
@@ -54,21 +55,27 @@ public class EquivalentExchangeTable extends AbstractManualMachine implements Re
     }
 
     @Override
-    protected void tick(@Nonnull Block block, @Nonnull SlimefunItem slimefunItem, @Nonnull Config config) {
-        BlockMenu blockMenu = BlockStorage.getInventory(block);
-        String value = JavaUtil.getFirstNotNull(config.getString(this.key), StringNumberUtil.ZERO);
+    protected void tick(@Nonnull Block block, @Nonnull SlimefunItem slimefunItem, @Nonnull LocationData locationData) {
+        Location location = block.getLocation();
+        Inventory inventory = FinalTech.getLocationDataService().getInventory(locationData);
+        if(inventory == null) {
+            return;
+        }
+
+        String value = JavaUtil.getFirstNotNull(FinalTech.getLocationDataService().getLocationData(locationData, this.key), StringNumberUtil.ZERO);
         for (int slot : this.getInputSlot()) {
-            ItemStack itemStack = blockMenu.getItemInSlot(slot);
+            ItemStack itemStack = inventory.getItem(slot);
             if (ItemStackUtil.isItemNull(itemStack)) {
                 continue;
             }
 
             if (FinalTechItems.UNORDERED_DUST.verifyItem(itemStack)) {
-                if (MachineUtil.slotCount(blockMenu.toInventory(), this.getOutputSlot()) == this.getOutputSlot().length) {
+                if (InventoryUtil.slotCount(inventory, this.getOutputSlot()) == this.getOutputSlot().length) {
                     continue;
                 }
-                value = this.doCraft(value, blockMenu, itemStack.getAmount());
+                value = this.doCraft(value, inventory, location, itemStack.getAmount());
                 itemStack.setAmount(0);
+                FinalTech.getLogService().subItem(FinalTechItems.UNORDERED_DUST.getId(), itemStack.getAmount(), this.getId(), LogSourceType.SLIMEFUN_MACHINE, null, location, this.getAddon().getJavaPlugin());
                 continue;
             }
 
@@ -83,19 +90,19 @@ public class EquivalentExchangeTable extends AbstractManualMachine implements Re
             }
         }
 
-        BlockStorage.addBlockInfo(block.getLocation(), this.key, value);
+        FinalTech.getLocationDataService().setLocationData(locationData, this.key, value);
 
-        if (blockMenu.hasViewer()) {
-            this.getMachineMenu().updateInventory(blockMenu.toInventory(), block.getLocation());
+        if (!inventory.getViewers().isEmpty()) {
+            this.getMachineMenu().updateInventory(inventory, block.getLocation());
         }
     }
 
-    private String doCraft(@Nonnull String value, @Nonnull BlockMenu blockMenu, int amount) {
+    private String doCraft(@Nonnull String value, @Nonnull Inventory inventory, @Nonnull Location location, int amount) {
         if(StringNumberUtil.compare(value, StringNumberUtil.ZERO) <= 0) {
             return StringNumberUtil.ZERO;
         }
 
-        List<SlimefunItem> slimefunItemList = Slimefun.getRegistry().getAllSlimefunItems();
+        List<SlimefunItem> slimefunItemList = Slimefun.getRegistry().getEnabledSlimefunItems();
         int searchedTime = 0;
         SlimefunItem searchedSlimefunItem = null;
         String searchedValue = null;
@@ -129,12 +136,15 @@ public class EquivalentExchangeTable extends AbstractManualMachine implements Re
 
         if(searchedSlimefunItem != null) {
             ItemStack itemStack = searchedSlimefunItem instanceof SimpleValidItem simpleValidItem ? simpleValidItem.getValidItem() : ItemStackUtil.cloneItem(searchedSlimefunItem.getItem(), 1);
-            if (MachineUtil.calMaxMatch(blockMenu.toInventory(), this.getOutputSlot(), List.of(new ItemAmountWrapper(itemStack))) >= 1) {
-                blockMenu.pushItem(itemStack, this.getOutputSlot());
+            if (InventoryUtil.tryPushAllItem(inventory, this.getOutputSlot(), itemStack)) {
                 if(StringNumberUtil.ZERO.equals(searchedValue)) {
                     value = StringNumberUtil.ZERO;
                 } else {
                     value = StringNumberUtil.sub(value, searchedValue);
+                }
+                SlimefunItem slimefunItem = SlimefunItem.getByItem(itemStack);
+                if(slimefunItem instanceof ValidItem) {
+                    FinalTech.getLogService().addItem(slimefunItem.getId(), 1, this.getId(), LogSourceType.SLIMEFUN_MACHINE, null, location, this.getAddon().getJavaPlugin());
                 }
             }
         }

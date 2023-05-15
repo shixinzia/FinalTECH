@@ -7,25 +7,27 @@ import io.github.thebusybiscuit.slimefun4.api.recipes.RecipeType;
 import io.github.thebusybiscuit.slimefun4.core.handlers.BlockBreakHandler;
 import io.github.thebusybiscuit.slimefun4.core.handlers.BlockPlaceHandler;
 import io.github.thebusybiscuit.slimefun4.implementation.Slimefun;
+import io.taraxacum.common.util.JavaUtil;
 import io.taraxacum.finaltech.FinalTech;
 import io.taraxacum.finaltech.core.interfaces.MenuUpdater;
 import io.taraxacum.finaltech.core.interfaces.RecipeItem;
 import io.taraxacum.finaltech.core.menu.AbstractMachineMenu;
 import io.taraxacum.finaltech.core.menu.machine.MatrixReactorMenu;
 import io.taraxacum.finaltech.setup.FinalTechItems;
+import io.taraxacum.libs.plugin.dto.ItemAmountWrapper;
+import io.taraxacum.libs.plugin.dto.LocationData;
+import io.taraxacum.libs.plugin.util.InventoryUtil;
 import io.taraxacum.libs.plugin.util.ItemStackUtil;
 import io.taraxacum.finaltech.util.MachineUtil;
 import io.taraxacum.finaltech.util.ConfigUtil;
 import io.taraxacum.finaltech.util.ConstantTableUtil;
 import io.taraxacum.finaltech.util.RecipeUtil;
-import me.mrCookieSlime.CSCoreLibPlugin.Configuration.Config;
-import me.mrCookieSlime.Slimefun.api.BlockStorage;
-import me.mrCookieSlime.Slimefun.api.inventory.BlockMenu;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Tag;
 import org.bukkit.block.Block;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataContainer;
@@ -40,8 +42,8 @@ import java.util.Set;
  * @since 2.0
  */
 public class MatrixReactor extends AbstractMachine implements RecipeItem, MenuUpdater {
-    private final String keyItem = "item";
-    private final String keyCount = "count";
+    private final String keyItem = "i";
+    private final String keyCount = "c";
     private final int difficulty = ConfigUtil.getOrDefaultItemSetting(80, this, "difficulty");
     private final Set<String> notAllowedIdList = new HashSet<>(ConfigUtil.getItemStringList(this, "not-allowed-id"));
 
@@ -58,7 +60,7 @@ public class MatrixReactor extends AbstractMachine implements RecipeItem, MenuUp
     @Nonnull
     @Override
     protected BlockBreakHandler onBlockBreak() {
-        return MachineUtil.simpleBlockBreakerHandler(this, MatrixReactorMenu.ITEM_PHONY_INPUT_SLOT);
+        return MachineUtil.simpleBlockBreakerHandler(FinalTech.getLocationDataService(), this.getId(), MatrixReactorMenu.ITEM_PHONY_INPUT_SLOT);
     }
 
     @Nonnull
@@ -68,37 +70,40 @@ public class MatrixReactor extends AbstractMachine implements RecipeItem, MenuUp
     }
 
     @Override
-    protected void tick(@Nonnull Block block, @Nonnull SlimefunItem slimefunItem, @Nonnull Config config) {
-        BlockMenu blockMenu = BlockStorage.getInventory(block);
+    protected void tick(@Nonnull Block block, @Nonnull SlimefunItem slimefunItem, @Nonnull LocationData locationData) {
         Location location = block.getLocation();
-        ItemStack itemStack = blockMenu.getItemInSlot(MatrixReactorMenu.ITEM_INPUT_SLOT[0]);
+        Inventory inventory = FinalTech.getLocationDataService().getInventory(locationData);
+        if(inventory == null) {
+            return;
+        }
+        ItemStack itemStack = inventory.getItem(MatrixReactorMenu.ITEM_INPUT_SLOT[0]);
 
         if (ItemStackUtil.isItemNull(itemStack)) {
-            BlockStorage.addBlockInfo(location, keyItem, null);
-            BlockStorage.addBlockInfo(location, keyCount, "0");
-            if (blockMenu.hasViewer()) {
-                this.updateMenu(blockMenu, MatrixReactorMenu.STATUS_SLOT, this,
+            FinalTech.getLocationDataService().setLocationData(locationData, this.keyItem, null);
+            FinalTech.getLocationDataService().setLocationData(locationData, this.keyCount, "0");
+            if (!inventory.getViewers().isEmpty()) {
+                this.updateInv(inventory, MatrixReactorMenu.STATUS_SLOT, this,
                         "0",
-                        String.valueOf(difficulty));
+                        String.valueOf(this.difficulty));
             }
             return;
         } else if (!this.allowedItem(itemStack)) {
-            BlockStorage.addBlockInfo(location, keyItem, null);
-            BlockStorage.addBlockInfo(location, keyCount, "0");
-            if (blockMenu.hasViewer()) {
-                this.updateMenu(blockMenu, MatrixReactorMenu.STATUS_SLOT, this,
+            FinalTech.getLocationDataService().setLocationData(locationData, this.keyItem, null);
+            FinalTech.getLocationDataService().setLocationData(locationData, this.keyCount, "0");
+            if (!inventory.getViewers().isEmpty()) {
+                this.updateInv(inventory, MatrixReactorMenu.STATUS_SLOT, this,
                         "0",
-                        String.valueOf(difficulty));
+                        String.valueOf(this.difficulty));
             }
             JavaPlugin javaPlugin = this.getAddon().getJavaPlugin();
-            javaPlugin.getServer().getScheduler().runTask(javaPlugin, () -> blockMenu.dropItems(location, MatrixReactorMenu.ITEM_INPUT_SLOT));
+            javaPlugin.getServer().getScheduler().runTask(javaPlugin, () -> InventoryUtil.dropItems(inventory, location, MatrixReactorMenu.ITEM_INPUT_SLOT));
             return;
         }
 
         ItemStack stringItem = null;
-        if (config.contains(keyItem)) {
-            String itemString = config.getString(keyItem);
-            stringItem = ItemStackUtil.stringToItemStack(itemString);
+        String keyItemStr = FinalTech.getLocationDataService().getLocationData(locationData, this.keyItem);
+        if (keyItemStr != null) {
+            stringItem = ItemStackUtil.stringToItemStack(keyItemStr);
         }
 
         boolean match = true;
@@ -112,9 +117,9 @@ public class MatrixReactor extends AbstractMachine implements RecipeItem, MenuUp
         int unorderedDustItemSlotsP = 0;
         int unorderedDustItemCount = 0;
         for (int slot : MatrixReactorMenu.ORDERED_DUST_INPUT_SLOT) {
-            if (FinalTechItems.ORDERED_DUST.verifyItem(blockMenu.getItemInSlot(slot))) {
+            if (FinalTechItems.ORDERED_DUST.verifyItem(inventory.getItem(slot))) {
                 orderedDustItemSlots[orderedDustItemSlotsP++] = slot;
-                orderedDustItemCount += blockMenu.getItemInSlot(slot).getAmount();
+                orderedDustItemCount += inventory.getItem(slot).getAmount();
                 if (orderedDustItemCount > amount) {
                     break;
                 }
@@ -122,9 +127,9 @@ public class MatrixReactor extends AbstractMachine implements RecipeItem, MenuUp
         }
         if (orderedDustItemCount >= amount) {
             for (int slot : MatrixReactorMenu.UNORDERED_DUST_INPUT_SLOT) {
-                if (FinalTechItems.UNORDERED_DUST.verifyItem(blockMenu.getItemInSlot(slot))) {
+                if (FinalTechItems.UNORDERED_DUST.verifyItem(inventory.getItem(slot))) {
                     unorderedDustItemSlots[unorderedDustItemSlotsP++] = slot;
-                    unorderedDustItemCount += blockMenu.getItemInSlot(slot).getAmount();
+                    unorderedDustItemCount += inventory.getItem(slot).getAmount();
                     if (unorderedDustItemCount > amount) {
                         break;
                     }
@@ -136,13 +141,14 @@ public class MatrixReactor extends AbstractMachine implements RecipeItem, MenuUp
         }
 
         if (!match) {
-            int count = config.contains(keyCount) ? Integer.parseInt(config.getString(keyCount)) : 0;
+            String keyCountStr = FinalTech.getLocationDataService().getLocationData(locationData, this.keyCount);
+            int count = keyCountStr != null ? Integer.parseInt(keyCountStr) : 0;
             count = count > 0 ? count - 1 : 0;
-            BlockStorage.addBlockInfo(location, keyCount, String.valueOf(count));
+            FinalTech.getLocationDataService().setLocationData(locationData, this.keyCount, String.valueOf(count));
         } else  {
             orderedDustItemCount = amount;
             for (int slot : orderedDustItemSlots) {
-                ItemStack dustItemStack = blockMenu.getItemInSlot(slot);
+                ItemStack dustItemStack = inventory.getItem(slot);
                 int n = Math.min(dustItemStack.getAmount(), orderedDustItemCount);
                 dustItemStack.setAmount(dustItemStack.getAmount() - n);
                 orderedDustItemCount -= n;
@@ -153,7 +159,7 @@ public class MatrixReactor extends AbstractMachine implements RecipeItem, MenuUp
 
             unorderedDustItemCount = amount;
             for (int slot : unorderedDustItemSlots) {
-                ItemStack dustItemStack = blockMenu.getItemInSlot(slot);
+                ItemStack dustItemStack = inventory.getItem(slot);
                 int n = Math.min(dustItemStack.getAmount(), unorderedDustItemCount);
                 dustItemStack.setAmount(dustItemStack.getAmount() - n);
                 unorderedDustItemCount -= n;
@@ -163,22 +169,23 @@ public class MatrixReactor extends AbstractMachine implements RecipeItem, MenuUp
             }
 
             if (ItemStackUtil.isItemNull(stringItem) || !ItemStackUtil.isItemSimilar(itemStack, stringItem) || itemStack.getAmount() != stringItem.getAmount()) {
-                BlockStorage.addBlockInfo(location, keyItem, ItemStackUtil.itemStackToString(itemStack));
+                FinalTech.getLocationDataService().setLocationData(locationData, this.keyItem, ItemStackUtil.itemStackToString(itemStack));
 
                 int count;
-                if (FinalTechItems.ITEM_PHONY.verifyItem(blockMenu.getItemInSlot(MatrixReactorMenu.ITEM_PHONY_INPUT_SLOT[0]))) {
-                    ItemStack itemPhony = blockMenu.getItemInSlot(MatrixReactorMenu.ITEM_PHONY_INPUT_SLOT[0]);
+                if (FinalTechItems.ITEM_PHONY.verifyItem(inventory.getItem(MatrixReactorMenu.ITEM_PHONY_INPUT_SLOT[0]))) {
+                    ItemStack itemPhony = inventory.getItem(MatrixReactorMenu.ITEM_PHONY_INPUT_SLOT[0]);
                     itemPhony.setAmount(itemPhony.getAmount() - 1);
                     count = 1;
                 } else {
                     count = FinalTech.getRandom().nextBoolean() ? 1 : 0;
                 }
 
-                BlockStorage.addBlockInfo(location, keyCount, String.valueOf(count));
+                FinalTech.getLocationDataService().setLocationData(locationData, this.keyCount, String.valueOf(count));
             } else {
-                int count = config.contains(keyCount) ? Integer.parseInt(config.getString(keyCount)) : 0;
-                if (FinalTechItems.ITEM_PHONY.verifyItem(blockMenu.getItemInSlot(MatrixReactorMenu.ITEM_PHONY_INPUT_SLOT[0])) && blockMenu.getItemInSlot(MatrixReactorMenu.ITEM_PHONY_INPUT_SLOT[0]).getAmount() >= amount + count && amount + count <= ConstantTableUtil.ITEM_MAX_STACK) {
-                    ItemStack itemPhony = blockMenu.getItemInSlot(MatrixReactorMenu.ITEM_PHONY_INPUT_SLOT[0]);
+                String keyCountStr = FinalTech.getLocationDataService().getLocationData(locationData, this.keyCount);
+                int count = keyCountStr != null ? Integer.parseInt(keyCountStr) : 0;
+                if (FinalTechItems.ITEM_PHONY.verifyItem(inventory.getItem(MatrixReactorMenu.ITEM_PHONY_INPUT_SLOT[0])) && inventory.getItem(MatrixReactorMenu.ITEM_PHONY_INPUT_SLOT[0]).getAmount() >= amount + count && amount + count <= ConstantTableUtil.ITEM_MAX_STACK) {
+                    ItemStack itemPhony = inventory.getItem(MatrixReactorMenu.ITEM_PHONY_INPUT_SLOT[0]);
                     itemPhony.setAmount(itemPhony.getAmount() - count - amount);
                     count++;
                 } else {
@@ -186,41 +193,28 @@ public class MatrixReactor extends AbstractMachine implements RecipeItem, MenuUp
                 }
 
                 if (count + itemStack.getAmount() >= this.difficulty) {
-                    ItemStack existedItem = blockMenu.getItemInSlot(this.getOutputSlot()[0]);
-                    if (ItemStackUtil.isItemNull(existedItem)) {
-                        ItemStack outputItem = ItemStackUtil.cloneItem(itemStack);
-                        outputItem.setAmount(1);
-                        blockMenu.replaceExistingItem(this.getOutputSlot()[0], outputItem);
-                        BlockStorage.addBlockInfo(location, keyItem, null);
-                        BlockStorage.addBlockInfo(location, keyCount, "0");
-                        if (blockMenu.hasViewer()) {
-                            this.updateMenu(blockMenu, MatrixReactorMenu.STATUS_SLOT, this,
-                                    "0",
-                                    String.valueOf(difficulty));
-                        }
-                        return;
-                    } else if (existedItem.getAmount() < existedItem.getMaxStackSize() && ItemStackUtil.isItemSimilar(existedItem, itemStack)) {
-                        existedItem.setAmount(existedItem.getAmount() + 1);
-                        BlockStorage.addBlockInfo(location, keyItem, null);
-                        BlockStorage.addBlockInfo(location, keyCount, "0");
-                        if (blockMenu.hasViewer()) {
-                            this.updateMenu(blockMenu, MatrixReactorMenu.STATUS_SLOT, this,
+                    if(InventoryUtil.tryPushAllItem(inventory, this.getOutputSlot(), new ItemAmountWrapper(itemStack, 1))) {
+                        FinalTech.getLocationDataService().setLocationData(locationData, this.keyItem, null);
+                        FinalTech.getLocationDataService().setLocationData(locationData, this.keyCount, "0");
+                        if (!inventory.getViewers().isEmpty()) {
+                            this.updateInv(inventory, MatrixReactorMenu.STATUS_SLOT, this,
                                     "0",
                                     String.valueOf(difficulty));
                         }
                         return;
                     }
+
                     count = count < this.difficulty ? count + 1 : this.difficulty;
                 }
 
                 count = Math.max(count, 0);
-                BlockStorage.addBlockInfo(location, keyCount, String.valueOf(count));
+                FinalTech.getLocationDataService().setLocationData(locationData, this.keyCount, String.valueOf(count));
             }
         }
 
-        if (blockMenu.hasViewer()) {
-            this.updateMenu(blockMenu, MatrixReactorMenu.STATUS_SLOT, this,
-                    config.getString(keyCount) == null ? "0" : config.getString(keyCount),
+        if (!inventory.getViewers().isEmpty()) {
+            this.updateInv(inventory, MatrixReactorMenu.STATUS_SLOT, this,
+                    JavaUtil.getFirstNotNull(FinalTech.getLocationDataService().getLocationData(locationData, this.keyCount), "0"),
                     String.valueOf(difficulty));
         }
     }
@@ -253,6 +247,6 @@ public class MatrixReactor extends AbstractMachine implements RecipeItem, MenuUp
             }
         }
         SlimefunItem slimefunItem = SlimefunItem.getByItem(item);
-        return slimefunItem == null || !notAllowedIdList.contains(slimefunItem.getId());
+        return slimefunItem == null || !this.notAllowedIdList.contains(slimefunItem.getId());
     }
 }

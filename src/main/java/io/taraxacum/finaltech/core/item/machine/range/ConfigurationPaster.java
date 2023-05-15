@@ -14,18 +14,18 @@ import io.taraxacum.finaltech.core.menu.AbstractMachineMenu;
 import io.taraxacum.finaltech.core.menu.machine.ConfigurationWorkerMenu;
 import io.taraxacum.finaltech.setup.FinalTechItemStacks;
 import io.taraxacum.finaltech.util.*;
+import io.taraxacum.libs.plugin.dto.LocationData;
+import io.taraxacum.libs.plugin.util.InventoryUtil;
 import io.taraxacum.libs.plugin.util.ItemStackUtil;
 import io.taraxacum.libs.plugin.util.ParticleUtil;
-import io.taraxacum.libs.slimefun.dto.LocationInfo;
-import me.mrCookieSlime.CSCoreLibPlugin.Configuration.Config;
-import me.mrCookieSlime.Slimefun.api.BlockStorage;
-import me.mrCookieSlime.Slimefun.api.inventory.BlockMenu;
+import io.taraxacum.libs.slimefun.util.LocationDataUtil;
 import org.bukkit.Location;
 import org.bukkit.Particle;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.block.data.Directional;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -37,7 +37,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * @author Final_ROOT
- * @since 2.2
  */
 public class ConfigurationPaster extends AbstractMachine implements RecipeItem, PointMachine, LineMachine, LocationMachine {
     private final Set<String> notAllowedId = new HashSet<>(ConfigUtil.getItemStringList(this, "not-allowed-id"));
@@ -56,7 +55,7 @@ public class ConfigurationPaster extends AbstractMachine implements RecipeItem, 
     @Nonnull
     @Override
     protected BlockBreakHandler onBlockBreak() {
-        return MachineUtil.simpleBlockBreakerHandler(this);
+        return MachineUtil.simpleBlockBreakerHandler(FinalTech.getLocationDataService(), this);
     }
 
     @Nullable
@@ -66,20 +65,24 @@ public class ConfigurationPaster extends AbstractMachine implements RecipeItem, 
     }
 
     @Override
-    protected void tick(@Nonnull Block block, @Nonnull SlimefunItem slimefunItem, @Nonnull Config config) {
-        BlockMenu blockMenu = BlockStorage.getInventory(block.getLocation());
+    protected void tick(@Nonnull Block block, @Nonnull SlimefunItem slimefunItem, @Nonnull LocationData locationData) {
+        Inventory inventory = FinalTech.getLocationDataService().getInventory(locationData);
+        if(inventory == null) {
+            return;
+        }
+        boolean hasViewer = !inventory.getViewers().isEmpty();
 
-        if(!ItemStackUtil.isItemNull(blockMenu.getItemInSlot(this.getOutputSlot()[0]))) {
+        if(!ItemStackUtil.isItemNull(inventory.getItem(this.getOutputSlot()[0]))) {
             return;
         }
 
-        ItemStack itemConfigurator = blockMenu.getItemInSlot(this.getInputSlot()[0]);
+        ItemStack itemConfigurator = inventory.getItem(this.getInputSlot()[0]);
         SlimefunItem machineConfigurator = SlimefunItem.getByItem(itemConfigurator);
         if(machineConfigurator == null || !FinalTechItemStacks.MACHINE_CONFIGURATOR.getItemId().equals(machineConfigurator.getId())) {
             return;
         }
 
-        ItemStack digitalItemStack = blockMenu.getItemInSlot(ConfigurationWorkerMenu.DIGITAL_SLOT);
+        ItemStack digitalItemStack = inventory.getItem(ConfigurationWorkerMenu.DIGITAL_SLOT);
         int digital = SlimefunItem.getByItem(digitalItemStack) instanceof DigitalItem digitalItem ? digitalItem.getDigit() : 0;
 
         BlockData blockData = block.getBlockData();
@@ -89,22 +92,23 @@ public class ConfigurationPaster extends AbstractMachine implements RecipeItem, 
                 AtomicBoolean atomicBoolean = new AtomicBoolean(false);
 
                 RangeFunction rangeFunction = location -> {
-                    if(atomicBoolean.get()) {
+                    if(atomicBoolean.get() || !location.getChunk().isLoaded()) {
                         return -1;
                     }
 
-                    LocationInfo locationInfo = LocationInfo.get(location);
-                    if (locationInfo != null) {
-                        if (ConfigurationPaster.this.notAllowedId.contains(locationInfo.getId())) {
+                    LocationData tempLocationData = FinalTech.getLocationDataService().getLocationData(location);
+                    if (tempLocationData != null) {
+                        String id = LocationDataUtil.getId(FinalTech.getLocationDataService(), tempLocationData);
+                        if(id == null || this.notAllowedId.contains(id)) {
                             return -1;
                         }
 
-                        if (ItemConfigurationUtil.loadConfigFromItem(outputItem, locationInfo)) {
-                            BlockTickerUtil.runTask(FinalTech.getLocationRunnableFactory(), FinalTech.isAsyncSlimefunItem(locationInfo.getId()), () -> FinalTech.getInstance().getServer().getPluginManager().callEvent(new ConfigSaveActionEvent(true, location, locationInfo.getId())), location);
+                        if (ItemConfigurationUtil.loadConfigFromItem(FinalTech.getLocationDataService(), outputItem, tempLocationData)) {
+                            BlockTickerUtil.runTask(FinalTech.getLocationRunnableFactory(), FinalTech.isAsyncSlimefunItem(id), () -> FinalTech.getInstance().getServer().getPluginManager().callEvent(new ConfigSaveActionEvent(true, location, id)), location);
 
-                            if (blockMenu.hasViewer()) {
+                            if (hasViewer) {
                                 JavaPlugin javaPlugin = ConfigurationPaster.this.getAddon().getJavaPlugin();
-                                javaPlugin.getServer().getScheduler().runTaskAsynchronously(javaPlugin, () -> ParticleUtil.drawCubeByBlock(javaPlugin, Particle.WAX_OFF, 0, locationInfo.getLocation().getBlock()));
+                                javaPlugin.getServer().getScheduler().runTaskAsynchronously(javaPlugin, () -> ParticleUtil.drawCubeByBlock(javaPlugin, Particle.WAX_OFF, 0, location.getBlock()));
                             }
                         }
                         atomicBoolean.set(true);
@@ -116,8 +120,9 @@ public class ConfigurationPaster extends AbstractMachine implements RecipeItem, 
 
                 int result = digital == 0 ? this.lineFunction(block, this.range, rangeFunction) : this.pointFunction(block, digital, rangeFunction);
 
-                blockMenu.pushItem(outputItem, this.getOutputSlot()[0]);
-                itemConfigurator.setAmount(itemConfigurator.getAmount() - 1);
+                if(InventoryUtil.tryPushAllItem(inventory, this.getOutputSlot(), outputItem)) {
+                    itemConfigurator.setAmount(itemConfigurator.getAmount() - 1);
+                }
             };
 
             BlockTickerUtil.runTask(FinalTech.getLocationRunnableFactory(), FinalTech.isAsyncSlimefunItem(this.getId()), runnable, () -> {

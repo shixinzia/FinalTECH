@@ -3,7 +3,7 @@ package io.taraxacum.finaltech.core.menu.machine;
 import io.github.thebusybiscuit.slimefun4.utils.ChestMenuUtils;
 import io.taraxacum.finaltech.core.item.machine.AbstractMachine;
 import io.taraxacum.finaltech.core.menu.AbstractMachineMenu;
-import io.taraxacum.finaltech.core.helper.Icon;
+import io.taraxacum.finaltech.core.option.Icon;
 import org.bukkit.Location;
 import org.bukkit.inventory.Inventory;
 
@@ -11,7 +11,6 @@ import javax.annotation.Nonnull;
 
 /**
  * @author Final_ROOT
- * @since 1.0
  */
 public class DustGeneratorMenu extends AbstractMachineMenu {
     private static final int[] BORDER = new int[] {0, 1, 2, 3, 5, 6, 7, 8, 9, 10, 16, 17, 18, 19, 25, 26, 27, 28, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44};

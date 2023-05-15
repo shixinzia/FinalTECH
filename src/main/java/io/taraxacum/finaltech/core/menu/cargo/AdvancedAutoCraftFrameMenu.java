@@ -7,25 +7,24 @@ import io.github.thebusybiscuit.slimefun4.libraries.dough.items.CustomItemStack;
 import io.github.thebusybiscuit.slimefun4.utils.ChestMenuUtils;
 import io.taraxacum.common.util.StringNumberUtil;
 import io.taraxacum.finaltech.FinalTech;
-import io.taraxacum.finaltech.core.helper.Icon;
+import io.taraxacum.finaltech.core.option.Icon;
 import io.taraxacum.finaltech.core.item.machine.AbstractMachine;
 import io.taraxacum.finaltech.core.item.machine.AdvancedAutoCraftFrame;
 import io.taraxacum.finaltech.core.menu.AbstractMachineMenu;
 import io.taraxacum.finaltech.setup.FinalTechItemStacks;
 import io.taraxacum.finaltech.setup.FinalTechItems;
-import io.taraxacum.finaltech.setup.FinalTechRecipeTypes;
 import io.taraxacum.finaltech.util.ConfigUtil;
-import io.taraxacum.finaltech.util.ConstantTableUtil;
+import io.taraxacum.finaltech.util.MachineUtil;
 import io.taraxacum.libs.plugin.dto.AdvancedMachineRecipe;
 import io.taraxacum.libs.plugin.dto.ItemAmountWrapper;
 import io.taraxacum.libs.plugin.dto.LocationRecipeRegistry;
 import io.taraxacum.libs.plugin.util.ItemStackUtil;
-import io.taraxacum.libs.plugin.util.StringItemUtil;
+import io.taraxacum.finaltech.util.StringItemUtil;
 import io.taraxacum.libs.slimefun.dto.MachineRecipeFactory;
 import io.taraxacum.libs.slimefun.dto.RecipeTypeRegistry;
+import io.taraxacum.libs.slimefun.service.SlimefunLocationDataService;
 import io.taraxacum.libs.slimefun.util.SfItemUtil;
 import me.mrCookieSlime.CSCoreLibPlugin.general.Inventory.ChestMenu;
-import me.mrCookieSlime.Slimefun.api.BlockStorage;
 import me.mrCookieSlime.Slimefun.api.inventory.BlockMenu;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -38,7 +37,6 @@ import java.util.*;
 
 /**
  * @author Final_ROOT
- * @since 2.0
  */
 public class AdvancedAutoCraftFrameMenu extends AbstractMachineMenu {
     public static final int PARSE_ITEM_SLOT = 46;
@@ -175,35 +173,7 @@ public class AdvancedAutoCraftFrameMenu extends AbstractMachineMenu {
 
             List<AdvancedMachineRecipe> advancedMachineRecipeList = this.recipeMap.get(sfMachineItem.getId());
             if (advancedMachineRecipeList != null) {
-                for (int i = 0; i < machineItem.getAmount(); i++) {
-                    boolean work = false;
-                    List<ItemAmountWrapper> inputListTemp = new ArrayList<>();
-                    for (ItemAmountWrapper oldInputItem : inputList) {
-                        if (oldInputItem.getAmount() < Integer.MAX_VALUE / ConstantTableUtil.ITEM_MAX_STACK) {
-                            for (AdvancedMachineRecipe advancedMachineRecipe : advancedMachineRecipeList) {
-                                for (AdvancedMachineRecipe.AdvancedRandomOutput advancedRandomOutput : advancedMachineRecipe.getOutputs()) {
-                                    ItemAmountWrapper outputItem = advancedRandomOutput.getOutputItem()[0];
-                                    if (advancedRandomOutput.getOutputItem().length == 1 && oldInputItem.getAmount() >= outputItem.getAmount() && ItemStackUtil.isItemSimilar(oldInputItem, outputItem)) {
-                                        int count = oldInputItem.getAmount() / outputItem.getAmount();
-                                        for (ItemAmountWrapper inputItem : advancedMachineRecipe.getInput()) {
-                                            ItemAmountWrapper.addToList(inputListTemp, inputItem, count * advancedMachineRecipe.getWeightSum() / advancedRandomOutput.weight());
-                                        }
-                                        oldInputItem.setAmount(oldInputItem.getAmount() - count * outputItem.getAmount());
-                                        work = true;
-                                    }
-                                }
-                            }
-                        }
-                        if (oldInputItem.getAmount() > 0) {
-                            ItemAmountWrapper.addToList(inputListTemp, oldInputItem);
-                            oldInputItem.setAmount(0);
-                        }
-                    }
-                    inputList = inputListTemp;
-                    if (!work) {
-                        break;
-                    }
-                }
+                inputList = MachineUtil.calParsed(inputList, advancedMachineRecipeList, machineItem.getAmount());
             } else if (FinalTechItems.COPY_CARD.verifyItem(machineItem)) {
                 ItemStack stringItem = StringItemUtil.parseItemInCard(machineItem);
                 if(!ItemStackUtil.isItemNull(stringItem)) {
@@ -224,7 +194,6 @@ public class AdvancedAutoCraftFrameMenu extends AbstractMachineMenu {
                         }
                     }
                 }
-
             }
         }
 
@@ -234,67 +203,71 @@ public class AdvancedAutoCraftFrameMenu extends AbstractMachineMenu {
     }
 
     private void setParseFailedMenu(@Nonnull Inventory inventory, @Nonnull Location location) {
-        BlockMenu blockMenu = BlockStorage.getInventory(location);
-        LocationRecipeRegistry.getInstance().setRecipe(location, null);
-        for (int slot : ITEM_INPUT_SLOT) {
-            inventory.setItem(slot, PARSE_FAILED_ICON);
-            blockMenu.addMenuClickHandler(slot, ChestMenuUtils.getEmptyClickHandler());
+        if(FinalTech.getLocationDataService() instanceof SlimefunLocationDataService slimefunLocationDataService) {
+            BlockMenu blockMenu = slimefunLocationDataService.getBlockMenu(location);
+            LocationRecipeRegistry.getInstance().setRecipe(location, null);
+            for (int slot : ITEM_INPUT_SLOT) {
+                inventory.setItem(slot, PARSE_FAILED_ICON);
+                blockMenu.addMenuClickHandler(slot, ChestMenuUtils.getEmptyClickHandler());
+            }
+            inventory.setItem(ITEM_OUTPUT_SLOT, Icon.BORDER_ICON);
+            blockMenu.addMenuClickHandler(ITEM_OUTPUT_SLOT, ChestMenuUtils.getEmptyClickHandler());
         }
-        inventory.setItem(ITEM_OUTPUT_SLOT, Icon.BORDER_ICON);
-        blockMenu.addMenuClickHandler(ITEM_OUTPUT_SLOT, ChestMenuUtils.getEmptyClickHandler());
     }
 
     private void setParseSuccessMenu(@Nonnull Inventory inventory, @Nonnull Location location, @Nonnull AdvancedMachineRecipe advancedMachineRecipe) {
-        BlockMenu blockMenu = BlockStorage.getInventory(location);
-        LocationRecipeRegistry.getInstance().setRecipe(location, advancedMachineRecipe);
-        int i;
-        for (i = 0; i < ITEM_INPUT_SLOT.length - 1; i++) {
-            if (i < advancedMachineRecipe.getInput().length) {
+        if(FinalTech.getLocationDataService() instanceof SlimefunLocationDataService slimefunLocationDataService) {
+            BlockMenu blockMenu = slimefunLocationDataService.getBlockMenu(location);
+            LocationRecipeRegistry.getInstance().setRecipe(location, advancedMachineRecipe);
+            int i;
+            for (i = 0; i < ITEM_INPUT_SLOT.length - 1; i++) {
+                if (i < advancedMachineRecipe.getInput().length) {
+                    int amount = advancedMachineRecipe.getInput()[i].getAmount();
+                    ItemStack icon = ItemStackUtil.cloneItem(advancedMachineRecipe.getInput()[i].getItemStack());
+                    SfItemUtil.removeSlimefunId(icon);
+                    icon.setAmount(Math.min(amount, 64));
+                    ItemStackUtil.addLoreToLast(icon, FinalTech.getLanguageManager().replaceString(FinalTech.getLanguageString("items", this.getSlimefunItem().getId(), "parse-amount"), String.valueOf(amount)));
+                    inventory.setItem(ITEM_INPUT_SLOT[i], icon);
+                } else {
+                    inventory.setItem(ITEM_INPUT_SLOT[i], this.parseSuccessIcon);
+                }
+                blockMenu.addMenuClickHandler(ITEM_INPUT_SLOT[i], ChestMenuUtils.getEmptyClickHandler());
+            }
+            if (advancedMachineRecipe.getInput().length < ITEM_INPUT_SLOT.length) {
+                blockMenu.replaceExistingItem(ITEM_INPUT_SLOT[i], this.parseSuccessIcon);
+            } else if (advancedMachineRecipe.getInput().length == ITEM_INPUT_SLOT.length) {
                 int amount = advancedMachineRecipe.getInput()[i].getAmount();
                 ItemStack icon = ItemStackUtil.cloneItem(advancedMachineRecipe.getInput()[i].getItemStack());
                 SfItemUtil.removeSlimefunId(icon);
                 icon.setAmount(Math.min(amount, 64));
                 ItemStackUtil.addLoreToLast(icon, FinalTech.getLanguageManager().replaceString(FinalTech.getLanguageString("items", this.getSlimefunItem().getId(), "parse-amount"), String.valueOf(amount)));
-                inventory.setItem(ITEM_INPUT_SLOT[i], icon);
+                blockMenu.replaceExistingItem(ITEM_INPUT_SLOT[i], icon);
+                blockMenu.addMenuClickHandler(ITEM_INPUT_SLOT[i], ChestMenuUtils.getEmptyClickHandler());
             } else {
-                inventory.setItem(ITEM_INPUT_SLOT[i], this.parseSuccessIcon);
-            }
-            blockMenu.addMenuClickHandler(ITEM_INPUT_SLOT[i], ChestMenuUtils.getEmptyClickHandler());
-        }
-        if (advancedMachineRecipe.getInput().length < ITEM_INPUT_SLOT.length) {
-            blockMenu.replaceExistingItem(ITEM_INPUT_SLOT[i], this.parseSuccessIcon);
-        } else if (advancedMachineRecipe.getInput().length == ITEM_INPUT_SLOT.length) {
-            int amount = advancedMachineRecipe.getInput()[i].getAmount();
-            ItemStack icon = ItemStackUtil.cloneItem(advancedMachineRecipe.getInput()[i].getItemStack());
-            SfItemUtil.removeSlimefunId(icon);
-            icon.setAmount(Math.min(amount, 64));
-            ItemStackUtil.addLoreToLast(icon, FinalTech.getLanguageManager().replaceString(FinalTech.getLanguageString("items", this.getSlimefunItem().getId(), "parse-amount"), String.valueOf(amount)));
-            blockMenu.replaceExistingItem(ITEM_INPUT_SLOT[i], icon);
-            blockMenu.addMenuClickHandler(ITEM_INPUT_SLOT[i], ChestMenuUtils.getEmptyClickHandler());
-        } else {
-            blockMenu.replaceExistingItem(ITEM_INPUT_SLOT[i], this.parseExtendIcon);
-            blockMenu.addMenuClickHandler(ITEM_INPUT_SLOT[i], (player, i1, itemStack, clickAction) -> {
-                ChestMenu chestMenu = new ChestMenu(ItemStackUtil.getItemName(advancedMachineRecipe.getOutput()[0].getItemStack()));
-                for (int slot = 0; slot < 54 && slot < advancedMachineRecipe.getInput().length; slot++) {
-                    if (advancedMachineRecipe.getInput().length > slot) {
-                        int amount = advancedMachineRecipe.getInput()[slot].getAmount();
-                        ItemStack icon = ItemStackUtil.cloneItem(advancedMachineRecipe.getInput()[slot].getItemStack());
-                        SfItemUtil.removeSlimefunId(icon);
-                        icon.setAmount(Math.min(amount, 64));
-                        ItemStackUtil.addLoreToLast(icon, FinalTech.getLanguageManager().replaceString(FinalTech.getLanguageString("items", this.getSlimefunItem().getId(), "parse-amount"), String.valueOf(amount)));
-                        chestMenu.addItem(slot, icon);
-                    } else {
-                        chestMenu.addItem(slot, Icon.BORDER_ICON);
+                blockMenu.replaceExistingItem(ITEM_INPUT_SLOT[i], this.parseExtendIcon);
+                blockMenu.addMenuClickHandler(ITEM_INPUT_SLOT[i], (player, i1, itemStack, clickAction) -> {
+                    ChestMenu chestMenu = new ChestMenu(ItemStackUtil.getItemName(advancedMachineRecipe.getOutput()[0].getItemStack()));
+                    for (int slot = 0; slot < 54 && slot < advancedMachineRecipe.getInput().length; slot++) {
+                        if (advancedMachineRecipe.getInput().length > slot) {
+                            int amount = advancedMachineRecipe.getInput()[slot].getAmount();
+                            ItemStack icon = ItemStackUtil.cloneItem(advancedMachineRecipe.getInput()[slot].getItemStack());
+                            SfItemUtil.removeSlimefunId(icon);
+                            icon.setAmount(Math.min(amount, 64));
+                            ItemStackUtil.addLoreToLast(icon, FinalTech.getLanguageManager().replaceString(FinalTech.getLanguageString("items", this.getSlimefunItem().getId(), "parse-amount"), String.valueOf(amount)));
+                            chestMenu.addItem(slot, icon);
+                        } else {
+                            chestMenu.addItem(slot, Icon.BORDER_ICON);
+                        }
+                        chestMenu.addMenuClickHandler(slot, ChestMenuUtils.getEmptyClickHandler());
                     }
-                    chestMenu.addMenuClickHandler(slot, ChestMenuUtils.getEmptyClickHandler());
-                }
-                chestMenu.open(player);
-                return false;
-            });
+                    chestMenu.open(player);
+                    return false;
+                });
+            }
+            ItemStack icon = ItemStackUtil.cloneItem(advancedMachineRecipe.getOutput()[0].getItemStack());
+            ItemStackUtil.addLoreToLast(icon, FinalTech.getLanguageManager().replaceString(FinalTech.getLanguageString("items", this.getSlimefunItem().getId(), "parse-amount"), String.valueOf(advancedMachineRecipe.getOutput()[0].getAmount())));
+            blockMenu.replaceExistingItem(ITEM_OUTPUT_SLOT, icon);
         }
-        ItemStack icon = ItemStackUtil.cloneItem(advancedMachineRecipe.getOutput()[0].getItemStack());
-        ItemStackUtil.addLoreToLast(icon, FinalTech.getLanguageManager().replaceString(FinalTech.getLanguageString("items", this.getSlimefunItem().getId(), "parse-amount"), String.valueOf(advancedMachineRecipe.getOutput()[0].getAmount())));
-        blockMenu.replaceExistingItem(ITEM_OUTPUT_SLOT, icon);
     }
 
     public void registerRecipe() {

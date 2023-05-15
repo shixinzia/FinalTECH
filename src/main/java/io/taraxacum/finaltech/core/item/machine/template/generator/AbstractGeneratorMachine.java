@@ -9,22 +9,21 @@ import io.github.thebusybiscuit.slimefun4.core.handlers.BlockPlaceHandler;
 import io.taraxacum.finaltech.FinalTech;
 import io.taraxacum.libs.plugin.dto.AdvancedMachineRecipe;
 import io.taraxacum.libs.plugin.dto.ItemAmountWrapper;
+import io.taraxacum.libs.plugin.dto.LocationData;
+import io.taraxacum.libs.plugin.util.InventoryUtil;
 import io.taraxacum.libs.slimefun.dto.RandomMachineRecipe;
 import io.taraxacum.finaltech.core.interfaces.RecipeItem;
 import io.taraxacum.libs.slimefun.dto.MachineRecipeFactory;
-import io.taraxacum.finaltech.core.helper.Icon;
+import io.taraxacum.finaltech.core.option.Icon;
 import io.taraxacum.finaltech.core.item.machine.AbstractMachine;
 import io.taraxacum.finaltech.core.menu.AbstractMachineMenu;
 import io.taraxacum.finaltech.core.menu.machine.GeneratorMachineMenu;
-import io.taraxacum.libs.plugin.util.ItemStackUtil;
 import io.taraxacum.finaltech.util.MachineUtil;
-import me.mrCookieSlime.CSCoreLibPlugin.Configuration.Config;
 import me.mrCookieSlime.Slimefun.Objects.SlimefunItem.abstractItems.MachineRecipe;
-import me.mrCookieSlime.Slimefun.api.BlockStorage;
-import me.mrCookieSlime.Slimefun.api.inventory.BlockMenu;
 import org.bukkit.Material;
 import org.bukkit.Tag;
 import org.bukkit.block.Block;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
 import javax.annotation.Nonnull;
@@ -33,7 +32,6 @@ import java.util.List;
 
 /**
  * @author Final_ROOT
- * @since 2.0
  */
 public abstract class AbstractGeneratorMachine extends AbstractMachine implements RecipeItem {
     private RandomMachineRecipe emptyInputRecipe;
@@ -51,7 +49,7 @@ public abstract class AbstractGeneratorMachine extends AbstractMachine implement
     @Nonnull
     @Override
     protected BlockBreakHandler onBlockBreak() {
-        return MachineUtil.simpleBlockBreakerHandler(this);
+        return MachineUtil.simpleBlockBreakerHandler(FinalTech.getLocationDataService(), this);
     }
 
     @Override
@@ -66,18 +64,19 @@ public abstract class AbstractGeneratorMachine extends AbstractMachine implement
     }
 
     @Override
-    protected void tick(@Nonnull Block block, @Nonnull SlimefunItem slimefunItem, @Nonnull Config config) {
-        BlockMenu blockMenu = BlockStorage.getInventory(block);
+    protected void tick(@Nonnull Block block, @Nonnull SlimefunItem slimefunItem, @Nonnull LocationData locationData) {
+        Inventory inventory = FinalTech.getLocationDataService().getInventory(locationData);
+        if(inventory == null) {
+            return;
+        }
+        boolean hasViewer = !inventory.getViewers().isEmpty();
+
         List<AdvancedMachineRecipe> advancedMachineRecipeList = MachineRecipeFactory.getInstance().getAdvancedRecipe(this.getId());
         AdvancedMachineRecipe advancedMachineRecipe = advancedMachineRecipeList.get((int) (FinalTech.getRandom().nextDouble() * advancedMachineRecipeList.size()));
         ItemAmountWrapper[] outputs = advancedMachineRecipe.getOutput();
-        int quantityModule = Icon.updateQuantityModule(blockMenu, GeneratorMachineMenu.MODULE_SLOT, GeneratorMachineMenu.STATUS_SLOT);
-        int maxMatch = Math.min(quantityModule, MachineUtil.calMaxMatch(blockMenu.toInventory(), this.getOutputSlot(), outputs));
-        if (maxMatch > 0) {
-            for (ItemStack itemStack : ItemStackUtil.calEnlargeItemArray(outputs, maxMatch)) {
-                blockMenu.pushItem(ItemStackUtil.cloneItem(itemStack), this.getOutputSlot());
-            }
-        }
+        int quantityModule = Icon.updateQuantityModule(inventory, hasViewer, GeneratorMachineMenu.MODULE_SLOT, GeneratorMachineMenu.STATUS_SLOT);
+
+        InventoryUtil.tryPushItem(inventory, this.getOutputSlot(), quantityModule, outputs);
     }
 
     @Override

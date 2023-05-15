@@ -1,12 +1,14 @@
 package io.taraxacum.finaltech.core.menu.clicker;
 
 import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItem;
+import io.taraxacum.finaltech.FinalTech;
 import io.taraxacum.finaltech.core.interfaces.DigitalItem;
 import io.taraxacum.finaltech.core.item.machine.clicker.AbstractClickerMachine;
 import io.taraxacum.finaltech.util.LocationUtil;
+import io.taraxacum.libs.plugin.util.InventoryUtil;
 import io.taraxacum.libs.plugin.util.ItemStackUtil;
 import io.taraxacum.libs.plugin.util.ParticleUtil;
-import me.mrCookieSlime.Slimefun.api.BlockStorage;
+import io.taraxacum.libs.slimefun.service.SlimefunLocationDataService;
 import me.mrCookieSlime.Slimefun.api.inventory.BlockMenu;
 import org.bukkit.Location;
 import org.bukkit.Particle;
@@ -20,8 +22,6 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import javax.annotation.Nonnull;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * @author Final_ROOT
@@ -42,7 +42,7 @@ public class ExpandedConsumableRemoteAccessorMenu extends AbstractClickerMenu {
     }
 
     @Override
-    protected void doFunction(@Nonnull BlockMenu blockMenu, @Nonnull Block block, @Nonnull Player player) {
+    protected void doFunction(@Nonnull Inventory inventory, @Nonnull Block block, @Nonnull Player player) {
         // TODO async
         int digit = -1;
         ItemStack[] digitItems = new ItemStack[INPUT_SLOT.length];
@@ -53,7 +53,7 @@ public class ExpandedConsumableRemoteAccessorMenu extends AbstractClickerMenu {
                 digit *= 16;
             }
 
-            ItemStack item = blockMenu.getItemInSlot(INPUT_SLOT[i]);
+            ItemStack item = inventory.getItem(INPUT_SLOT[i]);
             if(ItemStackUtil.isItemNull(item)) {
                 digit = -1;
                 break;
@@ -68,7 +68,7 @@ public class ExpandedConsumableRemoteAccessorMenu extends AbstractClickerMenu {
         }
 
         if(digit != -1) {
-            blockMenu.close();
+            InventoryUtil.closeInv(inventory);
 
             BlockData blockData = block.getState().getBlockData();
             if (blockData instanceof Directional) {
@@ -80,9 +80,9 @@ public class ExpandedConsumableRemoteAccessorMenu extends AbstractClickerMenu {
                         targetBlock = targetBlock.getRelative(blockFace);
                     }
 
-                    if(BlockStorage.hasInventory(targetBlock)) {
-                        BlockMenu targetBlockMenu = BlockStorage.getInventory(targetBlock);
-                        if(targetBlockMenu.canOpen(targetBlock, player)) {
+                    if(FinalTech.getLocationDataService() instanceof SlimefunLocationDataService slimefunLocationDataService) {
+                        BlockMenu targetBlockMenu = slimefunLocationDataService.getBlockMenu(targetBlock.getLocation());
+                        if(targetBlockMenu != null && targetBlockMenu.canOpen(targetBlock, player)) {
                             JavaPlugin javaPlugin = this.getSlimefunItem().getAddon().getJavaPlugin();
                             Block finalTargetBlock = targetBlock;
                             javaPlugin.getServer().getScheduler().runTaskAsynchronously(javaPlugin, () -> ParticleUtil.drawCubeByBlock(javaPlugin, Particle.WAX_OFF, 0, finalTargetBlock));
@@ -93,9 +93,9 @@ public class ExpandedConsumableRemoteAccessorMenu extends AbstractClickerMenu {
                 } else if(digit == 0) {
                     for (int i = 0; i < this.range; i++) {
                         targetBlock = targetBlock.getRelative(blockFace);
-                        if (BlockStorage.hasInventory(targetBlock)) {
-                            BlockMenu targetBlockMenu = BlockStorage.getInventory(targetBlock);
-                            if (targetBlockMenu.canOpen(targetBlock, player)) {
+                        if(FinalTech.getLocationDataService() instanceof SlimefunLocationDataService slimefunLocationDataService) {
+                            BlockMenu targetBlockMenu = slimefunLocationDataService.getBlockMenu(targetBlock.getLocation());
+                            if(targetBlockMenu != null && targetBlockMenu.canOpen(targetBlock, player)) {
                                 JavaPlugin javaPlugin = this.getSlimefunItem().getAddon().getJavaPlugin();
                                 Block finalTargetBlock = targetBlock;
                                 javaPlugin.getServer().getScheduler().runTaskAsynchronously(javaPlugin, () -> ParticleUtil.drawCubeByBlock(javaPlugin, Particle.WAX_OFF, 0, finalTargetBlock));

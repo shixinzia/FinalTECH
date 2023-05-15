@@ -7,9 +7,7 @@ import io.github.thebusybiscuit.slimefun4.api.recipes.RecipeType;
 import io.github.thebusybiscuit.slimefun4.core.attributes.EnergyNetProvider;
 import io.github.thebusybiscuit.slimefun4.core.handlers.BlockBreakHandler;
 import io.github.thebusybiscuit.slimefun4.core.handlers.BlockPlaceHandler;
-import io.github.thebusybiscuit.slimefun4.core.networks.energy.EnergyNetComponentType;
 import io.taraxacum.common.util.MathUtil;
-import io.taraxacum.common.util.StringNumberUtil;
 import io.taraxacum.finaltech.FinalTech;
 import io.taraxacum.finaltech.core.interfaces.MenuUpdater;
 import io.taraxacum.finaltech.core.interfaces.RecipeItem;
@@ -19,21 +17,20 @@ import io.taraxacum.finaltech.setup.FinalTechItems;
 import io.taraxacum.finaltech.util.MachineUtil;
 import io.taraxacum.finaltech.util.ConfigUtil;
 import io.taraxacum.finaltech.util.RecipeUtil;
-import me.mrCookieSlime.CSCoreLibPlugin.Configuration.Config;
-import me.mrCookieSlime.Slimefun.api.BlockStorage;
-import me.mrCookieSlime.Slimefun.api.inventory.BlockMenu;
+import io.taraxacum.libs.plugin.dto.LocationData;
+import io.taraxacum.libs.slimefun.interfaces.BeautifulEnergyProvider;
+import io.taraxacum.libs.slimefun.util.EnergyUtil;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
-import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
 import javax.annotation.Nonnull;
 
 /**
  * @author Final_ROOT
- * @since 1.0
  */
-public class DustGenerator extends AbstractMachine implements RecipeItem, MenuUpdater, EnergyNetProvider {
+public class DustGenerator extends AbstractMachine implements RecipeItem, MenuUpdater, EnergyNetProvider, BeautifulEnergyProvider {
     private final String keyCount = "count";
     private final int capacity = ConfigUtil.getOrDefaultItemSetting(Integer.MAX_VALUE / 4, this, "capacity");
     // default = 144115188344291328
@@ -47,18 +44,13 @@ public class DustGenerator extends AbstractMachine implements RecipeItem, MenuUp
     @Nonnull
     @Override
     protected BlockPlaceHandler onBlockPlace() {
-        return new BlockPlaceHandler(false) {
-            @Override
-            public void onPlayerPlace(@Nonnull BlockPlaceEvent blockPlaceEvent) {
-                BlockStorage.addBlockInfo(blockPlaceEvent.getBlock().getLocation(), keyCount, StringNumberUtil.ZERO);
-            }
-        };
+        return MachineUtil.BLOCK_PLACE_HANDLER_PLACER_DENY;
     }
 
     @Nonnull
     @Override
     protected BlockBreakHandler onBlockBreak() {
-        return MachineUtil.simpleBlockBreakerHandler(this);
+        return MachineUtil.simpleBlockBreakerHandler(FinalTech.getLocationDataService(), this);
     }
 
     @Nonnull
@@ -68,14 +60,19 @@ public class DustGenerator extends AbstractMachine implements RecipeItem, MenuUp
     }
 
     @Override
-    protected void tick(@Nonnull Block block, @Nonnull SlimefunItem slimefunItem, @Nonnull Config config) {
-        BlockMenu blockMenu = BlockStorage.getInventory(block);
+    protected void tick(@Nonnull Block block, @Nonnull SlimefunItem slimefunItem, @Nonnull LocationData locationData) {
+        Inventory inventory = FinalTech.getLocationDataService().getInventory(locationData);
+        if(inventory == null) {
+            return;
+        }
+
         Location location = block.getLocation();
 
-        long count = Long.parseLong(config.getString(keyCount));
+        String keyCountStr = FinalTech.getLocationDataService().getLocationData(locationData, this.keyCount);
+        long count = keyCountStr == null ? 0 : Long.parseLong(keyCountStr);
         boolean work = false;
         for (int slot : this.getInputSlot()) {
-            ItemStack itemStack = blockMenu.getItemInSlot(slot);
+            ItemStack itemStack = inventory.getItem(slot);
             if (FinalTechItems.UNORDERED_DUST.verifyItem(itemStack)) {
                 itemStack.setAmount(itemStack.getAmount() - 1);
                 count = Math.min(++count, this.countLimit);
@@ -94,13 +91,14 @@ public class DustGenerator extends AbstractMachine implements RecipeItem, MenuUp
         }
         int charge = (int) MathUtil.getBig(1, 1, -2 * count);
 
-        BlockStorage.addBlockInfo(location, keyCount, String.valueOf(count));
+
+        FinalTech.getLocationDataService().setLocationData(locationData, this.keyCount, String.valueOf(count));
         if (count > 0) {
             this.addCharge(location, charge);
         }
 
-        if(blockMenu.hasViewer()) {
-            this.updateMenu(blockMenu, DustGeneratorMenu.STATUS_SLOT, this,
+        if(!inventory.getViewers().isEmpty()) {
+            this.updateInv(inventory, DustGeneratorMenu.STATUS_SLOT, this,
                     String.valueOf(count),
                     String.valueOf(charge),
                     String.valueOf(this.getCharge(location)));
@@ -112,16 +110,11 @@ public class DustGenerator extends AbstractMachine implements RecipeItem, MenuUp
         return false;
     }
 
-    @Nonnull
     @Override
-    public EnergyNetComponentType getEnergyComponentType() {
-        return EnergyNetComponentType.GENERATOR;
-    }
-
-    @Override
-    public int getGeneratedOutput(@Nonnull Location location, @Nonnull Config config) {
-        int charge = this.getCharge(location);
-        this.setCharge(location, 0);
+    public int getGeneratedOutput(@Nonnull LocationData locationData) {
+        String chargeStr = EnergyUtil.getCharge(FinalTech.getLocationDataService(), locationData);
+        int charge = Integer.parseInt(chargeStr);
+        EnergyUtil.setCharge(FinalTech.getLocationDataService(), locationData, "0");
         return charge;
     }
 
@@ -135,4 +128,5 @@ public class DustGenerator extends AbstractMachine implements RecipeItem, MenuUp
         RecipeUtil.registerDescriptiveRecipe(FinalTech.getLanguageManager(), this,
                 String.valueOf(this.capacity));
     }
+
 }

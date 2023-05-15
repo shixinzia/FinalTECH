@@ -17,15 +17,14 @@ import io.taraxacum.finaltech.core.interfaces.RecipeItem;
 import io.taraxacum.finaltech.core.menu.AbstractMachineMenu;
 import io.taraxacum.finaltech.core.menu.unit.StatusMenu;
 import io.taraxacum.finaltech.util.BlockTickerUtil;
-import io.taraxacum.libs.slimefun.dto.LocationInfo;
+import io.taraxacum.libs.plugin.dto.LocationData;
 import io.taraxacum.libs.slimefun.util.EnergyUtil;
 import io.taraxacum.finaltech.util.MachineUtil;
-import me.mrCookieSlime.CSCoreLibPlugin.Configuration.Config;
-import me.mrCookieSlime.Slimefun.api.BlockStorage;
-import me.mrCookieSlime.Slimefun.api.inventory.BlockMenu;
+import io.taraxacum.libs.slimefun.util.LocationDataUtil;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
 import javax.annotation.Nonnull;
@@ -54,7 +53,7 @@ public class OverloadedChargeBase extends AbstractFaceMachine implements RecipeI
     @Nonnull
     @Override
     protected BlockBreakHandler onBlockBreak() {
-        return MachineUtil.simpleBlockBreakerHandler(this);
+        return MachineUtil.simpleBlockBreakerHandler(FinalTech.getLocationDataService(), this);
     }
 
     @Nonnull
@@ -64,16 +63,16 @@ public class OverloadedChargeBase extends AbstractFaceMachine implements RecipeI
     }
 
     @Override
-    protected void tick(@Nonnull Block block, @Nonnull SlimefunItem slimefunItem, @Nonnull Config config) {
+    protected void tick(@Nonnull Block block, @Nonnull SlimefunItem slimefunItem, @Nonnull LocationData locationData) {
         this.pointFunction(block, 1, location -> {
-            LocationInfo locationInfo = LocationInfo.get(location);
-            if (locationInfo != null && !notAllowedId.contains(locationInfo.getId())) {
-                BlockTickerUtil.runTask(FinalTech.getLocationRunnableFactory(), FinalTech.isAsyncSlimefunItem(locationInfo.getId()), () -> OverloadedChargeBase.this.doCharge(block, locationInfo), location);
+            LocationData tempLocationData = FinalTech.getLocationDataService().getLocationData(location);
+            if (tempLocationData != null && !notAllowedId.contains(LocationDataUtil.getId(FinalTech.getLocationDataService(), tempLocationData))) {
+                BlockTickerUtil.runTask(FinalTech.getLocationRunnableFactory(), FinalTech.isAsyncSlimefunItem(LocationDataUtil.getId(FinalTech.getLocationDataService(), tempLocationData)), () -> OverloadedChargeBase.this.doCharge(block, tempLocationData), location);
                 return 0;
             }
-            BlockMenu blockMenu = BlockStorage.getInventory(block);
-            if (blockMenu.hasViewer()) {
-                this.updateMenu(blockMenu, StatusMenu.STATUS_SLOT, this,
+            Inventory inventory = FinalTech.getLocationDataService().getInventory(locationData);
+            if (inventory != null && !inventory.getViewers().isEmpty()) {
+                this.updateInv(inventory, StatusMenu.STATUS_SLOT, this,
                         "0",
                         "0");
             }
@@ -86,26 +85,30 @@ public class OverloadedChargeBase extends AbstractFaceMachine implements RecipeI
         return false;
     }
 
-    private void doCharge(@Nonnull Block block, @Nonnull LocationInfo locationInfo) {
+    private void doCharge(@Nonnull Block block, @Nonnull LocationData locationData) {
         int storedEnergy = 0;
         int chargeEnergy = 0;
 
-        if (locationInfo.getSlimefunItem() instanceof EnergyNetComponent energyNetComponent && !JavaUtil.matchOnce(energyNetComponent.getEnergyComponentType(), EnergyNetComponentType.CAPACITOR, EnergyNetComponentType.GENERATOR)) {
+        if (LocationDataUtil.getSlimefunItem(FinalTech.getLocationDataService(), locationData) instanceof EnergyNetComponent energyNetComponent
+                && !JavaUtil.matchOnce(energyNetComponent.getEnergyComponentType(), EnergyNetComponentType.CAPACITOR, EnergyNetComponentType.GENERATOR)) {
             int capacity = energyNetComponent.getCapacity();
             int maxValue = capacity < Integer.MAX_VALUE / OverloadedChargeBase.this.maxLimit ? (int)(capacity * OverloadedChargeBase.this.maxLimit) : Integer.MAX_VALUE;
-            storedEnergy = Integer.parseInt(EnergyUtil.getCharge(locationInfo.getConfig()));
+            storedEnergy = Integer.parseInt(EnergyUtil.getCharge(FinalTech.getLocationDataService(), locationData));
             chargeEnergy = storedEnergy < maxValue - capacity * OverloadedChargeBase.this.efficiency ? (int)(capacity * OverloadedChargeBase.this.efficiency) : (maxValue - storedEnergy);
             if (chargeEnergy > 0) {
                 storedEnergy += chargeEnergy;
-                EnergyUtil.setCharge(locationInfo.getConfig(), storedEnergy);
+                EnergyUtil.setCharge(FinalTech.getLocationDataService(), locationData, String.valueOf(storedEnergy));
             }
         }
 
-        BlockMenu blockMenu = BlockStorage.getInventory(block);
-        if (blockMenu.hasViewer()) {
-            this.updateMenu(blockMenu, StatusMenu.STATUS_SLOT, this,
-                    String.valueOf(storedEnergy),
-                    String.valueOf(chargeEnergy));
+        LocationData tempLocationData = FinalTech.getLocationDataService().getLocationData(block.getLocation());
+        if(tempLocationData != null) {
+            Inventory inventory = FinalTech.getLocationDataService().getInventory(tempLocationData);
+            if (inventory != null && !inventory.getViewers().isEmpty()) {
+                this.updateInv(inventory, StatusMenu.STATUS_SLOT, this,
+                        String.valueOf(storedEnergy),
+                        String.valueOf(chargeEnergy));
+            }
         }
     }
 

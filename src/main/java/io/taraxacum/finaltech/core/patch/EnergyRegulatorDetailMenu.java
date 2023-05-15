@@ -9,15 +9,15 @@ import io.github.thebusybiscuit.slimefun4.utils.ChestMenuUtils;
 import io.taraxacum.common.util.ReflectionUtil;
 import io.taraxacum.finaltech.FinalTech;
 import io.taraxacum.finaltech.core.enchantment.NullEnchantment;
-import io.taraxacum.finaltech.core.helper.Icon;
+import io.taraxacum.finaltech.core.option.Icon;
 import io.taraxacum.finaltech.core.networks.AlteredEnergyNet;
 import io.taraxacum.finaltech.util.LocationUtil;
 import io.taraxacum.libs.plugin.dto.LanguageManager;
 import io.taraxacum.libs.plugin.util.ItemStackUtil;
 import io.taraxacum.libs.plugin.util.ParticleUtil;
+import io.taraxacum.libs.slimefun.service.SlimefunLocationDataService;
 import io.taraxacum.libs.slimefun.util.SfItemUtil;
 import me.mrCookieSlime.CSCoreLibPlugin.general.Inventory.ChestMenu;
-import me.mrCookieSlime.Slimefun.api.BlockStorage;
 import me.mrCookieSlime.Slimefun.api.inventory.BlockMenu;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -32,7 +32,6 @@ import java.util.stream.Collectors;
 /**
  * This menu should only be opened by one player at same time.
  * @author Final_ROOT
- * @since 2.4
  */
 public class EnergyRegulatorDetailMenu extends ChestMenu {
     private static final int[] CONTENT = new int[] {0, 1, 2, 3, 4, 5, 6, 9, 10 ,11 ,12, 13, 14, 15, 18, 19, 20, 21, 22, 23, 24, 27, 28, 29, 30, 31, 32, 33, 36, 37, 38, 39, 40, 41, 42, 45, 46, 47, 48, 49, 50, 51};
@@ -237,11 +236,13 @@ public class EnergyRegulatorDetailMenu extends ChestMenu {
 
                 this.replaceExistingItem(CONTENT[i], itemStack);
                 this.addMenuClickHandler(CONTENT[i], (p, slot, item, action) -> {
-                    BlockMenu blockMenu = BlockStorage.getInventory(componentLocation);
-                    if(blockMenu != null && blockMenu.canOpen(this.location.getBlock(), p)) {
-                        blockMenu.open(p);
+                    if (FinalTech.getLocationDataService() instanceof SlimefunLocationDataService slimefunLocationDataService) {
+                        BlockMenu blockMenu = slimefunLocationDataService.getBlockMenu(componentLocation);
+                        if(blockMenu != null && blockMenu.canOpen(this.location.getBlock(), p)) {
+                            blockMenu.open(p);
+                        }
+                        Bukkit.getScheduler().runTaskAsynchronously(FinalTech.getInstance(), () -> ParticleUtil.drawCubeByBlock(FinalTech.getInstance(), Particle.WAX_OFF, 0, componentLocation.getBlock()));
                     }
-                    Bukkit.getScheduler().runTaskAsynchronously(FinalTech.getInstance(), () -> ParticleUtil.drawCubeByBlock(FinalTech.getInstance(), Particle.WAX_OFF, 0, componentLocation.getBlock()));
                     return false;
                 });
             } else {

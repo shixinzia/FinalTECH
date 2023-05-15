@@ -6,7 +6,8 @@ import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItemStack;
 import io.github.thebusybiscuit.slimefun4.libraries.paperlib.PaperLib;
 import io.taraxacum.common.util.JavaUtil;
 import io.taraxacum.finaltech.FinalTech;
-import io.taraxacum.finaltech.core.helper.Icon;
+import io.taraxacum.finaltech.core.enums.LogSourceType;
+import io.taraxacum.finaltech.core.option.Icon;
 import io.taraxacum.finaltech.core.interfaces.RecipeItem;
 import io.taraxacum.finaltech.setup.FinalTechRecipeTypes;
 import io.taraxacum.finaltech.util.LocationUtil;
@@ -33,7 +34,6 @@ import java.util.List;
 
 /**
  * @author Final_ROOT
- * @since 2.4
  */
 public class BedrockCraftTable extends AbstractMultiBlockItem implements RecipeItem {
     public BedrockCraftTable(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item, @Nonnull ItemStack[] recipe) {

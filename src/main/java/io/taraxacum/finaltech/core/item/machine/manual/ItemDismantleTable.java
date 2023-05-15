@@ -5,12 +5,12 @@ import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItem;
 import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItemStack;
 import io.github.thebusybiscuit.slimefun4.api.recipes.RecipeType;
 import io.github.thebusybiscuit.slimefun4.core.handlers.BlockBreakHandler;
-import io.github.thebusybiscuit.slimefun4.core.handlers.BlockPlaceHandler;
 import io.taraxacum.common.util.JavaUtil;
 import io.taraxacum.common.util.StringNumberUtil;
 import io.taraxacum.finaltech.FinalTech;
 import io.taraxacum.finaltech.core.menu.manual.AbstractManualMachineMenu;
 import io.taraxacum.finaltech.util.RecipeUtil;
+import io.taraxacum.libs.plugin.dto.LocationData;
 import io.taraxacum.libs.slimefun.dto.RecipeTypeRegistry;
 import io.taraxacum.finaltech.core.interfaces.RecipeItem;
 import io.taraxacum.finaltech.core.menu.machine.ItemDismantleTableMenu;
@@ -18,10 +18,8 @@ import io.taraxacum.libs.plugin.util.ItemStackUtil;
 import io.taraxacum.finaltech.util.MachineUtil;
 import io.taraxacum.finaltech.util.ConfigUtil;
 import io.taraxacum.libs.slimefun.interfaces.ValidItem;
-import me.mrCookieSlime.CSCoreLibPlugin.Configuration.Config;
-import me.mrCookieSlime.Slimefun.api.BlockStorage;
-import me.mrCookieSlime.Slimefun.api.inventory.BlockMenu;
 import org.bukkit.block.Block;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
 import javax.annotation.Nonnull;
@@ -46,14 +44,8 @@ public class ItemDismantleTable extends AbstractManualMachine implements RecipeI
 
     @Nonnull
     @Override
-    protected BlockPlaceHandler onBlockPlace() {
-        return MachineUtil.BLOCK_PLACE_HANDLER_PLACER_DENY;
-    }
-
-    @Nonnull
-    @Override
     protected BlockBreakHandler onBlockBreak() {
-        return MachineUtil.simpleBlockBreakerHandler(this);
+        return MachineUtil.simpleBlockBreakerHandler(FinalTech.getLocationDataService(), this);
     }
 
     @Nonnull
@@ -63,21 +55,16 @@ public class ItemDismantleTable extends AbstractManualMachine implements RecipeI
     }
 
     @Override
-    protected void tick(@Nonnull Block block, @Nonnull SlimefunItem slimefunItem, @Nonnull Config config) {
-        String count = JavaUtil.getFirstNotNull(config.getString(key), StringNumberUtil.ZERO);
-        if(StringNumberUtil.compare(count, limit) < 0) {
-            config.setValue(key, StringNumberUtil.add(count));
+    protected void tick(@Nonnull Block block, @Nonnull SlimefunItem slimefunItem, @Nonnull LocationData locationData) {
+        String count = JavaUtil.getFirstNotNull(FinalTech.getLocationDataService().getLocationData(locationData, this.key), StringNumberUtil.ZERO);
+        if(StringNumberUtil.compare(count, this.limit) < 0) {
+            FinalTech.getLocationDataService().setLocationData(locationData, this.key, StringNumberUtil.add(count));
         }
 
-        BlockMenu blockMenu = BlockStorage.getInventory(block);
-        if(blockMenu != null && blockMenu.hasViewer()) {
-            this.getMachineMenu().updateInventory(blockMenu.toInventory(), block.getLocation());
+        Inventory inventory = FinalTech.getLocationDataService().getInventory(locationData);
+        if (inventory != null && !inventory.getViewers().isEmpty()) {
+            this.getMachineMenu().updateInventory(inventory, block.getLocation());
         }
-    }
-
-    @Override
-    protected boolean isSynchronized() {
-        return false;
     }
 
     @Override

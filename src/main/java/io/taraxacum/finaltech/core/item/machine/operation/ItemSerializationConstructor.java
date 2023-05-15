@@ -5,9 +5,9 @@ import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItem;
 import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItemStack;
 import io.github.thebusybiscuit.slimefun4.api.recipes.RecipeType;
 import io.github.thebusybiscuit.slimefun4.core.handlers.BlockBreakHandler;
-import io.github.thebusybiscuit.slimefun4.libraries.dough.inventory.InvUtils;
 import io.github.thebusybiscuit.slimefun4.libraries.dough.items.CustomItemStack;
 import io.taraxacum.finaltech.FinalTech;
+import io.taraxacum.finaltech.core.enums.LogSourceType;
 import io.taraxacum.finaltech.core.interfaces.UnCopiableItem;
 import io.taraxacum.finaltech.core.menu.AbstractMachineMenu;
 import io.taraxacum.finaltech.core.operation.ItemSerializationConstructorOperation;
@@ -16,14 +16,16 @@ import io.taraxacum.finaltech.core.menu.machine.ItemSerializationConstructorMenu
 import io.taraxacum.finaltech.setup.FinalTechItemStacks;
 import io.taraxacum.finaltech.setup.FinalTechItems;
 import io.taraxacum.finaltech.util.*;
+import io.taraxacum.libs.plugin.dto.LocationData;
+import io.taraxacum.libs.plugin.util.InventoryUtil;
 import io.taraxacum.libs.plugin.util.ItemStackUtil;
-import me.mrCookieSlime.CSCoreLibPlugin.Configuration.Config;
-import me.mrCookieSlime.Slimefun.api.BlockStorage;
+import io.taraxacum.libs.slimefun.service.SlimefunLocationDataService;
 import me.mrCookieSlime.Slimefun.api.inventory.BlockMenu;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
 import javax.annotation.Nonnull;
@@ -39,8 +41,8 @@ import java.util.List;
  */
 public class ItemSerializationConstructor extends AbstractOperationMachine {
     private final CustomItemStack nullInfoIcon = new CustomItemStack(Material.RED_STAINED_GLASS_PANE, FinalTech.getLanguageString("items", this.getId(), "null-icon", "name"), FinalTech.getLanguageStringArray("items", this.getId(), "null-icon", "lore"));
-    private final String blockStorageItemKey = "item";
-    private final String blockStorageAmountKey = "amount";
+    private final String keyItem = "i";
+    private final String keyAmount = "a";
 
     private double efficiency = 1;
     private final double rate = ConfigUtil.getOrDefaultItemSetting(0.9, FinalTechItemStacks.ITEM_SERIALIZATION_CONSTRUCTOR.getItemId(), "rate");
@@ -58,9 +60,14 @@ public class ItemSerializationConstructor extends AbstractOperationMachine {
             @Override
             public void onPlayerBreak(@Nonnull BlockBreakEvent blockBreakEvent, @Nonnull ItemStack item, @Nonnull List<ItemStack> drops) {
                 Location location = blockBreakEvent.getBlock().getLocation();
-                BlockMenu blockMenu = BlockStorage.getInventory(location);
-                blockMenu.dropItems(location, ItemSerializationConstructor.this.getInputSlot());
-                blockMenu.dropItems(location, ItemSerializationConstructor.this.getOutputSlot());
+                if(FinalTech.getLocationDataService() instanceof SlimefunLocationDataService slimefunLocationDataService) {
+                    BlockMenu blockMenu = slimefunLocationDataService.getBlockMenu(location);
+                    if(blockMenu != null && blockMenu.getPreset().getID().equals(ItemSerializationConstructor.this.getId())) {
+                        Inventory inventory = blockMenu.toInventory();
+                        InventoryUtil.dropItems(inventory, location, ItemSerializationConstructor.this.getInputSlot());
+                        InventoryUtil.dropItems(inventory, location, ItemSerializationConstructor.this.getOutputSlot());
+                    }
+                }
 
                 ItemSerializationConstructor.this.getMachineProcessor().endOperation(location);
             }
@@ -74,42 +81,45 @@ public class ItemSerializationConstructor extends AbstractOperationMachine {
     }
 
     @Override
-    protected void tick(@Nonnull Block block, @Nonnull SlimefunItem slimefunItem, @Nonnull Config config) {
+    protected void tick(@Nonnull Block block, @Nonnull SlimefunItem slimefunItem, @Nonnull LocationData locationData) {
         Location location = block.getLocation();
         this.locationList.add(location);
-        BlockMenu blockMenu = BlockStorage.getInventory(block);
+
+        Inventory inventory = FinalTech.getLocationDataService().getInventory(locationData);
+        if(inventory == null) {
+            return;
+        }
 
         if(FinalTech.getTps() < ConstantTableUtil.WARNING_TPS && this.lastLocationList.size() > 1) {
-            if (BlockTickerUtil.hasSleep(config)) {
-                BlockTickerUtil.subSleep(config);
+            if (!BlockTickerUtil.subSleep(FinalTech.getLocationDataService(), locationData)) {
                 return;
             }
 
             Location randomLocation = this.lastLocationList.get(FinalTech.getRandom().nextInt(this.lastLocationList.size()));
             double manhattanDistance = LocationUtil.getManhattanDistance(randomLocation, location);
             if(manhattanDistance < this.lastLocationList.size()) {
-                BlockTickerUtil.setSleep(config, String.valueOf(this.lastLocationList.size() * (int)(20 - FinalTech.getTps() + 1) * (1 + MachineUtil.slotCount(blockMenu.toInventory(), this.getInputSlot()))));
+                BlockTickerUtil.setSleep(FinalTech.getLocationDataService(), locationData, this.lastLocationList.size() * (int)(20 - FinalTech.getTps() + 1) * (1 + InventoryUtil.slotCount(inventory, this.getInputSlot())));
                 return;
             }
         }
 
         ItemSerializationConstructorOperation operation = (ItemSerializationConstructorOperation) this.getMachineProcessor().getOperation(block);
 
-        if (operation == null && config.contains(this.blockStorageItemKey)) {
-            String itemString = config.getString(this.blockStorageItemKey);
+        String itemString = FinalTech.getLocationDataService().getLocationData(locationData, this.keyItem);
+        if (operation == null && itemString != null) {
             ItemStack stringItem = ItemStackUtil.stringToItemStack(itemString);
             if (!ItemStackUtil.isItemNull(stringItem) && ItemSerializationConstructorOperation.getType(stringItem) == ItemSerializationConstructorOperation.COPY_CARD) {
                 operation = ItemSerializationConstructorOperation.newInstance(stringItem);
                 if (operation != null) {
                     this.getMachineProcessor().startOperation(block, operation);
-                    int amount = (int) Double.parseDouble(config.getString(blockStorageAmountKey));
+                    int amount = (int) Double.parseDouble(FinalTech.getLocationDataService().getLocationData(locationData, this.keyAmount));
                     ((ItemCopyCardOperation)operation).setCount(amount);
                 }
             }
         }
 
         for (int slot : this.getInputSlot()) {
-            ItemStack inputItem = blockMenu.getItemInSlot(slot);
+            ItemStack inputItem = inventory.getItem(slot);
             if (ItemStackUtil.isItemNull(inputItem)) {
                 continue;
             }
@@ -129,22 +139,33 @@ public class ItemSerializationConstructor extends AbstractOperationMachine {
             }
         }
 
-        if (operation != null && operation.isFinished() && InvUtils.fits(blockMenu.toInventory(), operation.getResult(), this.getOutputSlot())) {
-            blockMenu.pushItem(operation.getResult(), this.getOutputSlot());
+        if (operation != null && operation.isFinished() && InventoryUtil.tryPushAllItem(inventory, this.getOutputSlot(), operation.getResult())) {
+            if(operation.getType() == ItemSerializationConstructorOperation.COPY_CARD) {
+                FinalTech.getLogService().addItem(FinalTechItems.COPY_CARD.getId(), 1, this.getId(), LogSourceType.SLIMEFUN_MACHINE, null, location, this.getAddon().getJavaPlugin());
+            } else if(operation.getType() == ItemSerializationConstructorOperation.ITEM_PHONY) {
+                SlimefunItem sfItem = SlimefunItem.getByItem(operation.getResult());
+                if(sfItem != null) {
+                    FinalTech.getLogService().addItem(sfItem.getId(), 1, this.getId(), LogSourceType.SLIMEFUN_MACHINE, null, location, this.getAddon().getJavaPlugin());
+                }
+            }
             this.getMachineProcessor().endOperation(block);
             operation = null;
-            BlockStorage.addBlockInfo(location, this.blockStorageItemKey, null);
-            BlockStorage.addBlockInfo(location, this.blockStorageAmountKey, null);
+            FinalTech.getLocationDataService().setLocationData(locationData, this.keyItem, null);
+            FinalTech.getLocationDataService().setLocationData(locationData, this.keyAmount, null);
         }
 
         if (operation != null && operation.getType() == ItemSerializationConstructorOperation.COPY_CARD) {
-            if(!config.contains(this.blockStorageItemKey)) {
-                BlockStorage.addBlockInfo(location, this.blockStorageItemKey, ItemStackUtil.itemStackToString(((ItemCopyCardOperation)operation).getMatchItem()));
+            itemString = FinalTech.getLocationDataService().getLocationData(locationData, this.keyItem);
+            if(itemString == null) {
+                itemString = FinalTech.safeSql() ? SqlUtil.getSafeSql(ItemStackUtil.itemStackToString(((ItemCopyCardOperation)operation).getMatchItem())) : ItemStackUtil.itemStackToString(((ItemCopyCardOperation)operation).getMatchItem());
+                if(itemString != null) {
+                    FinalTech.getLocationDataService().setLocationData(locationData, this.keyItem, itemString);
+                }
             }
-            BlockStorage.addBlockInfo(location, this.blockStorageAmountKey, String.valueOf((int)((ItemCopyCardOperation)operation).getCount()));
+            FinalTech.getLocationDataService().setLocationData(locationData, this.keyAmount, String.valueOf((int)((ItemCopyCardOperation)operation).getCount()));
         }
 
-        if (blockMenu.hasViewer()) {
+        if (!inventory.getViewers().isEmpty()) {
             ItemStack showItem;
             if (operation != null) {
                 operation.updateShowItem();
@@ -152,7 +173,7 @@ public class ItemSerializationConstructor extends AbstractOperationMachine {
             } else {
                 showItem = this.nullInfoIcon;
             }
-            blockMenu.replaceExistingItem(ItemSerializationConstructorMenu.STATUS_SLOT, showItem);
+            inventory.setItem(ItemSerializationConstructorMenu.STATUS_SLOT, showItem);
         }
     }
 

@@ -4,19 +4,21 @@ import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItem;
 import io.github.thebusybiscuit.slimefun4.libraries.dough.items.CustomItemStack;
 import io.github.thebusybiscuit.slimefun4.utils.ChestMenuUtils;
 import io.taraxacum.finaltech.FinalTech;
+import io.taraxacum.finaltech.core.enums.LogSourceType;
 import io.taraxacum.finaltech.core.item.machine.AbstractMachine;
 import io.taraxacum.finaltech.core.item.unusable.CopyCard;
 import io.taraxacum.finaltech.core.item.unusable.StorageCard;
 import io.taraxacum.finaltech.setup.FinalTechItemStacks;
 import io.taraxacum.finaltech.setup.FinalTechItems;
 import io.taraxacum.libs.plugin.util.ItemStackUtil;
-import io.taraxacum.libs.plugin.util.StringItemUtil;
+import io.taraxacum.finaltech.util.StringItemUtil;
 import io.taraxacum.common.util.StringNumberUtil;
 import io.taraxacum.finaltech.util.ConfigUtil;
 import me.mrCookieSlime.Slimefun.api.inventory.BlockMenu;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -29,7 +31,6 @@ import java.util.List;
 
 /**
  * @author Final_ROOT
- * @since 2.0
  */
 public class CardOperationPortMenu extends AbstractManualMachineMenu {
     private static final int[] BORDER = new int[] {3, 4, 5, 12, 14, 21, 22, 23, 27, 28, 29, 33, 34, 35, 36, 37, 38, 42, 43, 44, 45, 46, 47, 51, 52, 53};
@@ -105,7 +106,7 @@ public class CardOperationPortMenu extends AbstractManualMachineMenu {
             }
 
             @Override
-            public boolean craft(@Nullable ItemStack itemStack1, @Nullable ItemStack itemStack2, @Nonnull Inventory inventory, int outputSlot) {
+            public boolean craft(@Nullable ItemStack itemStack1, @Nullable ItemStack itemStack2, @Nonnull Inventory inventory, int outputSlot, @Nonnull Player player, @Nonnull Location location) {
                 if(ItemStackUtil.isItemNull(itemStack1) || ItemStackUtil.isItemNull(itemStack2)) {
                     return false;
                 }
@@ -213,7 +214,7 @@ public class CardOperationPortMenu extends AbstractManualMachineMenu {
             }
 
             @Override
-            public boolean craft(@Nullable ItemStack itemStack1, @Nullable ItemStack itemStack2, @Nonnull Inventory inventory, int outputSlot) {
+            public boolean craft(@Nullable ItemStack itemStack1, @Nullable ItemStack itemStack2, @Nonnull Inventory inventory, int outputSlot, @Nonnull Player player, @Nonnull Location location) {
                 if(ItemStackUtil.isItemNull(itemStack1) || ItemStackUtil.isItemNull(itemStack2)) {
                     return false;
                 }
@@ -250,6 +251,9 @@ public class CardOperationPortMenu extends AbstractManualMachineMenu {
                 itemPhony.setAmount(itemPhony.getAmount() - 1);
                 itemCopyCard.setAmount(itemCopyCard.getAmount() - 1);
                 inventory.setItem(outputSlot, outputItem);
+
+                FinalTech.getLogService().subItem(FinalTechItems.COPY_CARD.getId(), 1, CardOperationPortMenu.this.getID(), LogSourceType.SLIMEFUN_MACHINE, player, location, CardOperationPortMenu.this.getSlimefunItem().getAddon().getJavaPlugin());
+                FinalTech.getLogService().subItem(FinalTechItems.ITEM_PHONY.getId(), 1, CardOperationPortMenu.this.getID(), LogSourceType.SLIMEFUN_MACHINE, player, location, CardOperationPortMenu.this.getSlimefunItem().getAddon().getJavaPlugin());
 
                 return true;
             }
@@ -312,7 +316,7 @@ public class CardOperationPortMenu extends AbstractManualMachineMenu {
             }
 
             @Override
-            public boolean craft(@Nullable ItemStack itemStack1, @Nullable ItemStack itemStack2, @Nonnull Inventory inventory, int outputSlot) {
+            public boolean craft(@Nullable ItemStack itemStack1, @Nullable ItemStack itemStack2, @Nonnull Inventory inventory, int outputSlot, @Nonnull Player player, @Nonnull Location location) {
                 if(ItemStackUtil.isItemNull(itemStack1) || ItemStackUtil.isItemNull(itemStack2)) {
                     return false;
                 }
@@ -425,7 +429,7 @@ public class CardOperationPortMenu extends AbstractManualMachineMenu {
             }
 
             @Override
-            public boolean craft(@Nullable ItemStack itemStack1, @Nullable ItemStack itemStack2, @Nonnull Inventory inventory, int outputSlot) {
+            public boolean craft(@Nullable ItemStack itemStack1, @Nullable ItemStack itemStack2, @Nonnull Inventory inventory, int outputSlot, @Nonnull Player player, @Nonnull Location location) {
                 if (!ItemStackUtil.isItemNull(itemStack1) && !ItemStackUtil.isItemNull(itemStack2) && itemStack1.hasItemMeta() && itemStack2.hasItemMeta()) {
                     ItemMeta itemMeta1 = itemStack1.getItemMeta();
                     ItemMeta itemMeta2 = itemStack2.getItemMeta();
@@ -488,18 +492,22 @@ public class CardOperationPortMenu extends AbstractManualMachineMenu {
             }
 
             @Override
-            public boolean craft(@Nullable ItemStack itemStack1, @Nullable ItemStack itemStack2, @Nonnull Inventory inventory, int outputSlot) {
+            public boolean craft(@Nullable ItemStack itemStack1, @Nullable ItemStack itemStack2, @Nonnull Inventory inventory, int outputSlot, @Nonnull Player player, @Nonnull Location location) {
                 if (!ItemStackUtil.isItemNull(itemStack1) && FinalTechItems.COPY_CARD.verifyItem(itemStack1) && FinalTechItems.SHELL.verifyItem(itemStack2) && !ItemStackUtil.isItemNull(StringItemUtil.parseItemInCard(itemStack1))) {
                     itemStack2.setAmount(itemStack2.getAmount() - 1);
                     ItemStack outputItem = ItemStackUtil.cloneItem(itemStack1);
                     outputItem.setAmount(1);
                     inventory.setItem(outputSlot, outputItem);
+                    FinalTech.getLogService().subItem(FinalTechItems.SHELL.getId(), 1, CardOperationPortMenu.this.getID(), LogSourceType.SLIMEFUN_MACHINE, player, location, CardOperationPortMenu.this.getSlimefunItem().getAddon().getJavaPlugin());
+                    FinalTech.getLogService().addItem(FinalTechItems.COPY_CARD.getId(), 1, CardOperationPortMenu.this.getID(), LogSourceType.SLIMEFUN_MACHINE, player, location, CardOperationPortMenu.this.getSlimefunItem().getAddon().getJavaPlugin());
                     return true;
                 } else if (!ItemStackUtil.isItemNull(itemStack2) && FinalTechItems.COPY_CARD.verifyItem(itemStack2) && FinalTechItems.SHELL.verifyItem(itemStack1) && !ItemStackUtil.isItemNull(StringItemUtil.parseItemInCard(itemStack2))) {
                     itemStack1.setAmount(itemStack1.getAmount() - 1);
                     ItemStack outputItem = ItemStackUtil.cloneItem(itemStack2);
                     outputItem.setAmount(1);
                     inventory.setItem(outputSlot, outputItem);
+                    FinalTech.getLogService().subItem(FinalTechItems.SHELL.getId(), 1, CardOperationPortMenu.this.getID(), LogSourceType.SLIMEFUN_MACHINE, player, location, CardOperationPortMenu.this.getSlimefunItem().getAddon().getJavaPlugin());
+                    FinalTech.getLogService().addItem(FinalTechItems.COPY_CARD.getId(), 1, CardOperationPortMenu.this.getID(), LogSourceType.SLIMEFUN_MACHINE, player, location, CardOperationPortMenu.this.getSlimefunItem().getAddon().getJavaPlugin());
                     return true;
                 }
                 return false;
@@ -546,11 +554,14 @@ public class CardOperationPortMenu extends AbstractManualMachineMenu {
             }
 
             @Override
-            public boolean craft(@Nullable ItemStack itemStack1, @Nullable ItemStack itemStack2, @Nonnull Inventory inventory, int outputSlot) {
+            public boolean craft(@Nullable ItemStack itemStack1, @Nullable ItemStack itemStack2, @Nonnull Inventory inventory, int outputSlot, @Nonnull Player player, @Nonnull Location location) {
                 if (this.canCraft(itemStack1, itemStack2)) {
                     itemStack1.setAmount(itemStack1.getAmount() - 1);
                     itemStack2.setAmount(itemStack2.getAmount() - 1);
                     inventory.setItem(outputSlot, FinalTechItems.ITEM_PHONY.getValidItem());
+                    FinalTech.getLogService().subItem(FinalTechItems.SINGULARITY.getId(), 1, CardOperationPortMenu.this.getID(), LogSourceType.SLIMEFUN_MACHINE, player, location, CardOperationPortMenu.this.getSlimefunItem().getAddon().getJavaPlugin());
+                    FinalTech.getLogService().subItem(FinalTechItems.SPIROCHETE.getId(), 1, CardOperationPortMenu.this.getID(), LogSourceType.SLIMEFUN_MACHINE, player, location, CardOperationPortMenu.this.getSlimefunItem().getAddon().getJavaPlugin());
+                    FinalTech.getLogService().addItem(FinalTechItems.ITEM_PHONY.getId(), 1, CardOperationPortMenu.this.getID(), LogSourceType.SLIMEFUN_MACHINE, player, location, CardOperationPortMenu.this.getSlimefunItem().getAddon().getJavaPlugin());
                     return true;
                 }
                 return false;
@@ -595,16 +606,20 @@ public class CardOperationPortMenu extends AbstractManualMachineMenu {
             }
 
             @Override
-            public boolean craft(@Nullable ItemStack itemStack1, @Nullable ItemStack itemStack2, @Nonnull Inventory inventory, int outputSlot) {
+            public boolean craft(@Nullable ItemStack itemStack1, @Nullable ItemStack itemStack2, @Nonnull Inventory inventory, int outputSlot, @Nonnull Player player, @Nonnull Location location) {
                 if (FinalTechItems.SINGULARITY.verifyItem(itemStack1) || FinalTechItems.SPIROCHETE.verifyItem(itemStack1)) {
                     itemStack1.setAmount(itemStack1.getAmount() - 1);
                     ItemStack outputItem = FinalTechItems.SHELL.getValidItem();
                     inventory.setItem(outputSlot, outputItem);
+                    FinalTech.getLogService().subItem(SlimefunItem.getByItem(itemStack1).getId(), 1, CardOperationPortMenu.this.getID(), LogSourceType.SLIMEFUN_MACHINE, player, location, CardOperationPortMenu.this.getSlimefunItem().getAddon().getJavaPlugin());
+                    FinalTech.getLogService().addItem(FinalTechItems.SHELL.getId(), 1, CardOperationPortMenu.this.getID(), LogSourceType.SLIMEFUN_MACHINE, player, location, CardOperationPortMenu.this.getSlimefunItem().getAddon().getJavaPlugin());
                     return true;
                 } else if (FinalTechItems.SINGULARITY.verifyItem(itemStack2) || FinalTechItems.SPIROCHETE.verifyItem(itemStack2)) {
                     itemStack2.setAmount(itemStack2.getAmount() - 1);
                     ItemStack outputItem = FinalTechItems.SHELL.getValidItem();
                     inventory.setItem(outputSlot, outputItem);
+                    FinalTech.getLogService().subItem(SlimefunItem.getByItem(itemStack2).getId(), 1, CardOperationPortMenu.this.getID(), LogSourceType.SLIMEFUN_MACHINE, player, location, CardOperationPortMenu.this.getSlimefunItem().getAddon().getJavaPlugin());
+                    FinalTech.getLogService().addItem(FinalTechItems.SHELL.getId(), 1, CardOperationPortMenu.this.getID(), LogSourceType.SLIMEFUN_MACHINE, player, location, CardOperationPortMenu.this.getSlimefunItem().getAddon().getJavaPlugin());
                     return true;
                 }
                 return false;
@@ -649,14 +664,18 @@ public class CardOperationPortMenu extends AbstractManualMachineMenu {
             }
 
             @Override
-            public boolean craft(@Nullable ItemStack itemStack1, @Nullable ItemStack itemStack2, @Nonnull Inventory inventory, int outputSlot) {
+            public boolean craft(@Nullable ItemStack itemStack1, @Nullable ItemStack itemStack2, @Nonnull Inventory inventory, int outputSlot, @Nonnull Player player, @Nonnull Location location) {
                 if (FinalTechItems.COPY_CARD.verifyItem(itemStack1) && !ItemStackUtil.isItemNull(StringItemUtil.parseItemInCard(itemStack1))) {
                     itemStack1.setAmount(itemStack1.getAmount() - 1);
                     inventory.setItem(outputSlot, FinalTechItems.ANNULAR.getValidItem());
+                    FinalTech.getLogService().subItem(FinalTechItems.COPY_CARD.getId(), 1, CardOperationPortMenu.this.getID(), LogSourceType.SLIMEFUN_MACHINE, player, location, CardOperationPortMenu.this.getSlimefunItem().getAddon().getJavaPlugin());
+                    FinalTech.getLogService().addItem(FinalTechItems.ANNULAR.getId(), 1, CardOperationPortMenu.this.getID(), LogSourceType.SLIMEFUN_MACHINE, player, location, CardOperationPortMenu.this.getSlimefunItem().getAddon().getJavaPlugin());
                     return true;
                 } else if (FinalTechItems.COPY_CARD.verifyItem(itemStack2) && !ItemStackUtil.isItemNull(StringItemUtil.parseItemInCard(itemStack2))) {
                     itemStack2.setAmount(itemStack2.getAmount() - 1);
                     inventory.setItem(outputSlot, FinalTechItems.ANNULAR.getValidItem());
+                    FinalTech.getLogService().subItem(FinalTechItems.COPY_CARD.getId(), 1, CardOperationPortMenu.this.getID(), LogSourceType.SLIMEFUN_MACHINE, player, location, CardOperationPortMenu.this.getSlimefunItem().getAddon().getJavaPlugin());
+                    FinalTech.getLogService().addItem(FinalTechItems.ANNULAR.getId(), 1, CardOperationPortMenu.this.getID(), LogSourceType.SLIMEFUN_MACHINE, player, location, CardOperationPortMenu.this.getSlimefunItem().getAddon().getJavaPlugin());
                     return true;
                 }
                 return false;
@@ -704,7 +723,7 @@ public class CardOperationPortMenu extends AbstractManualMachineMenu {
     public void newInstance(@Nonnull BlockMenu blockMenu, @Nonnull Block block) {
         super.newInstance(blockMenu, block);
         blockMenu.addMenuClickHandler(CRAFT_SLOT, ((player, i, itemStack, clickAction) -> {
-            CardOperationPortMenu.this.doFunction(blockMenu.toInventory());
+            CardOperationPortMenu.this.doFunction(blockMenu.toInventory(), player, block.getLocation());
             return false;
         }));
     }
@@ -734,7 +753,7 @@ public class CardOperationPortMenu extends AbstractManualMachineMenu {
         }
     }
 
-    private void doFunction(@Nonnull Inventory inventory) {
+    private void doFunction(@Nonnull Inventory inventory, @Nonnull Player player, @Nonnull Location location) {
         if (!ItemStackUtil.isItemNull(inventory.getItem(this.getOutputSlot()[0]))) {
             inventory.setItem(CRAFT_SLOT, CRAFT_ICON);
             return;
@@ -745,7 +764,7 @@ public class CardOperationPortMenu extends AbstractManualMachineMenu {
             return;
         }
         for (Craft craft : CRAFT_LIST) {
-            if (craft.isEnabled() && craft.craft(inputItem1, inputItem2, inventory, OUTPUT_SLOT[0])) {
+            if (craft.isEnabled() && craft.craft(inputItem1, inputItem2, inventory, OUTPUT_SLOT[0], player, location)) {
                 break;
             }
         }
@@ -771,6 +790,6 @@ public class CardOperationPortMenu extends AbstractManualMachineMenu {
             ItemStackUtil.setLore(iconItem, this.getInfoLore());
         }
 
-        boolean craft(@Nullable ItemStack item1, @Nullable ItemStack item2, @Nonnull Inventory inventory, int outputSlot);
+        boolean craft(@Nullable ItemStack item1, @Nullable ItemStack item2, @Nonnull Inventory inventory, int outputSlot, @Nonnull Player player, @Nonnull Location location);
     }
 }

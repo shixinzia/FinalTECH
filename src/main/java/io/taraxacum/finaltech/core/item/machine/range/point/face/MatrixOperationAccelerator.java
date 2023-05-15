@@ -19,8 +19,8 @@ import io.taraxacum.finaltech.util.ConfigUtil;
 import io.taraxacum.finaltech.util.MachineUtil;
 import io.taraxacum.finaltech.util.BlockTickerUtil;
 import io.taraxacum.finaltech.util.RecipeUtil;
-import io.taraxacum.libs.slimefun.dto.LocationInfo;
-import me.mrCookieSlime.CSCoreLibPlugin.Configuration.Config;
+import io.taraxacum.libs.plugin.dto.LocationData;
+import io.taraxacum.libs.slimefun.util.LocationDataUtil;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
@@ -50,7 +50,7 @@ public class MatrixOperationAccelerator extends AbstractFaceMachine implements R
     @Nonnull
     @Override
     protected BlockBreakHandler onBlockBreak() {
-        return MachineUtil.simpleBlockBreakerHandler(this);
+        return MachineUtil.simpleBlockBreakerHandler(FinalTech.getLocationDataService(), this);
     }
 
     @Nonnull
@@ -60,21 +60,21 @@ public class MatrixOperationAccelerator extends AbstractFaceMachine implements R
     }
 
     @Override
-    protected void tick(@Nonnull Block block, @Nonnull SlimefunItem slimefunItem, @Nonnull Config config) {
+    protected void tick(@Nonnull Block block, @Nonnull SlimefunItem slimefunItem, @Nonnull LocationData locationData) {
         this.pointFunction(block, 1, location -> {
-            LocationInfo locationInfo = LocationInfo.get(location);
-            if(locationInfo != null && !this.notAllowedId.contains(locationInfo.getId())) {
-                if (locationInfo.getSlimefunItem() instanceof MachineProcessHolder machineProcessHolder) {
-                    MachineProcessor<?> machineProcessor = machineProcessHolder.getMachineProcessor();
-                    Runnable runnable = () -> {
-                        MachineOperation operation = machineProcessor.getOperation(location);
-                        if (operation != null && operation.getRemainingTicks() > 0) {
-                            operation.addProgress(operation.getRemainingTicks());
-                        }
-                    };
-                    BlockTickerUtil.runTask(FinalTech.getLocationRunnableFactory(), FinalTech.isAsyncSlimefunItem(locationInfo.getId()), runnable, location);
-                    return 1;
-                }
+            LocationData tempLocationData = FinalTech.getLocationDataService().getLocationData(location);
+            if(tempLocationData != null
+                    && !this.notAllowedId.contains(LocationDataUtil.getId(FinalTech.getLocationDataService(), tempLocationData))
+                    && LocationDataUtil.getSlimefunItem(FinalTech.getLocationDataService(), tempLocationData) instanceof MachineProcessHolder machineProcessHolder) {
+                MachineProcessor<?> machineProcessor = machineProcessHolder.getMachineProcessor();
+                Runnable runnable = () -> {
+                    MachineOperation operation = machineProcessor.getOperation(location);
+                    if (operation != null && operation.getRemainingTicks() > 0) {
+                        operation.addProgress(operation.getRemainingTicks());
+                    }
+                };
+                BlockTickerUtil.runTask(FinalTech.getLocationRunnableFactory(), FinalTech.isAsyncSlimefunItem(LocationDataUtil.getId(FinalTech.getLocationDataService(), tempLocationData)), runnable, location);
+                return 1;
             }
             return 0;
         });
@@ -95,7 +95,7 @@ public class MatrixOperationAccelerator extends AbstractFaceMachine implements R
     public void registerDefaultRecipes() {
         RecipeUtil.registerDescriptiveRecipeWithBorder(FinalTech.getLanguageManager(), this);
 
-        for (SlimefunItem slimefunItem : Slimefun.getRegistry().getAllSlimefunItems()) {
+        for (SlimefunItem slimefunItem : Slimefun.getRegistry().getEnabledSlimefunItems()) {
             if (slimefunItem instanceof MachineProcessHolder) {
                 this.registerDescriptiveRecipe(slimefunItem.getItem());
             }

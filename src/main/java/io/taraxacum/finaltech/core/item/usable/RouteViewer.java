@@ -6,11 +6,12 @@ import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItem;
 import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItemStack;
 import io.github.thebusybiscuit.slimefun4.api.recipes.RecipeType;
 import io.taraxacum.finaltech.FinalTech;
-import io.taraxacum.finaltech.core.helper.RouteShow;
+import io.taraxacum.finaltech.core.option.RouteShow;
 import io.taraxacum.finaltech.core.interfaces.RecipeItem;
 import io.taraxacum.finaltech.util.ConfigUtil;
 import io.taraxacum.finaltech.util.RecipeUtil;
-import io.taraxacum.libs.slimefun.dto.LocationInfo;
+import io.taraxacum.libs.plugin.dto.LocationData;
+import io.taraxacum.libs.slimefun.util.LocationDataUtil;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.inventory.ItemStack;
@@ -37,22 +38,18 @@ public class RouteViewer extends UsableSlimefunItem implements RecipeItem {
     /**
      * The function the item will do
      * while a player hold the item and right click.
-     *
-     * @param playerRightClickEvent
      */
     @Override
     protected void function(@Nonnull PlayerRightClickEvent playerRightClickEvent) {
-        playerRightClickEvent.cancel();
-
         Optional<Block> clickedBlock = playerRightClickEvent.getClickedBlock();
         if(clickedBlock.isPresent()) {
             Block block = clickedBlock.get();
             Location location = block.getLocation();
-            LocationInfo locationInfo = LocationInfo.get(location);
-            if(locationInfo != null && this.allowedId.contains(locationInfo.getId())) {
-                String value = RouteShow.HELPER.getOrDefaultValue(locationInfo.getConfig());
-                value = RouteShow.HELPER.nextOrDefaultValue(value);
-                RouteShow.HELPER.setOrClearValue(locationInfo.getConfig(), value);
+            LocationData locationData = FinalTech.getLocationDataService().getLocationData(location);
+            if(locationData != null && this.allowedId.contains(LocationDataUtil.getId(FinalTech.getLocationDataService(), locationData))) {
+                String value = RouteShow.OPTION.getOrDefaultValue(FinalTech.getLocationDataService(), locationData);
+                value = RouteShow.OPTION.nextOrDefaultValue(value);
+                RouteShow.OPTION.setOrClearValue(FinalTech.getLocationDataService(), locationData, value);
             }
         }
     }

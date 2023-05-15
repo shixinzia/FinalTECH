@@ -2,8 +2,8 @@ package io.taraxacum.finaltech.core.menu.clicker;
 
 import io.taraxacum.finaltech.core.item.machine.clicker.AbstractClickerMachine;
 import io.taraxacum.finaltech.util.LocationUtil;
+import io.taraxacum.libs.plugin.util.InventoryUtil;
 import io.taraxacum.libs.plugin.util.ParticleUtil;
-import me.mrCookieSlime.Slimefun.api.inventory.BlockMenu;
 import org.bukkit.Location;
 import org.bukkit.Particle;
 import org.bukkit.block.Block;
@@ -67,7 +67,7 @@ public class TransporterMenu extends AbstractClickerMenu {
     }
 
     @Override
-    protected void doFunction(@Nonnull BlockMenu blockMenu, @Nonnull Block block, @Nonnull Player player) {
+    protected void doFunction(@Nonnull Inventory inventory, @Nonnull Block block, @Nonnull Player player) {
         BlockData blockData = block.getState().getBlockData();
         List<Block> blockList = new ArrayList<>();
         if (blockData instanceof Directional) {
@@ -91,6 +91,6 @@ public class TransporterMenu extends AbstractClickerMenu {
             }
         }
 
-        blockMenu.close();
+        InventoryUtil.closeInv(inventory);
     }
 }

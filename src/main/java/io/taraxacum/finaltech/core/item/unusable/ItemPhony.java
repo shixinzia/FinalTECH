@@ -13,6 +13,7 @@ import io.taraxacum.libs.slimefun.util.SfItemUtil;
 import org.bukkit.inventory.ItemStack;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 /**
  * @author Final_ROOT
@@ -40,7 +41,7 @@ public class ItemPhony extends UnusableSlimefunItem implements RecipeItem, Simpl
     }
 
     @Override
-    public boolean verifyItem(@Nonnull ItemStack itemStack) {
+    public boolean verifyItem(@Nullable ItemStack itemStack) {
         return ItemStackUtil.isItemSimilar(itemStack, this.templateValidItem);
     }
 }

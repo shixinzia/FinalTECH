@@ -16,12 +16,12 @@ import io.taraxacum.finaltech.core.menu.unit.StatusMenu;
 import io.taraxacum.finaltech.util.ConfigUtil;
 import io.taraxacum.finaltech.util.MachineUtil;
 import io.taraxacum.finaltech.util.RecipeUtil;
-import me.mrCookieSlime.CSCoreLibPlugin.Configuration.Config;
-import me.mrCookieSlime.Slimefun.api.BlockStorage;
-import me.mrCookieSlime.Slimefun.api.inventory.BlockMenu;
+import io.taraxacum.libs.plugin.dto.LocationData;
+import io.taraxacum.libs.slimefun.util.EnergyUtil;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.block.Block;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
 import javax.annotation.Nonnull;
@@ -31,7 +31,7 @@ import javax.annotation.Nonnull;
  * @since 2.2
  */
 public class TimeCapacitor extends AbstractMachine implements EnergyNetComponent, RecipeItem, MenuUpdater {
-    private final String key = "time";
+    private final String key = "t";
     private final int interval = ConfigUtil.getOrDefaultItemSetting(1600, this, "interval");
     private final int capacity = ConfigUtil.getOrDefaultItemSetting(16777216, this, "capacity");
 
@@ -48,7 +48,7 @@ public class TimeCapacitor extends AbstractMachine implements EnergyNetComponent
     @Nonnull
     @Override
     protected BlockBreakHandler onBlockBreak() {
-        return MachineUtil.simpleBlockBreakerHandler(this);
+        return MachineUtil.simpleBlockBreakerHandler(FinalTech.getLocationDataService(), this);
     }
 
     @Nonnull
@@ -58,27 +58,31 @@ public class TimeCapacitor extends AbstractMachine implements EnergyNetComponent
     }
 
     @Override
-    protected void tick(@Nonnull Block block, @Nonnull SlimefunItem slimefunItem, @Nonnull Config config) {
-        Location location = block.getLocation();
+    protected void tick(@Nonnull Block block, @Nonnull SlimefunItem slimefunItem, @Nonnull LocationData locationData) {
+        Location location = locationData.getLocation();
         World world = location.getWorld();
-        int charge = this.getCharge(location);
+        String chargeStr = EnergyUtil.getCharge(FinalTech.getLocationDataService(), locationData);
+        int charge = Integer.parseInt(chargeStr);
 
         if(world != null) {
             long time = world.getTime() / this.interval;
-            String oldTime = config.getString(this.key);
-            if(oldTime != null && !oldTime.equals(String.valueOf(time))) {
+            String oldTime = FinalTech.getLocationDataService().getLocationData(locationData, this.key);
+            if(oldTime == null) {
+                FinalTech.getLocationDataService().setLocationData(locationData, this.key, String.valueOf(time));
+            } else if (!oldTime.equals(String.valueOf(time))) {
                 charge *= 2;
+                FinalTech.getLocationDataService().setLocationData(locationData, this.key, String.valueOf(time));
             }
-            config.setValue(this.key, String.valueOf(time));
         }
 
         charge = charge > this.capacity ? 0 : charge;
-        this.setCharge(location, charge);
+        chargeStr = String.valueOf(charge);
+        EnergyUtil.setCharge(FinalTech.getLocationDataService(), locationData, chargeStr);
 
-        BlockMenu blockMenu = BlockStorage.getInventory(location);
-        if(blockMenu.hasViewer()) {
-            this.updateMenu(blockMenu, 4, this,
-                    String.valueOf(charge));
+        Inventory inventory = FinalTech.getLocationDataService().getInventory(locationData);
+        if(inventory != null && !inventory.getViewers().isEmpty()) {
+            this.updateInv(inventory, StatusMenu.STATUS_SLOT, this,
+                    chargeStr);
         }
     }
 

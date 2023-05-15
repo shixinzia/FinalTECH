@@ -10,7 +10,6 @@ import javax.annotation.Nullable;
 
 /**
  * @author Final_ROOT
- * @since 1.0
  */
 public class DustFactoryOperation implements MachineOperation {
     private int amountCount = 0;
@@ -25,27 +24,26 @@ public class DustFactoryOperation implements MachineOperation {
         this.matchItemList = new ItemWrapper[typeDifficulty + 1];
     }
 
-    public void addItem(@Nullable ItemStack item) {
-        if (ItemStackUtil.isItemNull(item)) {
+    public void addItem(@Nullable ItemStack itemStack) {
+        if (ItemStackUtil.isItemNull(itemStack)) {
             return;
         }
 
-        this.amountCount += item.getAmount();
-        if (this.amountCount > this.amountDifficulty + 1) {
-            this.amountCount = this.amountDifficulty + 1;
-        }
+        this.amountCount = Math.min(this.amountCount + itemStack.getAmount(), this.amountDifficulty + 1);
 
+        ItemWrapper itemWrapper = new ItemWrapper(itemStack);
         if (this.typeCount <= this.typeDifficulty) {
             boolean newItem = true;
             for (int i = 0; i < this.typeCount; i++) {
                 ItemWrapper existedItem = this.matchItemList[i];
-                if (ItemStackUtil.isItemSimilar(item, existedItem)) {
+                if (ItemStackUtil.isItemSimilar(itemWrapper, existedItem)) {
                     newItem = false;
                     break;
                 }
             }
             if (newItem) {
-                this.matchItemList[this.typeCount++] = new ItemWrapper(ItemStackUtil.cloneItem(item));
+                itemWrapper.setItemStack(itemStack.clone());
+                this.matchItemList[this.typeCount++] = itemWrapper;
             }
         }
     }
@@ -91,12 +89,12 @@ public class DustFactoryOperation implements MachineOperation {
     @Deprecated
     @Override
     public int getProgress() {
-        return 0;
+        return this.amountCount * this.typeCount;
     }
 
     @Deprecated
     @Override
     public int getTotalTicks() {
-        return 0;
+        return this.amountDifficulty * this.typeDifficulty;
     }
 }

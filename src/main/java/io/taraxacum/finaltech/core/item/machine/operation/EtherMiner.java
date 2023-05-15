@@ -8,6 +8,7 @@ import io.github.thebusybiscuit.slimefun4.core.handlers.BlockBreakHandler;
 import io.github.thebusybiscuit.slimefun4.implementation.Slimefun;
 import io.taraxacum.common.util.MathUtil;
 import io.taraxacum.finaltech.FinalTech;
+import io.taraxacum.finaltech.core.enums.LogSourceType;
 import io.taraxacum.finaltech.core.interfaces.MenuUpdater;
 import io.taraxacum.finaltech.core.interfaces.RecipeItem;
 import io.taraxacum.finaltech.core.menu.AbstractMachineMenu;
@@ -16,14 +17,15 @@ import io.taraxacum.finaltech.core.operation.EtherMinerOperation;
 import io.taraxacum.finaltech.setup.FinalTechItemStacks;
 import io.taraxacum.finaltech.setup.FinalTechItems;
 import io.taraxacum.finaltech.util.ConfigUtil;
-import io.taraxacum.finaltech.util.MachineUtil;
 import io.taraxacum.finaltech.util.RecipeUtil;
-import me.mrCookieSlime.CSCoreLibPlugin.Configuration.Config;
-import me.mrCookieSlime.Slimefun.api.BlockStorage;
+import io.taraxacum.libs.plugin.dto.LocationData;
+import io.taraxacum.libs.plugin.util.InventoryUtil;
+import io.taraxacum.libs.slimefun.service.SlimefunLocationDataService;
 import me.mrCookieSlime.Slimefun.api.inventory.BlockMenu;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
 import javax.annotation.Nonnull;
@@ -54,9 +56,14 @@ public class EtherMiner extends AbstractOperationMachine implements RecipeItem, 
             @Override
             public void onPlayerBreak(@Nonnull BlockBreakEvent blockBreakEvent, @Nonnull ItemStack itemStack, @Nonnull List<ItemStack> drops) {
                 Location location = blockBreakEvent.getBlock().getLocation();
-                BlockMenu blockMenu = BlockStorage.getInventory(location);
-                blockMenu.dropItems(location, EtherMiner.this.getInputSlot());
-                blockMenu.dropItems(location, EtherMiner.this.getOutputSlot());
+                if(FinalTech.getLocationDataService() instanceof SlimefunLocationDataService slimefunLocationDataService) {
+                    BlockMenu blockMenu = slimefunLocationDataService.getBlockMenu(location);
+                    if(blockMenu != null && blockMenu.getPreset().getID().equals(EtherMiner.this.getId())) {
+                        Inventory inventory = blockMenu.toInventory();
+                        InventoryUtil.dropItems(inventory, location, EtherMiner.this.getInputSlot());
+                        InventoryUtil.dropItems(inventory, location, EtherMiner.this.getOutputSlot());
+                    }
+                }
 
                 EtherMiner.this.getMachineProcessor().endOperation(location);
             }
@@ -70,9 +77,12 @@ public class EtherMiner extends AbstractOperationMachine implements RecipeItem, 
     }
 
     @Override
-    protected void tick(@Nonnull Block block, @Nonnull SlimefunItem slimefunItem, @Nonnull Config config) {
+    protected void tick(@Nonnull Block block, @Nonnull SlimefunItem slimefunItem, @Nonnull LocationData locationData) {
+        Inventory inventory = FinalTech.getLocationDataService().getInventory(locationData);
+        if(inventory == null) {
+            return;
+        }
         Location location = block.getLocation();
-        BlockMenu blockMenu = BlockStorage.getInventory(location);
 
         OptionalInt supplies = Slimefun.getGPSNetwork().getResourceManager().getSupplies(FinalTechItems.ETHER, block.getWorld(), block.getX() >> 4, block.getZ() >> 4);
         int etherAmount = supplies.isPresent() ? supplies.getAsInt() : -1;
@@ -82,19 +92,17 @@ public class EtherMiner extends AbstractOperationMachine implements RecipeItem, 
             etherMinerOperation.addProgress(1);
             if(etherMinerOperation.isFinished()) {
                 ItemStack outputItemStack = FinalTechItems.ETHER.getValidItem();
-                if(MachineUtil.calMaxMatch(blockMenu.toInventory(), this.getOutputSlot(), outputItemStack) > 0) {
+                if(InventoryUtil.tryPushAllItem(inventory, this.getOutputSlot(), outputItemStack)) {
+                    FinalTech.getLogService().addItem(FinalTechItems.ETHER.getId(), 1, this.getId(), LogSourceType.SLIMEFUN_MACHINE, null, location, this.getAddon().getJavaPlugin());
                     this.getMachineProcessor().endOperation(location);
-                    if(etherMinerOperation.getEtherAmount() == etherAmount--) {
-                        blockMenu.pushItem(outputItemStack, this.getOutputSlot());
-                        Slimefun.getGPSNetwork().getResourceManager().setSupplies(FinalTechItems.ETHER, block.getWorld(), block.getX() >> 4, block.getZ() >> 4, Math.max(0, etherAmount));
-                    }
                     etherMinerOperation = null;
+                    Slimefun.getGPSNetwork().getResourceManager().setSupplies(FinalTechItems.ETHER, block.getWorld(), block.getX() >> 4, block.getZ() >> 4, Math.max(0, etherAmount));
                 }
             }
         } else if(etherAmount > 0) {
             ItemStack unorderedDustItemStack = null;
             for(int slot : this.getInputSlot()) {
-                ItemStack itemStack = blockMenu.getItemInSlot(slot);
+                ItemStack itemStack = inventory.getItem(slot);
                 if(FinalTechItems.UNORDERED_DUST.verifyItem(itemStack)) {
                     unorderedDustItemStack = itemStack;
                     break;
@@ -105,6 +113,7 @@ public class EtherMiner extends AbstractOperationMachine implements RecipeItem, 
                 boolean startOperation = this.getMachineProcessor().startOperation(location, etherMinerOperation);
                 if(startOperation) {
                     unorderedDustItemStack.setAmount(unorderedDustItemStack.getAmount() - 1);
+                    FinalTech.getLogService().subItem(FinalTechItems.UNORDERED_DUST.getId(), 1, this.getId(), LogSourceType.SLIMEFUN_MACHINE, null, location, this.getAddon().getJavaPlugin());
                 } else {
                     etherMinerOperation = null;
                 }
@@ -114,14 +123,14 @@ public class EtherMiner extends AbstractOperationMachine implements RecipeItem, 
             Slimefun.getGPSNetwork().getResourceManager().setSupplies(FinalTechItems.ETHER, block.getWorld(), block.getX() >> 4, block.getZ() >> 4, Math.max(0, etherAmount));
         }
 
-        if(blockMenu.hasViewer()) {
+        if(!inventory.getViewers().isEmpty()) {
             int progress = 0;
             int totalTicks = 0;
             if(etherMinerOperation != null) {
                 progress = etherMinerOperation.getProgress();
                 totalTicks = etherMinerOperation.getTotalTicks();
             }
-            this.updateMenu(blockMenu, EtherMinerMenu.STATUS_SLOT, this,
+            this.updateInv(inventory, EtherMinerMenu.STATUS_SLOT, this,
                     String.valueOf(progress),
                     String.valueOf(totalTicks),
                     String.valueOf(etherAmount));

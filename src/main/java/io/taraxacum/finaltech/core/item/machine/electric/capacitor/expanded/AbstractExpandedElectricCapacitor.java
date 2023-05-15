@@ -5,7 +5,6 @@ import io.github.thebusybiscuit.slimefun4.api.items.ItemGroup;
 import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItem;
 import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItemStack;
 import io.github.thebusybiscuit.slimefun4.api.recipes.RecipeType;
-import io.github.thebusybiscuit.slimefun4.core.handlers.BlockPlaceHandler;
 import io.github.thebusybiscuit.slimefun4.implementation.Slimefun;
 import io.taraxacum.common.util.JavaUtil;
 import io.taraxacum.finaltech.FinalTech;
@@ -13,27 +12,21 @@ import io.taraxacum.finaltech.core.interfaces.RecipeItem;
 import io.taraxacum.finaltech.core.interfaces.MenuUpdater;
 import io.taraxacum.finaltech.core.item.machine.electric.capacitor.AbstractElectricCapacitor;
 import io.taraxacum.finaltech.core.listener.ExpandedElectricCapacitorEnergyListener;
-import io.taraxacum.finaltech.core.menu.AbstractMachineMenu;
 import io.taraxacum.finaltech.core.menu.unit.StatusMenu;
 import io.taraxacum.common.util.StringNumberUtil;
 import io.taraxacum.finaltech.util.ConstantTableUtil;
+import io.taraxacum.libs.plugin.dto.LocationData;
 import io.taraxacum.libs.slimefun.util.EnergyUtil;
 import io.taraxacum.finaltech.util.RecipeUtil;
-import me.mrCookieSlime.CSCoreLibPlugin.Configuration.Config;
-import me.mrCookieSlime.Slimefun.api.BlockStorage;
-import me.mrCookieSlime.Slimefun.api.inventory.BlockMenu;
-import org.bukkit.Location;
 import org.bukkit.block.Block;
-import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.PluginManager;
 
 import javax.annotation.Nonnull;
-import java.math.BigInteger;
 
 /**
  * @author Final_ROOT
- * @since 1.0
  */
 public abstract class AbstractExpandedElectricCapacitor extends AbstractElectricCapacitor implements RecipeItem, MenuUpdater {
     private static boolean registerListener = false;
@@ -53,37 +46,20 @@ public abstract class AbstractExpandedElectricCapacitor extends AbstractElectric
         }
     }
 
-    @Nonnull
     @Override
-    protected BlockPlaceHandler onBlockPlace() {
-        return new BlockPlaceHandler(false) {
-            @Override
-            public void onPlayerPlace(@Nonnull BlockPlaceEvent blockPlaceEvent) {
-                BlockStorage.addBlockInfo(blockPlaceEvent.getBlock().getLocation(), AbstractExpandedElectricCapacitor.this.key, StringNumberUtil.ZERO);
-            }
-        };
-    }
-
-    @Nonnull
-    @Override
-    protected AbstractMachineMenu setMachineMenu() {
-        return new StatusMenu(this);
-    }
-
-    @Override
-    protected void tick(@Nonnull Block block, @Nonnull SlimefunItem slimefunItem, @Nonnull Config config) {
-        String energyStr = EnergyUtil.getCharge(config);
-        String energyStackStr = JavaUtil.getFirstNotNull(config.getString(this.key), StringNumberUtil.ZERO);
+    protected void tick(@Nonnull Block block, @Nonnull SlimefunItem slimefunItem, @Nonnull LocationData locationData) {
+        String energyStr = EnergyUtil.getCharge(FinalTech.getLocationDataService(), locationData);
+        String energyStackStr = JavaUtil.getFirstNotNull(FinalTech.getLocationDataService().getLocationData(locationData, this.key), StringNumberUtil.ZERO);
         long energy = Integer.parseInt(energyStr);
         long energyStack = Integer.parseInt(energyStackStr);
 
         long allEnergy = energyStack * (this.getCapacity() / 2 + 1) + energy;
 
-        this.setEnergy(block.getLocation(), allEnergy);
+        this.setEnergy(locationData, allEnergy);
 
-        BlockMenu blockMenu = BlockStorage.getInventory(block);
-        if (blockMenu.hasViewer()) {
-            this.updateMenu(blockMenu, StatusMenu.STATUS_SLOT, this, String.valueOf(energy), energyStackStr);
+        Inventory inventory = FinalTech.getLocationDataService().getInventory(locationData);
+        if (inventory != null && !inventory.getViewers().isEmpty()) {
+            this.updateInv(inventory, StatusMenu.STATUS_SLOT, this, String.valueOf(energy), energyStackStr);
         }
     }
 
@@ -100,8 +76,8 @@ public abstract class AbstractExpandedElectricCapacitor extends AbstractElectric
                 String.format("%.2f", Slimefun.getTickerTask().getTickRate() / 20.0));
     }
 
-    public int getStack(@Nonnull Config config) {
-        return Integer.parseInt(JavaUtil.getFirstNotNull(config.getString(this.key), StringNumberUtil.ZERO));
+    public int getStack(@Nonnull LocationData locationData) {
+        return Integer.parseInt(JavaUtil.getFirstNotNull(FinalTech.getLocationDataService().getLocationData(locationData, this.key), StringNumberUtil.ZERO));
     }
 
     public long getMaxEnergy() {
@@ -112,7 +88,7 @@ public abstract class AbstractExpandedElectricCapacitor extends AbstractElectric
         return (long) this.getCapacity() / 2 * stack + energy;
     }
 
-    public void setEnergy(@Nonnull Location location, long energy) {
+    public void setEnergy(@Nonnull LocationData locationData, long energy) {
         long stack = energy / (this.getCapacity() / 2);
         stack = Math.min(stack, this.getMaxStack());
         long lastEnergy = energy - this.getCapacity() / 2 * stack;
@@ -126,7 +102,7 @@ public abstract class AbstractExpandedElectricCapacitor extends AbstractElectric
             stack++;
         }
 
-        BlockStorage.addBlockInfo(location, this.key, String.valueOf(stack));
-        BlockStorage.addBlockInfo(location, ConstantTableUtil.CONFIG_CHARGE, String.valueOf(lastEnergy));
+        FinalTech.getLocationDataService().setLocationData(locationData, this.key, String.valueOf(stack));
+        FinalTech.getLocationDataService().setLocationData(locationData, ConstantTableUtil.CONFIG_CHARGE, String.valueOf(lastEnergy));
     }
 }

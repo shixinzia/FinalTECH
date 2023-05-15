@@ -9,16 +9,17 @@ import io.github.thebusybiscuit.slimefun4.api.recipes.RecipeType;
 import io.github.thebusybiscuit.slimefun4.libraries.dough.protection.Interaction;
 import io.taraxacum.finaltech.FinalTech;
 import io.taraxacum.finaltech.core.event.ConfigSaveActionEvent;
-import io.taraxacum.finaltech.core.helper.Icon;
+import io.taraxacum.finaltech.core.option.Icon;
 import io.taraxacum.finaltech.core.interfaces.RecipeItem;
 import io.taraxacum.finaltech.core.listener.ConfigSaveListener;
 import io.taraxacum.finaltech.util.ConfigUtil;
 import io.taraxacum.finaltech.util.ItemConfigurationUtil;
 import io.taraxacum.finaltech.util.PermissionUtil;
 import io.taraxacum.finaltech.util.RecipeUtil;
+import io.taraxacum.libs.plugin.dto.LocationData;
 import io.taraxacum.libs.plugin.util.ItemStackUtil;
 import io.taraxacum.libs.plugin.util.ParticleUtil;
-import io.taraxacum.libs.slimefun.dto.LocationInfo;
+import io.taraxacum.libs.slimefun.util.LocationDataUtil;
 import org.bukkit.Location;
 import org.bukkit.Particle;
 import org.bukkit.block.Block;
@@ -51,29 +52,36 @@ public class MachineConfigurator extends UsableSlimefunItem implements RecipeIte
 
     @Override
     protected void function(@Nonnull PlayerRightClickEvent playerRightClickEvent) {
-        playerRightClickEvent.cancel();
         JavaPlugin javaPlugin = this.getAddon().getJavaPlugin();
 
         Optional<Block> clickedBlock = playerRightClickEvent.getClickedBlock();
         if (clickedBlock.isPresent()) {
             Block block = clickedBlock.get();
             Location location = block.getLocation();
-            LocationInfo locationInfo = LocationInfo.get(location);
-            if (locationInfo != null && !this.notAllowedId.contains(locationInfo.getId()) && PermissionUtil.checkPermission(playerRightClickEvent.getPlayer(), location, Interaction.BREAK_BLOCK, Interaction.INTERACT_BLOCK, Interaction.PLACE_BLOCK)) {
+            LocationData locationData = FinalTech.getLocationDataService().getLocationData(location);
+            if (locationData != null
+                    && !this.notAllowedId.contains(LocationDataUtil.getId(FinalTech.getLocationDataService(), locationData))
+                    && PermissionUtil.checkPermission(playerRightClickEvent.getPlayer(), location, Interaction.BREAK_BLOCK, Interaction.INTERACT_BLOCK, Interaction.PLACE_BLOCK)) {
                 ItemStack itemStack = playerRightClickEvent.getItem();
                 if (playerRightClickEvent.getPlayer().isSneaking()) {
                     // save data
 
-                    if(ItemConfigurationUtil.saveConfigToItem(itemStack, locationInfo.getConfig())) {
-                        ItemStackUtil.setLore(itemStack, locationInfo.getSlimefunItem().getItemName());
+                    if(ItemConfigurationUtil.saveConfigToItem(itemStack, FinalTech.getLocationDataService(), locationData)) {
+                        SlimefunItem slimefunItem = LocationDataUtil.getSlimefunItem(FinalTech.getLocationDataService(), locationData);
+                        if(slimefunItem != null) {
+                            ItemStackUtil.setLore(itemStack, slimefunItem.getItemName());
+                        }
 
                         javaPlugin.getServer().getScheduler().runTaskAsynchronously(javaPlugin, () -> ParticleUtil.drawCubeByBlock(javaPlugin, Particle.WAX_OFF, 0, block));
                     }
                 } else {
                     // load data
 
-                    if(ItemConfigurationUtil.loadConfigFromItem(itemStack, location)) {
-                        FinalTech.getInstance().getServer().getPluginManager().callEvent(new ConfigSaveActionEvent(false, location, locationInfo.getId()));
+                    if(ItemConfigurationUtil.loadConfigFromItem(FinalTech.getLocationDataService(), itemStack, locationData)) {
+                        String id = LocationDataUtil.getId(FinalTech.getLocationDataService(), locationData);
+                        if(id != null) {
+                            FinalTech.getInstance().getServer().getPluginManager().callEvent(new ConfigSaveActionEvent(false, location, id));
+                        }
 
                         javaPlugin.getServer().getScheduler().runTaskAsynchronously(javaPlugin, () -> ParticleUtil.drawCubeByBlock(javaPlugin, Particle.WAX_OFF, 0, block));
                     }

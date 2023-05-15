@@ -4,18 +4,18 @@ import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItem;
 import io.taraxacum.common.util.JavaUtil;
 import io.taraxacum.common.util.StringNumberUtil;
 import io.taraxacum.finaltech.FinalTech;
-import io.taraxacum.finaltech.core.helper.Icon;
+import io.taraxacum.finaltech.core.enums.LogSourceType;
+import io.taraxacum.finaltech.core.option.Icon;
 import io.taraxacum.finaltech.core.item.machine.AbstractMachine;
 import io.taraxacum.finaltech.core.item.unusable.ReplaceableCard;
 import io.taraxacum.finaltech.core.menu.manual.AbstractManualMachineMenu;
 import io.taraxacum.finaltech.setup.FinalTechItems;
-import io.taraxacum.finaltech.util.MachineUtil;
 import io.taraxacum.finaltech.util.RecipeUtil;
 import io.taraxacum.libs.plugin.dto.LanguageManager;
+import io.taraxacum.libs.plugin.dto.LocationData;
+import io.taraxacum.libs.plugin.util.InventoryUtil;
 import io.taraxacum.libs.plugin.util.ItemStackUtil;
 import io.taraxacum.libs.slimefun.interfaces.ValidItem;
-import me.mrCookieSlime.CSCoreLibPlugin.Configuration.Config;
-import me.mrCookieSlime.Slimefun.api.BlockStorage;
 import me.mrCookieSlime.Slimefun.api.inventory.BlockMenu;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -75,13 +75,14 @@ public class ItemDismantleTableMenu extends AbstractManualMachineMenu {
     @Override
     public void newInstance(@Nonnull BlockMenu blockMenu, @Nonnull Block block) {
         super.newInstance(blockMenu, block);
+        Inventory inventory = blockMenu.toInventory();
+        LocationData locationData = FinalTech.getLocationDataService().getLocationData(block.getLocation());
 
         blockMenu.addMenuClickHandler(STATUS_SLOT, (player, slot, itemStack, action) -> {
-            Config config = BlockStorage.getLocationInfo(block.getLocation());
-            String count = JavaUtil.getFirstNotNull(config.getString(FinalTechItems.ITEM_DISMANTLE_TABLE.getKey()), StringNumberUtil.ZERO);
+            String count = JavaUtil.getFirstNotNull(FinalTech.getLocationDataService().getLocationData(locationData, FinalTechItems.ITEM_DISMANTLE_TABLE.getKey()), StringNumberUtil.ZERO);
             if(StringNumberUtil.compare(count, FinalTechItems.ITEM_DISMANTLE_TABLE.getCount()) >= 0) {
-                if (MachineUtil.isEmpty(blockMenu.toInventory(), this.getOutputSlot())) {
-                    ItemStack item = blockMenu.getItemInSlot(this.getInputSlot()[0]);
+                if (InventoryUtil.isEmpty(inventory, this.getOutputSlot())) {
+                    ItemStack item = inventory.getItem(this.getInputSlot()[0]);
                     SlimefunItem slimefunItem = SlimefunItem.getByItem(item);
                     if (slimefunItem != null && FinalTechItems.ITEM_DISMANTLE_TABLE.calAllowed(slimefunItem) && item.getAmount() >= slimefunItem.getRecipeOutput().getAmount()) {
                         boolean verify;
@@ -98,21 +99,25 @@ public class ItemDismantleTableMenu extends AbstractManualMachineMenu {
                                 }
                             }
                             item.setAmount(item.getAmount() - slimefunItem.getRecipeOutput().getAmount() * amount);
+                            if(slimefunItem instanceof ValidItem) {
+                                FinalTech.getLogService().subItem(slimefunItem.getId(), slimefunItem.getRecipeOutput().getAmount() * amount, this.getID(), LogSourceType.SLIMEFUN_MACHINE, null, block.getLocation(), this.getSlimefunItem().getAddon().getJavaPlugin());
+                            }
                             for (int i = 0; i < ItemDismantleTableMenu.this.getOutputSlot().length && i < slimefunItem.getRecipe().length; i++) {
                                 if (!ItemStackUtil.isItemNull(slimefunItem.getRecipe()[i])) {
                                     ItemStack outputItem;
                                     ReplaceableCard replaceableCard = RecipeUtil.getReplaceableCard(slimefunItem.getRecipe()[i]);
                                     if (replaceableCard != null && replaceableCard.getExtraSourceMaterial() != null) {
-                                        outputItem = ItemStackUtil.cloneItem(replaceableCard.getItem());
+                                        outputItem = replaceableCard.getItem();
                                     } else {
-                                        outputItem = ItemStackUtil.cloneItem(slimefunItem.getRecipe()[i]);
+                                        outputItem = slimefunItem.getRecipe()[i];
                                     }
+                                    inventory.setItem(this.getOutputSlot()[i], outputItem);
+                                    outputItem = inventory.getItem(this.getOutputSlot()[i]);
                                     outputItem.setAmount(outputItem.getAmount() * amount);
-                                    blockMenu.replaceExistingItem(ItemDismantleTableMenu.this.getOutputSlot()[i], outputItem);
                                 }
                             }
 
-                            config.setValue(FinalTechItems.ITEM_DISMANTLE_TABLE.getKey(), StringNumberUtil.sub(count, FinalTechItems.ITEM_DISMANTLE_TABLE.getCount()));
+                            FinalTech.getLocationDataService().setLocationData(locationData, FinalTechItems.ITEM_DISMANTLE_TABLE.getKey(), StringNumberUtil.sub(count, FinalTechItems.ITEM_DISMANTLE_TABLE.getCount()));
                         }
                     }
                 }
@@ -124,11 +129,11 @@ public class ItemDismantleTableMenu extends AbstractManualMachineMenu {
 
     @Override
     public void updateInventory(@Nonnull Inventory inventory, @Nonnull Location location) {
-        Config config = BlockStorage.getLocationInfo(location);
+        LocationData locationData = FinalTech.getLocationDataService().getLocationData(location);
 
         ItemStack item = inventory.getItem(STATUS_SLOT);
         if(!ItemStackUtil.isItemNull(item)) {
-            String count = JavaUtil.getFirstNotNull(config.getString(FinalTechItems.ITEM_DISMANTLE_TABLE.getKey()), StringNumberUtil.ZERO);
+            String count = JavaUtil.getFirstNotNull(FinalTech.getLocationDataService().getLocationData(locationData, FinalTechItems.ITEM_DISMANTLE_TABLE.getKey()), StringNumberUtil.ZERO);
 
             LanguageManager languageManager = FinalTech.getLanguageManager();
             ItemStackUtil.setLore(item, languageManager.replaceStringList(languageManager.getStringList("items", this.getID(), "status-icon", "lore"),

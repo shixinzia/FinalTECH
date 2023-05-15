@@ -2,7 +2,7 @@ package io.taraxacum.finaltech.core.menu.limit.lock;
 
 import io.github.thebusybiscuit.slimefun4.utils.ChestMenuUtils;
 import io.taraxacum.finaltech.core.item.machine.AbstractMachine;
-import io.taraxacum.finaltech.core.helper.Icon;
+import io.taraxacum.finaltech.core.option.Icon;
 import me.mrCookieSlime.Slimefun.api.inventory.BlockMenu;
 import org.bukkit.block.Block;
 
@@ -10,7 +10,6 @@ import javax.annotation.Nonnull;
 
 /**
  * @author Final_ROOT
- * @since 1.0
  */
 public class AdvancedMachineMenu extends AbstractLockMachineMenu {
     private static final int[] BORDER = new int[] {3, 4, 5, 12, 14, 21, 23, 30, 32, 39, 40, 41, 48, 49, 50};

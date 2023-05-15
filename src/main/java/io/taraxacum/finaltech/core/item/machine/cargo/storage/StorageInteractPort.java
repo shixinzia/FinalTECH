@@ -6,21 +6,19 @@ import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItemStack;
 import io.github.thebusybiscuit.slimefun4.api.recipes.RecipeType;
 import io.taraxacum.common.util.JavaUtil;
 import io.taraxacum.finaltech.FinalTech;
-import io.taraxacum.finaltech.core.menu.machine.MatrixReactorMenu;
+import io.taraxacum.finaltech.core.dto.StringItemCardCache;
 import io.taraxacum.finaltech.setup.FinalTechItems;
 import io.taraxacum.libs.plugin.dto.ItemWrapper;
+import io.taraxacum.libs.plugin.dto.LocationData;
+import io.taraxacum.libs.plugin.util.InventoryUtil;
 import io.taraxacum.libs.plugin.util.ItemStackUtil;
-import io.taraxacum.libs.plugin.util.StringItemUtil;
+import io.taraxacum.finaltech.util.StringItemUtil;
 import io.taraxacum.finaltech.core.interfaces.RecipeItem;
 import io.taraxacum.finaltech.core.item.machine.cargo.AbstractCargo;
 import io.taraxacum.finaltech.core.menu.AbstractMachineMenu;
 import io.taraxacum.finaltech.core.menu.machine.StorageInteractPortMenu;
 import io.taraxacum.finaltech.util.ConfigUtil;
 import io.taraxacum.finaltech.util.RecipeUtil;
-import io.taraxacum.finaltech.util.MachineUtil;
-import me.mrCookieSlime.CSCoreLibPlugin.Configuration.Config;
-import me.mrCookieSlime.Slimefun.api.BlockStorage;
-import me.mrCookieSlime.Slimefun.api.inventory.BlockMenu;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
@@ -33,7 +31,6 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import javax.annotation.Nonnull;
-import java.util.*;
 
 /**
  * @author Final_ROOT
@@ -53,137 +50,96 @@ public class StorageInteractPort extends AbstractCargo implements RecipeItem {
     }
 
     @Override
-    protected void tick(Block block, @Nonnull SlimefunItem slimefunItem, @Nonnull Config config) {
+    protected void tick(@Nonnull Block block, @Nonnull SlimefunItem slimefunItem, @Nonnull LocationData locationData) {
         Block targetBlock = block.getRelative(BlockFace.UP);
-        BlockMenu blockMenu = BlockStorage.getInventory(block);
-        if (!BlockStorage.hasInventory(targetBlock)) {
+        Inventory inventory = FinalTech.getLocationDataService().getInventory(locationData);
+        if(inventory == null) {
+            return;
+        }
+        if (FinalTech.getLocationDataService().getInventory(targetBlock.getLocation()) != null) {
             if (Bukkit.isPrimaryThread()) {
                 BlockState blockState = targetBlock.getState();
-                if (blockState instanceof InventoryHolder) {
-                    Inventory targetInventory = ((InventoryHolder) blockState).getInventory();
-                    this.doFunction(targetInventory, blockMenu, block.getLocation());
+                if (blockState instanceof InventoryHolder inventoryHolder) {
+                    Inventory targetInventory = inventoryHolder.getInventory();
+                    this.doFunction(targetInventory, inventory, block.getLocation());
                 }
             } else {
                 JavaPlugin javaPlugin = this.getAddon().getJavaPlugin();
                 javaPlugin.getServer().getScheduler().runTask(javaPlugin, () -> {
                     BlockState blockState = targetBlock.getState();
-                    if (blockState instanceof InventoryHolder) {
-                        Inventory targetInventory = ((InventoryHolder) blockState).getInventory();
-                        FinalTech.getLocationRunnableFactory().waitThenRun(() -> StorageInteractPort.this.doFunction(targetInventory, blockMenu, block.getLocation()), targetBlock.getLocation(), block.getLocation());
+                    if (blockState instanceof InventoryHolder inventoryHolder) {
+                        Inventory targetInventory = inventoryHolder.getInventory();
+                        FinalTech.getLocationRunnableFactory().waitThenRun(() -> StorageInteractPort.this.doFunction(targetInventory, inventory, block.getLocation()), targetBlock.getLocation(), block.getLocation());
                     }
                 });
             }
         }
     }
 
-    private void doFunction(@Nonnull Inventory targetInventory, @Nonnull BlockMenu blockMenu, @Nonnull Location location) {
-        boolean canInput = !MachineUtil.isEmpty(blockMenu.toInventory(), this.getInputSlot()) && MachineUtil.slotCount(blockMenu.toInventory(), this.getInputSlot()) >= this.getInputSlot().length / 2;
-        boolean canOutput = !MachineUtil.isFull(blockMenu.toInventory(), this.getOutputSlot()) && MachineUtil.slotCount(blockMenu.toInventory(), this.getOutputSlot()) < this.getOutputSlot().length / 2;
+    private void doFunction(@Nonnull Inventory targetInventory, @Nonnull Inventory blockInventory, @Nonnull Location location) {
+        boolean canInput = !InventoryUtil.isEmpty(blockInventory, this.getInputSlot()) && InventoryUtil.slotCount(blockInventory, this.getInputSlot()) >= this.getInputSlot().length / 2;
+        boolean canOutput = !InventoryUtil.isFull(blockInventory, this.getOutputSlot()) && InventoryUtil.slotCount(blockInventory, this.getOutputSlot()) < this.getOutputSlot().length / 2;
 
         if (!canInput && !canOutput) {
             return;
         }
 
         if (canInput) {
-            MachineUtil.stockSlots(blockMenu.toInventory(), this.getInputSlot());
+            InventoryUtil.stockSlots(blockInventory, this.getInputSlot());
         }
 
-        canInput = !MachineUtil.isEmpty(blockMenu.toInventory(), this.getInputSlot()) && MachineUtil.slotCount(blockMenu.toInventory(), this.getInputSlot()) >= this.getInputSlot().length / 2;
+        canInput = !InventoryUtil.isEmpty(blockInventory, this.getInputSlot()) && InventoryUtil.slotCount(blockInventory, this.getInputSlot()) >= this.getInputSlot().length / 2;
 
         if (!canInput && !canOutput) {
             return;
         }
 
-        for (int slot : this.getInputSlot()) {
-            ItemStack item = blockMenu.getItemInSlot(slot);
-            if (!ItemStackUtil.isItemNull(item) && !FinalTechItems.STORAGE_CARD.isTargetItem(item)) {
-                JavaPlugin javaPlugin = this.getAddon().getJavaPlugin();
-                javaPlugin.getServer().getScheduler().runTask(javaPlugin, () -> blockMenu.dropItems(location, MatrixReactorMenu.ITEM_INPUT_SLOT));
-                return;
-            }
-        }
-
         int pushItemAmount = 0;
-        List<ItemWrapper> storageCardItemList = new ArrayList<>(Math.min(targetInventory.getSize(), this.searchLimit));
+        StringItemCardCache[] stringItemCardCaches = new StringItemCardCache[this.searchLimit];
         for (int i = 0, size = Math.min(targetInventory.getSize(), this.searchLimit); i < size; i++) {
             ItemStack itemStack = targetInventory.getItem(i);
-            if (ItemStackUtil.isItemNull(itemStack) || !itemStack.hasItemMeta()) {
-                continue;
+            if(!ItemStackUtil.isItemNull(itemStack) && FinalTechItems.STORAGE_CARD.verifyItem(itemStack)) {
+                stringItemCardCaches[i] = new StringItemCardCache(itemStack);
             }
-            ItemMeta itemMeta = itemStack.getItemMeta();
-            if (itemMeta != null && FinalTechItems.STORAGE_CARD.verifyItem(itemMeta)) {
-                storageCardItemList.add(new ItemWrapper(itemStack, itemMeta));
-                if (itemStack.getAmount() == 1) {
-                    pushItemAmount++;
-                }
+
+            if (stringItemCardCaches[i] != null && stringItemCardCaches[i].getCardItem().getAmount() == 1) {
+                pushItemAmount++;
             }
         }
 
-        List<ItemWrapper> unOutputItem = new LinkedList<>();
-        List<ItemWrapper> unInputItem = new LinkedList<>();
-
-        for (ItemWrapper storageCardItem : storageCardItemList) {
-            if (!canInput && !canOutput) {
+        for (StringItemCardCache stringItemCardCache : stringItemCardCaches) {
+            if(stringItemCardCache == null) {
                 continue;
             }
-            ItemMeta itemMeta = storageCardItem.getItemMeta();
-            ItemStack stringItemStack = StringItemUtil.parseItemInCard(itemMeta);
-            ItemWrapper stringItem = stringItemStack == null ? null : new ItemWrapper(stringItemStack);
-
-            boolean work;
+            if (!canInput && !canOutput) {
+                break;
+            }
+            ItemMeta itemMeta = stringItemCardCache.getCardItemMeta();
+            ItemWrapper stringItem = stringItemCardCache.getTemplateStringItem();
 
             int pushCount = 0;
-            if (canOutput && storageCardItem.getItemStack().getAmount() == 1 && stringItem != null) {
-                work = true;
-                for (ItemWrapper unWorkItem : unOutputItem) {
-                    if (ItemStackUtil.isItemSimilar(stringItem, unWorkItem)) {
-                        work = false;
-                        break;
-                    }
+            if (canOutput && stringItemCardCache.getCardItem().getAmount() == 1 && stringItemCardCache.storedItem()) {
+                pushItemAmount--;
+                pushCount = StringItemUtil.pullItemFromCard(stringItemCardCache, blockInventory, this.getOutputSlot());
+                if (pushCount > 0) {
+                    InventoryUtil.stockSlots(blockInventory, this.getOutputSlot());
+                    canOutput = !InventoryUtil.isFull(blockInventory, this.getOutputSlot());
                 }
-                if (work) {
-                    pushItemAmount--;
-                    pushCount = StringItemUtil.pullItemFromCard(itemMeta, stringItem, blockMenu.toInventory(), this.getOutputSlot());
-                    if (pushCount == 0) {
-                        unOutputItem.add(new ItemWrapper(stringItem.getItemStack()));
-                    } else {
-                        MachineUtil.stockSlots(blockMenu.toInventory(), this.getOutputSlot());
-                        canOutput = !MachineUtil.isFull(blockMenu.toInventory(), this.getOutputSlot());
-                    }
-                    if (pushItemAmount == 0) {
-                        canOutput = false;
-                    }
+                if (pushItemAmount == 0) {
+                    canOutput = false;
                 }
             }
 
             int stackCount = 0;
             if (canInput) {
-                work = true;
-                if (stringItem != null) {
-                    for (ItemWrapper unWorkItem : unInputItem) {
-                        if (ItemStackUtil.isItemSimilar(stringItem, unWorkItem)) {
-                            work = false;
-                            break;
-                        }
-                    }
-                }
-                if (work) {
-                    stackCount = StringItemUtil.storageItemToCard(itemMeta, stringItem, storageCardItem.getItemStack().getAmount(), blockMenu.toInventory(), JavaUtil.shuffle(this.getInputSlot()));
-                    if (stackCount == 0) {
-                        if (stringItem != null) {
-                            unInputItem.add(new ItemWrapper(stringItem.getItemStack()));
-                        }
-                    } else {
-                        canInput = !MachineUtil.isEmpty(blockMenu.toInventory(), this.getInputSlot());
-                        if (stringItem == null) {
-                            stringItem = new ItemWrapper(StringItemUtil.parseItemInCard(itemMeta));
-                        }
-                    }
+                stackCount = StringItemUtil.storageItemToCard(stringItemCardCache, blockInventory, JavaUtil.shuffle(this.getInputSlot()));
+                if (stackCount > 0) {
+                    canInput = !InventoryUtil.isEmpty(blockInventory, this.getInputSlot());
                 }
             }
-            if (pushCount != 0 || stackCount != 0) {
-                FinalTechItems.STORAGE_CARD.updateLore(itemMeta, stringItem.getItemStack());
-                storageCardItem.getItemStack().setItemMeta(itemMeta);
+            if (pushCount - stackCount != 0 || stringItem != stringItemCardCache.getTemplateStringItem()) {
+                FinalTechItems.STORAGE_CARD.updateLore(itemMeta, stringItemCardCache.storedItem() ? stringItemCardCache.getTemplateStringItem().getItemStack() : null, stringItemCardCache.getAmount());
+                stringItemCardCache.updateCardItemMeta();
             }
         }
     }

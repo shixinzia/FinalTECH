@@ -4,17 +4,16 @@ import io.github.thebusybiscuit.slimefun4.api.items.ItemGroup;
 import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItem;
 import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItemStack;
 import io.github.thebusybiscuit.slimefun4.api.recipes.RecipeType;
+import io.taraxacum.finaltech.FinalTech;
 import io.taraxacum.finaltech.core.menu.AbstractMachineMenu;
 import io.taraxacum.finaltech.core.menu.unit.StatusL2Menu;
 import io.taraxacum.finaltech.setup.FinalTechItems;
+import io.taraxacum.libs.plugin.dto.LocationData;
 import io.taraxacum.libs.plugin.util.ItemStackUtil;
 import io.taraxacum.common.util.StringNumberUtil;
 import io.taraxacum.finaltech.util.ConfigUtil;
-import me.mrCookieSlime.CSCoreLibPlugin.Configuration.Config;
-import me.mrCookieSlime.Slimefun.api.BlockStorage;
-import me.mrCookieSlime.Slimefun.api.inventory.BlockMenu;
-import org.bukkit.Location;
 import org.bukkit.block.Block;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
 import javax.annotation.Nonnull;
@@ -38,18 +37,19 @@ public class MatrixExpandedCapacitor extends AbstractExpandedElectricCapacitor {
     }
 
     @Override
-    protected void tick(@Nonnull Block block, @Nonnull SlimefunItem slimefunItem, @Nonnull Config config) {
-        Location location = block.getLocation();
-        BlockMenu blockMenu = BlockStorage.getInventory(location);
-        for (int slot : this.getInputSlot()) {
-            ItemStack item = blockMenu.getItemInSlot(slot);
-            if (!ItemStackUtil.isItemNull(item) && FinalTechItems.ITEM_PHONY.verifyItem(item)) {
-                String energyStack = String.valueOf(config.getString(this.key));
-                BlockStorage.addBlockInfo(location, this.key, StringNumberUtil.min(String.valueOf(this.stack), StringNumberUtil.add(energyStack, energyStack)));
-                item.setAmount(item.getAmount() - 1);
+    protected void tick(@Nonnull Block block, @Nonnull SlimefunItem slimefunItem, @Nonnull LocationData locationData) {
+        Inventory inventory = FinalTech.getLocationDataService().getInventory(locationData);
+        if(inventory != null) {
+            for (int slot : this.getInputSlot()) {
+                ItemStack item = inventory.getItem(slot);
+                if (!ItemStackUtil.isItemNull(item) && FinalTechItems.ITEM_PHONY.verifyItem(item)) {
+                    String energyStack = String.valueOf(FinalTech.getLocationDataService().getLocationData(locationData, this.key));
+                    FinalTech.getLocationDataService().setLocationData(locationData, this.key, StringNumberUtil.min(String.valueOf(this.stack), StringNumberUtil.add(energyStack, energyStack)));
+                    item.setAmount(item.getAmount() - 1);
+                }
             }
         }
-        super.tick(block, slimefunItem, config);
+        super.tick(block, slimefunItem, locationData);
     }
 
     @Override

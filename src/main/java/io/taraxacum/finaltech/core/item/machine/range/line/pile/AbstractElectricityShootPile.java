@@ -12,28 +12,25 @@ import io.taraxacum.common.util.JavaUtil;
 import io.taraxacum.finaltech.FinalTech;
 import io.taraxacum.finaltech.core.interfaces.LocationMachine;
 import io.taraxacum.finaltech.core.interfaces.MenuUpdater;
-import io.taraxacum.finaltech.core.interfaces.RangeMachine;
 import io.taraxacum.finaltech.core.interfaces.RecipeItem;
 import io.taraxacum.finaltech.core.item.machine.range.AbstractRangeMachine;
 import io.taraxacum.finaltech.core.item.machine.range.line.AbstractLineMachine;
 import io.taraxacum.finaltech.core.menu.AbstractMachineMenu;
 import io.taraxacum.finaltech.core.menu.unit.StatusMenu;
 import io.taraxacum.finaltech.util.BlockTickerUtil;
+import io.taraxacum.libs.plugin.dto.LocationData;
 import io.taraxacum.libs.plugin.util.ItemStackUtil;
 import io.taraxacum.finaltech.util.MachineUtil;
 import io.taraxacum.common.util.StringNumberUtil;
 import io.taraxacum.finaltech.util.ConfigUtil;
-import io.taraxacum.finaltech.util.ConstantTableUtil;
-import io.taraxacum.libs.slimefun.dto.LocationInfo;
 import io.taraxacum.libs.slimefun.util.EnergyUtil;
-import me.mrCookieSlime.CSCoreLibPlugin.Configuration.Config;
-import me.mrCookieSlime.Slimefun.api.BlockStorage;
-import me.mrCookieSlime.Slimefun.api.inventory.BlockMenu;
+import io.taraxacum.libs.slimefun.util.LocationDataUtil;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.block.data.Directional;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
 import javax.annotation.Nonnull;
@@ -42,7 +39,6 @@ import java.util.Set;
 
 /**
  * @author Final_ROOT
- * @since 1.0
  */
 public abstract class AbstractElectricityShootPile extends AbstractLineMachine implements RecipeItem, MenuUpdater, LocationMachine {
     protected final Set<String> notAllowedId = new HashSet<>(ConfigUtil.getItemStringList(this, "not-allowed-id"));
@@ -60,7 +56,7 @@ public abstract class AbstractElectricityShootPile extends AbstractLineMachine i
     @Nonnull
     @Override
     protected BlockBreakHandler onBlockBreak() {
-        return MachineUtil.simpleBlockBreakerHandler(this);
+        return MachineUtil.simpleBlockBreakerHandler(FinalTech.getLocationDataService(), this);
     }
 
     @Nonnull
@@ -70,27 +66,30 @@ public abstract class AbstractElectricityShootPile extends AbstractLineMachine i
     }
 
     @Override
-    protected void tick(@Nonnull Block block, @Nonnull SlimefunItem slimefunItem, @Nonnull Config config) {
+    protected void tick(@Nonnull Block block, @Nonnull SlimefunItem slimefunItem, @Nonnull LocationData locationData) {
         BlockData blockData = block.getBlockData();
         if (blockData instanceof Directional directional) {
             Runnable runnable = () -> {
                 int count = 0;
                 Summary summary = new Summary();
-                LocationInfo locationInfo = LocationInfo.get(block.getRelative(directional.getFacing().getOppositeFace()).getLocation());
-                if(locationInfo != null && !this.notAllowedId.contains(locationInfo.getId()) && locationInfo.getSlimefunItem() instanceof EnergyNetComponent energyNetComponent && JavaUtil.matchOnce(energyNetComponent.getEnergyComponentType(), EnergyNetComponentType.CAPACITOR, EnergyNetComponentType.GENERATOR)) {
-                    int capacitorEnergy = Integer.parseInt(EnergyUtil.getCharge(locationInfo.getConfig()));
+                LocationData tempLocationData = FinalTech.getLocationDataService().getLocationData(block.getRelative(directional.getFacing().getOppositeFace()).getLocation());
+                if(tempLocationData != null
+                        && !this.notAllowedId.contains(LocationDataUtil.getId(FinalTech.getLocationDataService(), tempLocationData))
+                        && LocationDataUtil.getSlimefunItem(FinalTech.getLocationDataService(), tempLocationData) instanceof EnergyNetComponent energyNetComponent
+                        && JavaUtil.matchOnce(energyNetComponent.getEnergyComponentType(), EnergyNetComponentType.CAPACITOR, EnergyNetComponentType.GENERATOR)) {
+                    int capacitorEnergy = Integer.parseInt(EnergyUtil.getCharge(FinalTech.getLocationDataService(), tempLocationData));
                     summary.capacitorEnergy = capacitorEnergy;
 
                     count = this.lineFunction(block, this.getRange(), this.doFunction(summary));
 
                     if(capacitorEnergy != summary.capacitorEnergy) {
-                        EnergyUtil.setCharge(locationInfo.getConfig(), summary.capacitorEnergy);
+                        EnergyUtil.setCharge(FinalTech.getLocationDataService(), tempLocationData, String.valueOf(summary.capacitorEnergy));
                     }
                 }
 
-                BlockMenu blockMenu = BlockStorage.getInventory(block);
-                if (blockMenu.hasViewer()) {
-                    this.updateMenu(blockMenu, StatusMenu.STATUS_SLOT, this,
+                Inventory inventory = FinalTech.getLocationDataService().getInventory(locationData);
+                if (inventory != null && !inventory.getViewers().isEmpty()) {
+                    this.updateInv(inventory, StatusMenu.STATUS_SLOT, this,
                             String.valueOf(count),
                             summary.getEnergyCharge(),
                             String.valueOf(summary.capacitorEnergy));
@@ -106,8 +105,8 @@ public abstract class AbstractElectricityShootPile extends AbstractLineMachine i
         return false;
     }
 
-    protected void updateMenu(@Nonnull BlockMenu blockMenu, int count, @Nonnull Summary summary) {
-        ItemStack item = blockMenu.getItemInSlot(StatusMenu.STATUS_SLOT);
+    protected void updateInv(@Nonnull Inventory inventory, int count, @Nonnull Summary summary) {
+        ItemStack item = inventory.getItem(StatusMenu.STATUS_SLOT);
         ItemStackUtil.setLore(item, ConfigUtil.getStatusMenuLore(FinalTech.getLanguageManager(), this,
                 String.valueOf(count),
                 summary.getEnergyCharge()));

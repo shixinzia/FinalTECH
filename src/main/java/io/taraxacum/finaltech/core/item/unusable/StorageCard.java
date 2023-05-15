@@ -7,7 +7,7 @@ import io.taraxacum.finaltech.FinalTech;
 import io.taraxacum.finaltech.core.interfaces.RecipeItem;
 import io.taraxacum.finaltech.setup.FinalTechItemStacks;
 import io.taraxacum.libs.plugin.util.ItemStackUtil;
-import io.taraxacum.libs.plugin.util.StringItemUtil;
+import io.taraxacum.finaltech.util.StringItemUtil;
 import io.taraxacum.libs.plugin.util.TextUtil;
 import io.taraxacum.finaltech.util.RecipeUtil;
 import io.taraxacum.libs.slimefun.interfaces.ValidItem;
@@ -88,13 +88,16 @@ public class StorageCard extends UnusableSlimefunItem implements RecipeItem, Val
     public void updateLore(@Nonnull ItemMeta cardItemMeta) {
         PersistentDataContainer persistentDataContainer = cardItemMeta.getPersistentDataContainer();
         ItemStack stringItem = null;
-        if (persistentDataContainer.has(StringItemUtil.ITEM_KEY, PersistentDataType.STRING)) {
-            String itemString = persistentDataContainer.get(StringItemUtil.ITEM_KEY, PersistentDataType.STRING);
+        String amount = null;
+        String itemString = persistentDataContainer.get(StringItemUtil.ITEM_KEY, PersistentDataType.STRING);
+        if (itemString != null) {
+            amount = persistentDataContainer.get(StringItemUtil.AMOUNT_KEY, PersistentDataType.STRING);
             stringItem = ItemStackUtil.stringToItemStack(itemString);
         }
-        this.updateLore(cardItemMeta, stringItem);
+        this.updateLore(cardItemMeta, stringItem, amount);
     }
 
+    @Deprecated
     public void updateLore(@Nonnull ItemMeta cardItemMeta, @Nullable ItemStack stringItem) {
         PersistentDataContainer persistentDataContainer = cardItemMeta.getPersistentDataContainer();
         List<String> lore;
@@ -112,6 +115,29 @@ public class StorageCard extends UnusableSlimefunItem implements RecipeItem, Val
                 lore.add(TextUtil.getRandomColor() + name + "  " + TextUtil.colorRandomString(String.valueOf(amount)));
             } else {
                 lore.set(1, TextUtil.getRandomColor() + name + "  " + TextUtil.colorRandomString(String.valueOf(amount)));
+            }
+        } else {
+            lore = new ArrayList<>(1);
+            lore.add(this.itemLore);
+        }
+        cardItemMeta.setLore(lore);
+    }
+
+    public void updateLore(@Nonnull ItemMeta cardItemMeta, @Nullable ItemStack stringItem, @Nullable String amount) {
+        List<String> lore;
+        if (amount != null) {
+            lore = cardItemMeta.getLore();
+            if (lore == null || lore.isEmpty()) {
+                lore = new ArrayList<>(4);
+                lore.add(this.itemLore);
+            } else {
+                lore.set(0, this.itemLore);
+            }
+            String name = ItemStackUtil.getItemName(stringItem);
+            if (lore.size() == 1) {
+                lore.add(TextUtil.getRandomColor() + name + "  " + TextUtil.colorRandomString(amount));
+            } else {
+                lore.set(1, TextUtil.getRandomColor() + name + "  " + TextUtil.colorRandomString(amount));
             }
         } else {
             lore = new ArrayList<>(1);

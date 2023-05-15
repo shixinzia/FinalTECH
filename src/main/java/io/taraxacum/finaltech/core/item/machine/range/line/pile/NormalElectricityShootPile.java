@@ -8,9 +8,10 @@ import io.github.thebusybiscuit.slimefun4.core.networks.energy.EnergyNetComponen
 import io.taraxacum.finaltech.FinalTech;
 import io.taraxacum.common.util.StringNumberUtil;
 import io.taraxacum.finaltech.util.ConfigUtil;
-import io.taraxacum.libs.slimefun.dto.LocationInfo;
+import io.taraxacum.libs.plugin.dto.LocationData;
 import io.taraxacum.libs.slimefun.util.EnergyUtil;
 import io.taraxacum.finaltech.util.RecipeUtil;
+import io.taraxacum.libs.slimefun.util.LocationDataUtil;
 import org.bukkit.inventory.ItemStack;
 
 import javax.annotation.Nonnull;
@@ -38,15 +39,18 @@ public class NormalElectricityShootPile extends AbstractElectricityShootPile {
             if (summary.getCapacitorEnergy() <= 0) {
                 return -1;
             }
-            LocationInfo locationInfo = LocationInfo.get(location);
-            if (locationInfo != null && !this.notAllowedId.contains(locationInfo.getId()) && locationInfo.getSlimefunItem() instanceof EnergyNetComponent energyNetComponent && !EnergyNetComponentType.NONE.equals(energyNetComponent.getEnergyComponentType())) {
+            LocationData locationData = FinalTech.getLocationDataService().getLocationData(location);
+            if (locationData != null
+                    && !this.notAllowedId.contains(LocationDataUtil.getId(FinalTech.getLocationDataService(), locationData))
+                    && LocationDataUtil.getSlimefunItem(FinalTech.getLocationDataService(), locationData) instanceof EnergyNetComponent energyNetComponent
+                    && !EnergyNetComponentType.NONE.equals(energyNetComponent.getEnergyComponentType())) {
                 int componentCapacity = energyNetComponent.getCapacity();
                 if(componentCapacity > 0) {
-                    int componentEnergy = Integer.parseInt(EnergyUtil.getCharge(locationInfo.getConfig()));
+                    int componentEnergy = Integer.parseInt(EnergyUtil.getCharge(FinalTech.getLocationDataService(), locationData));
                     if (componentEnergy < componentCapacity) {
                         int transferEnergy = Math.min(summary.getCapacitorEnergy(), componentCapacity - componentEnergy);
                         if(transferEnergy > 0) {
-                            EnergyUtil.setCharge(location, String.valueOf(componentEnergy + transferEnergy));
+                            EnergyUtil.setCharge(FinalTech.getLocationDataService(), locationData, String.valueOf(componentEnergy + transferEnergy));
                             summary.setCapacitorEnergy(summary.getCapacitorEnergy() - transferEnergy);
                             summary.setEnergyCharge(StringNumberUtil.add(summary.getEnergyCharge(), String.valueOf(transferEnergy)));
                             return 1;

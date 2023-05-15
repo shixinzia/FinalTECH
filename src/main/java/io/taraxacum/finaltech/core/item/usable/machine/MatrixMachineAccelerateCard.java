@@ -16,16 +16,16 @@ import javax.annotation.Nonnull;
  * @author Final_ROOT
  * @since 2.0
  */
-public class InfinityMachineChargeCard extends AbstractMachineChargeCard implements RecipeItem {
-    private final double energy = ConfigUtil.getOrDefaultItemSetting(16.04, this, "energy");
+public class MatrixMachineAccelerateCard extends AbstractMachineAccelerateCard implements RecipeItem {
+    private final int times = ConfigUtil.getOrDefaultItemSetting(1, this, "times");
 
-    public InfinityMachineChargeCard(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
+    public MatrixMachineAccelerateCard(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
         super(itemGroup, item, recipeType, recipe);
     }
 
     @Override
-    protected double energy() {
-        return this.energy;
+    protected int times() {
+        return this.times;
     }
 
     @Override
@@ -35,8 +35,8 @@ public class InfinityMachineChargeCard extends AbstractMachineChargeCard impleme
 
     @Override
     protected boolean conditionMatch(@Nonnull Player player) {
-        if (player.getTotalExperience() > 1) {
-            player.setTotalExperience(player.getTotalExperience() - 1);
+        if (player.getHealth() > 1) {
+            player.setHealth(player.getHealth() - 1);
             return true;
         }
         return false;
@@ -45,7 +45,6 @@ public class InfinityMachineChargeCard extends AbstractMachineChargeCard impleme
     @Override
     public void registerDefaultRecipes() {
         RecipeUtil.registerDescriptiveRecipe(FinalTech.getLanguageManager(), this,
-                String.valueOf((int)(Math.floor(energy))),
-                String.format("%.2f", (energy - Math.floor(energy)) * 100));
+                String.valueOf(this.times()));
     }
 }

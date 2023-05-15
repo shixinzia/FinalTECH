@@ -12,16 +12,15 @@ import io.taraxacum.finaltech.FinalTech;
 import io.taraxacum.finaltech.core.menu.unit.StatusL2Menu;
 import io.taraxacum.finaltech.setup.FinalTechItems;
 import io.taraxacum.finaltech.util.*;
+import io.taraxacum.libs.plugin.dto.LocationData;
 import io.taraxacum.libs.plugin.util.ItemStackUtil;
 import io.taraxacum.finaltech.util.BlockTickerUtil;
 import io.taraxacum.libs.plugin.util.ParticleUtil;
-import io.taraxacum.libs.slimefun.dto.LocationInfo;
 import io.taraxacum.libs.slimefun.util.EnergyUtil;
-import me.mrCookieSlime.CSCoreLibPlugin.Configuration.Config;
-import me.mrCookieSlime.Slimefun.api.BlockStorage;
-import me.mrCookieSlime.Slimefun.api.inventory.BlockMenu;
+import io.taraxacum.libs.slimefun.util.LocationDataUtil;
 import org.bukkit.*;
 import org.bukkit.block.Block;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -40,14 +39,17 @@ public class MatrixGenerator extends AbstractCubeElectricGenerator {
     }
 
     @Override
-    protected void tick(@Nonnull Block block, @Nonnull SlimefunItem slimefunItem, @Nonnull Config config) {
-        BlockMenu blockMenu = BlockStorage.getInventory(block);
-        boolean drawParticle = blockMenu.hasViewer();
+    protected void tick(@Nonnull Block block, @Nonnull SlimefunItem slimefunItem, @Nonnull LocationData locationData) {
+        Inventory inventory = FinalTech.getLocationDataService().getInventory(locationData);
+        if(inventory == null) {
+            return;
+        }
+        boolean drawParticle = !inventory.getViewers().isEmpty();
         JavaPlugin javaPlugin = this.getAddon().getJavaPlugin();
 
         int range = 0;
         for (int slot : this.getInputSlot()) {
-            ItemStack itemStack = blockMenu.getItemInSlot(slot);
+            ItemStack itemStack = inventory.getItem(slot);
             if (!ItemStackUtil.isItemNull(itemStack) && FinalTechItems.ITEM_PHONY.verifyItem(itemStack)) {
                 for (int i = itemStack.getAmount(); i > 0; i /= 2) {
                     range++;
@@ -56,10 +58,16 @@ public class MatrixGenerator extends AbstractCubeElectricGenerator {
         }
 
         int count = this.cubeFunction(block, range + this.getRange(), location -> {
-            LocationInfo locationInfo = LocationInfo.get(location);
+            if(!location.getChunk().isLoaded()) {
+                return -1;
+            }
 
-            if (locationInfo != null && !this.notAllowedId.contains(locationInfo.getId()) && locationInfo.getSlimefunItem() instanceof EnergyNetComponent energyNetComponent && !JavaUtil.matchOnce(energyNetComponent.getEnergyComponentType(), EnergyNetComponentType.CAPACITOR, EnergyNetComponentType.GENERATOR)) {
-                BlockTickerUtil.runTask(FinalTech.getLocationRunnableFactory(), FinalTech.isAsyncSlimefunItem(locationInfo.getId()), () -> this.chargeMachine(energyNetComponent, locationInfo), location);
+            LocationData tempLocationData = FinalTech.getLocationDataService().getLocationData(location);
+            if (tempLocationData != null
+                    && !this.notAllowedId.contains(LocationDataUtil.getId(FinalTech.getLocationDataService(), tempLocationData))
+                    && LocationDataUtil.getSlimefunItem(FinalTech.getLocationDataService(), tempLocationData) instanceof EnergyNetComponent energyNetComponent
+                    && !JavaUtil.matchOnce(energyNetComponent.getEnergyComponentType(), EnergyNetComponentType.CAPACITOR, EnergyNetComponentType.GENERATOR)) {
+                BlockTickerUtil.runTask(FinalTech.getLocationRunnableFactory(), FinalTech.isAsyncSlimefunItem(LocationDataUtil.getId(FinalTech.getLocationDataService(), tempLocationData)), () -> this.chargeMachine(energyNetComponent, tempLocationData), location);
                 if (drawParticle) {
                     Location cloneLocation = location.clone();
                     javaPlugin.getServer().getScheduler().runTaskAsynchronously(javaPlugin, () -> ParticleUtil.drawCubeByBlock(javaPlugin, Particle.WAX_OFF, 0, cloneLocation.getBlock()));
@@ -69,15 +77,15 @@ public class MatrixGenerator extends AbstractCubeElectricGenerator {
             return 0;
         });
 
-        if (blockMenu.hasViewer()) {
-            this.updateMenu(blockMenu, StatusL2Menu.STATUS_SLOT, this,
+        if (drawParticle) {
+            this.updateInv(inventory, StatusL2Menu.STATUS_SLOT, this,
                     String.valueOf(count),
                     String.valueOf(range + this.getRange()));
         }
     }
 
-    private void chargeMachine(@Nonnull EnergyNetComponent energyNetComponent, @Nonnull LocationInfo locationInfo) {
-        EnergyUtil.setCharge(locationInfo.getConfig(), energyNetComponent.getCapacity());
+    private void chargeMachine(@Nonnull EnergyNetComponent energyNetComponent, @Nonnull LocationData locationData) {
+        EnergyUtil.setCharge(FinalTech.getLocationDataService(), locationData, String.valueOf(energyNetComponent.getCapacity()));
     }
 
     @Override

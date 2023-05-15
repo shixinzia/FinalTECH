@@ -13,9 +13,10 @@ import io.taraxacum.finaltech.core.interfaces.RecipeItem;
 import io.taraxacum.finaltech.util.ConfigUtil;
 import io.taraxacum.finaltech.util.PermissionUtil;
 import io.taraxacum.finaltech.util.RecipeUtil;
+import io.taraxacum.libs.plugin.dto.LocationData;
 import io.taraxacum.libs.plugin.util.ParticleUtil;
-import io.taraxacum.libs.slimefun.dto.LocationInfo;
 import io.taraxacum.libs.slimefun.util.EnergyUtil;
+import io.taraxacum.libs.slimefun.util.LocationDataUtil;
 import org.bukkit.Location;
 import org.bukkit.Particle;
 import org.bukkit.block.Block;
@@ -29,7 +30,6 @@ import java.util.*;
 
 /**
  * @author Final_ROOT
- * @version 2.4
  */
 public class EnergyCard extends UsableSlimefunItem implements RecipeItem {
     public static final Map<String, EnergyCard> ENERGY_CARD_MAP = new LinkedHashMap<>();
@@ -48,8 +48,6 @@ public class EnergyCard extends UsableSlimefunItem implements RecipeItem {
 
     @Override
     protected void function(@Nonnull PlayerRightClickEvent playerRightClickEvent) {
-        playerRightClickEvent.cancel();
-
         Block block = playerRightClickEvent.getInteractEvent().getClickedBlock();
         if (block == null) {
             return;
@@ -61,9 +59,9 @@ public class EnergyCard extends UsableSlimefunItem implements RecipeItem {
         }
 
         Location location = block.getLocation();
-        LocationInfo locationInfo = LocationInfo.get(location);
+        LocationData locationData = FinalTech.getLocationDataService().getLocationData(location);
 
-        if(locationInfo == null || this.notAllowedId.contains(locationInfo.getId())) {
+        if(locationData == null || this.notAllowedId.contains(LocationDataUtil.getId(FinalTech.getLocationDataService(), locationData))) {
             return;
         }
 
@@ -72,7 +70,7 @@ public class EnergyCard extends UsableSlimefunItem implements RecipeItem {
             return;
         }
 
-        if (locationInfo.getSlimefunItem() instanceof EnergyNetComponent energyNetComponent && energyNetComponent.isChargeable()) {
+        if (LocationDataUtil.getSlimefunItem(FinalTech.getLocationDataService(), locationData) instanceof EnergyNetComponent energyNetComponent && energyNetComponent.isChargeable()) {
             JavaPlugin javaPlugin = this.getAddon().getJavaPlugin();
             javaPlugin.getServer().getScheduler().runTaskAsynchronously(javaPlugin, () -> ParticleUtil.drawCubeByBlock(this.getAddon().getJavaPlugin(), Particle.WAX_OFF, 0, block));
 
@@ -81,11 +79,11 @@ public class EnergyCard extends UsableSlimefunItem implements RecipeItem {
             String transferEnergy = energyDepositEvent.getEnergy();
 
             int capacity = energyNetComponent.getCapacity();
-            String energyStr = EnergyUtil.getCharge(locationInfo.getConfig());
+            String energyStr = EnergyUtil.getCharge(FinalTech.getLocationDataService(), locationData);
             int energy = Integer.parseInt(energyStr);
             if(energy < capacity) {
                 energyStr = StringNumberUtil.min(StringNumberUtil.add(transferEnergy, energyStr), String.valueOf(capacity));
-                EnergyUtil.setCharge(locationInfo.getLocation(), energyStr);
+                EnergyUtil.setCharge(FinalTech.getLocationDataService(), locationData, energyStr);
 
                 ItemStack itemStack = playerRightClickEvent.getItem();
                 itemStack.setAmount(itemStack.getAmount() - 1);

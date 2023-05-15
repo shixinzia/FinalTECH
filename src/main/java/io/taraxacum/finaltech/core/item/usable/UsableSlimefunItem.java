@@ -30,6 +30,9 @@ public abstract class UsableSlimefunItem extends AbstractMySlimefunItem {
     }
 
     private void doFunction(@Nonnull PlayerRightClickEvent playerRightClickEvent) {
+        if(this.cancel()) {
+            playerRightClickEvent.cancel();
+        }
         Player player = playerRightClickEvent.getPlayer();
         if(this.getInterval() > 0 && this.getThreshold() > 0) {
             List<Long> timeList = this.intervalThresholdMap.getOrDefault(player, new ArrayList<>(this.getThreshold()));
@@ -71,5 +74,9 @@ public abstract class UsableSlimefunItem extends AbstractMySlimefunItem {
 
     int getInterval() {
         return 0;
+    }
+
+    boolean cancel() {
+        return true;
     }
 }

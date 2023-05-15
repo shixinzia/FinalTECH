@@ -14,11 +14,10 @@ import io.taraxacum.finaltech.core.menu.AbstractMachineMenu;
 import io.taraxacum.finaltech.core.menu.machine.LogicCrafterMenu;
 import io.taraxacum.finaltech.setup.FinalTechItemStacks;
 import io.taraxacum.finaltech.util.RecipeUtil;
+import io.taraxacum.libs.plugin.dto.LocationData;
+import io.taraxacum.libs.plugin.util.InventoryUtil;
 import io.taraxacum.libs.plugin.util.ItemStackUtil;
 import io.taraxacum.finaltech.util.MachineUtil;
-import me.mrCookieSlime.CSCoreLibPlugin.Configuration.Config;
-import me.mrCookieSlime.Slimefun.api.BlockStorage;
-import me.mrCookieSlime.Slimefun.api.inventory.BlockMenu;
 import org.bukkit.block.Block;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
@@ -43,7 +42,7 @@ public class LogicCrafter extends AbstractMachine implements RecipeItem {
     @Nonnull
     @Override
     protected BlockBreakHandler onBlockBreak() {
-        return MachineUtil.simpleBlockBreakerHandler(this);
+        return MachineUtil.simpleBlockBreakerHandler(FinalTech.getLocationDataService(), this);
     }
 
     @Nonnull
@@ -53,11 +52,10 @@ public class LogicCrafter extends AbstractMachine implements RecipeItem {
     }
 
     @Override
-    protected void tick(@Nonnull Block block, @Nonnull SlimefunItem slimefunItem, @Nonnull Config config) {
+    protected void tick(@Nonnull Block block, @Nonnull SlimefunItem slimefunItem, @Nonnull LocationData locationData) {
         int digit = 0;
-        BlockMenu blockMenu = BlockStorage.getInventory(block);
-        Inventory inventory = blockMenu.toInventory();
-        if (MachineUtil.slotCount(inventory, this.getOutputSlot()) == this.getOutputSlot().length) {
+        Inventory inventory = FinalTech.getLocationDataService().getInventory(locationData);
+        if (inventory == null || InventoryUtil.slotCount(inventory, this.getOutputSlot()) == this.getOutputSlot().length) {
             return;
         }
         for (int slot : this.getInputSlot()) {
@@ -66,8 +64,8 @@ public class LogicCrafter extends AbstractMachine implements RecipeItem {
                 return;
             }
             SlimefunItem logicItem = SlimefunItem.getByItem(itemStack);
-            if (logicItem instanceof LogicItem) {
-                boolean logic = ((LogicItem) logicItem).getLogic();
+            if (logicItem instanceof LogicItem l) {
+                boolean logic = l.getLogic();
                 digit = digit << 1;
                 digit += logic ? 1 : 0;
             } else {

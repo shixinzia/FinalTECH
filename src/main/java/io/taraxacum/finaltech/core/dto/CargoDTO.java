@@ -1,9 +1,10 @@
 package io.taraxacum.finaltech.core.dto;
 
-import io.taraxacum.finaltech.core.helper.CargoFilter;
-import io.taraxacum.finaltech.core.helper.CargoLimit;
-import io.taraxacum.finaltech.core.helper.SlotSearchOrder;
-import io.taraxacum.finaltech.core.helper.SlotSearchSize;
+import io.taraxacum.finaltech.core.option.CargoFilter;
+import io.taraxacum.finaltech.core.option.CargoLimit;
+import io.taraxacum.finaltech.core.option.SlotSearchOrder;
+import io.taraxacum.finaltech.core.option.SlotSearchSize;
+import io.taraxacum.libs.plugin.interfaces.LocationDataService;
 import me.mrCookieSlime.Slimefun.api.inventory.BlockMenu;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
@@ -13,10 +14,11 @@ import org.bukkit.plugin.java.JavaPlugin;
 /**
  * @see io.taraxacum.finaltech.util.CargoUtil#doCargo(CargoDTO, String)
  * @author Final_ROOT
- * @since 2.0
  */
 public class CargoDTO {
     private JavaPlugin javaPlugin;
+
+    private LocationDataService locationDataService;
 
     /** Source #{@link Location} of #{@link BlockMenu} or #{@link Inventory} */
     private Block inputBlock;
@@ -55,8 +57,9 @@ public class CargoDTO {
 
     }
 
-    public CargoDTO(JavaPlugin javaPlugin, Block inputBlock, String inputSize, String inputOrder, Block outputBlock, String outputSize, String outputOrder, int cargoNumber, String cargoLimit, String cargoFilter, Inventory filterInv, int[] filterSlots) {
+    public CargoDTO(JavaPlugin javaPlugin, LocationDataService locationDataService, Block inputBlock, String inputSize, String inputOrder, Block outputBlock, String outputSize, String outputOrder, int cargoNumber, String cargoLimit, String cargoFilter, Inventory filterInv, int[] filterSlots) {
         this.javaPlugin = javaPlugin;
+        this.locationDataService = locationDataService;
         this.inputBlock = inputBlock;
         this.inputSize = inputSize;
         this.inputOrder = inputOrder;
@@ -76,6 +79,14 @@ public class CargoDTO {
 
     public void setJavaPlugin(JavaPlugin javaPlugin) {
         this.javaPlugin = javaPlugin;
+    }
+
+    public LocationDataService getLocationDataService() {
+        return locationDataService;
+    }
+
+    public void setLocationDataService(LocationDataService locationDataService) {
+        this.locationDataService = locationDataService;
     }
 
     public Block getInputBlock() {

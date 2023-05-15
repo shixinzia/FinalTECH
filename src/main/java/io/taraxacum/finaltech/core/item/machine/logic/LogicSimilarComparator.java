@@ -35,13 +35,13 @@ public class LogicSimilarComparator extends AbstractLogicComparator implements R
     @Nonnull
     @Override
     protected ItemStack resultTrue() {
-        return ItemStackUtil.cloneItem(FinalTechItemStacks.LOGIC_TRUE);
+        return FinalTechItemStacks.LOGIC_TRUE;
     }
 
     @Nonnull
     @Override
     protected ItemStack resultFalse() {
-        return ItemStackUtil.cloneItem(FinalTechItemStacks.LOGIC_FALSE);
+        return FinalTechItemStacks.LOGIC_FALSE;
     }
 
     @Override

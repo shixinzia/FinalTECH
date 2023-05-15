@@ -14,7 +14,7 @@ import io.taraxacum.finaltech.core.menu.AbstractMachineMenu;
 import io.taraxacum.finaltech.core.menu.unit.VoidMenu;
 import io.taraxacum.finaltech.util.MachineUtil;
 import io.taraxacum.finaltech.util.RecipeUtil;
-import me.mrCookieSlime.CSCoreLibPlugin.Configuration.Config;
+import io.taraxacum.libs.plugin.dto.LocationData;
 import org.bukkit.Location;
 import org.bukkit.block.*;
 import org.bukkit.inventory.ItemStack;
@@ -45,7 +45,7 @@ public class FuelAccelerator extends AbstractFaceMachine implements RecipeItem {
     @Nonnull
     @Override
     protected BlockBreakHandler onBlockBreak() {
-        return MachineUtil.simpleBlockBreakerHandler(this);
+        return MachineUtil.simpleBlockBreakerHandler(FinalTech.getLocationDataService(), this);
     }
 
     @Nonnull
@@ -55,7 +55,7 @@ public class FuelAccelerator extends AbstractFaceMachine implements RecipeItem {
     }
 
     @Override
-    protected void tick(@Nonnull Block block, @Nonnull SlimefunItem slimefunItem, @Nonnull Config config) {
+    protected void tick(@Nonnull Block block, @Nonnull SlimefunItem slimefunItem, @Nonnull LocationData locationData) {
         Location location = block.getLocation();
         BukkitTask task = locationBukkitTaskMap.get(location);
         if(task != null && !task.isCancelled()) {
@@ -73,9 +73,8 @@ public class FuelAccelerator extends AbstractFaceMachine implements RecipeItem {
                     FuelAccelerator.this.pointFunction(block, 1, location -> {
                         BlockState blockState = PaperLib.getBlockState(location.getBlock(), false).getState();
                         if (blockState instanceof Furnace furnace) {
-                            if (((Furnace) blockState).getCookTime() > 0 && furnace.getCookTime() < furnace.getCookTimeTotal() - 1) {
-                                furnace.setCookTime((short) (((Furnace) blockState).getCookTimeTotal()));
-//                                furnace.setCookTimeTotal(1);
+                            if (furnace.getCookTime() > 0 && furnace.getCookTime() < furnace.getCookTimeTotal() - 1) {
+                                furnace.setCookTime((short) (furnace.getCookTimeTotal()));
                             }
                         }
                         return 0;
@@ -83,7 +82,7 @@ public class FuelAccelerator extends AbstractFaceMachine implements RecipeItem {
                 }
             }
         }, 1L, 1L);
-        locationBukkitTaskMap.put(location, bukkitTask);
+        this.locationBukkitTaskMap.put(location, bukkitTask);
 
         javaPlugin.getServer().getScheduler().runTaskLater(javaPlugin, bukkitTask::cancel, time);
     }

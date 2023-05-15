@@ -1,7 +1,7 @@
 package io.taraxacum.finaltech.core.menu.machine;
 
 import io.github.thebusybiscuit.slimefun4.utils.ChestMenuUtils;
-import io.taraxacum.finaltech.core.helper.Icon;
+import io.taraxacum.finaltech.core.option.Icon;
 import io.taraxacum.finaltech.core.item.machine.AbstractMachine;
 import io.taraxacum.finaltech.core.menu.AbstractMachineMenu;
 import org.bukkit.Location;
@@ -11,7 +11,6 @@ import javax.annotation.Nonnull;
 
 /**
  * @author Final_ROOT
- * @since 2.0
  */
 public class ConversionMachineMenu extends AbstractMachineMenu {
     private static final int[] BORDER = new int[] {45, 46, 47, 51, 52, 53};

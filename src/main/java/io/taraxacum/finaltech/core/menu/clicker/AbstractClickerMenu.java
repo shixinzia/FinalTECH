@@ -6,12 +6,12 @@ import me.mrCookieSlime.Slimefun.api.inventory.BlockMenu;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.Inventory;
 
 import javax.annotation.Nonnull;
 
 /**
  * @author Final_ROOT
- * @since 2.2
  */
 public abstract class AbstractClickerMenu extends AbstractMachineMenu {
     protected final AbstractClickerMachine clickerMachine;
@@ -37,10 +37,10 @@ public abstract class AbstractClickerMenu extends AbstractMachineMenu {
             }
 
             if(p.getPlayer() != null) {
-                AbstractClickerMenu.this.doFunction(blockMenu, block, p.getPlayer());
+                AbstractClickerMenu.this.doFunction(blockMenu.toInventory(), block, p.getPlayer());
             }
         });
     }
 
-    abstract protected void doFunction(@Nonnull BlockMenu blockMenu, @Nonnull Block block, @Nonnull Player player);
+    abstract protected void doFunction(@Nonnull Inventory inventory, @Nonnull Block block, @Nonnull Player player);
 }

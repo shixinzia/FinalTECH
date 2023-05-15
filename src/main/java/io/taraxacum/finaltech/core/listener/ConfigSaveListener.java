@@ -7,7 +7,7 @@ import io.taraxacum.common.util.ReflectionUtil;
 import io.taraxacum.finaltech.FinalTech;
 import io.taraxacum.finaltech.core.event.ConfigSaveActionEvent;
 import io.taraxacum.finaltech.core.item.machine.AbstractMachine;
-import me.mrCookieSlime.Slimefun.api.BlockStorage;
+import io.taraxacum.libs.slimefun.service.SlimefunLocationDataService;
 import me.mrCookieSlime.Slimefun.api.inventory.BlockMenu;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -18,7 +18,6 @@ import java.lang.reflect.Method;
 
 /**
  * @author Final_ROOT
- * @since 2.4
  */
 public class ConfigSaveListener implements Listener {
 
@@ -28,8 +27,10 @@ public class ConfigSaveListener implements Listener {
         SlimefunItem slimefunItem = SlimefunItem.getById(id);
 
         // Slimefun cargo node
-        if(slimefunItem != null && JavaUtil.matchOnce(id, SlimefunItems.CARGO_INPUT_NODE.getItemId(), SlimefunItems.CARGO_OUTPUT_NODE.getItemId(), SlimefunItems.CARGO_OUTPUT_NODE_2.getItemId())) {
-            BlockMenu blockMenu = BlockStorage.getInventory(configSaveActionEvent.getLocation());
+        if(slimefunItem != null
+                && JavaUtil.matchOnce(id, SlimefunItems.CARGO_INPUT_NODE.getItemId(), SlimefunItems.CARGO_OUTPUT_NODE.getItemId(), SlimefunItems.CARGO_OUTPUT_NODE_2.getItemId())
+                && FinalTech.getLocationDataService() instanceof SlimefunLocationDataService slimefunLocationDataService) {
+            BlockMenu blockMenu = slimefunLocationDataService.getBlockMenu(configSaveActionEvent.getLocation());
             if(blockMenu != null) {
                 Method method = ReflectionUtil.getMethod(slimefunItem.getClass(), "updateBlockMenu");
                 if(method != null) {
@@ -44,8 +45,11 @@ public class ConfigSaveListener implements Listener {
         }
 
         // FinalTECH machines
-        if(slimefunItem != null && slimefunItem.getAddon().getJavaPlugin().equals(FinalTech.getInstance()) && slimefunItem instanceof AbstractMachine) {
-            BlockMenu blockMenu = BlockStorage.getInventory(configSaveActionEvent.getLocation());
+        if(slimefunItem != null
+                && slimefunItem.getAddon().getJavaPlugin().equals(FinalTech.getInstance())
+                && slimefunItem instanceof AbstractMachine
+                && FinalTech.getLocationDataService() instanceof SlimefunLocationDataService slimefunLocationDataService) {
+            BlockMenu blockMenu = slimefunLocationDataService.getBlockMenu(configSaveActionEvent.getLocation());
             if(blockMenu != null) {
                 try {
                     Field field = ReflectionUtil.getField(slimefunItem.getClass(), "menu");

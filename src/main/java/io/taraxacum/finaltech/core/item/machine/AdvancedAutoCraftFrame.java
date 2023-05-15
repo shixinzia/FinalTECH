@@ -7,25 +7,22 @@ import io.github.thebusybiscuit.slimefun4.api.recipes.RecipeType;
 import io.github.thebusybiscuit.slimefun4.core.handlers.BlockBreakHandler;
 import io.github.thebusybiscuit.slimefun4.core.handlers.BlockPlaceHandler;
 import io.taraxacum.finaltech.FinalTech;
-import io.taraxacum.finaltech.core.helper.Icon;
+import io.taraxacum.finaltech.core.option.Icon;
 import io.taraxacum.finaltech.core.interfaces.RecipeItem;
 import io.taraxacum.finaltech.core.menu.AbstractMachineMenu;
 import io.taraxacum.finaltech.core.menu.cargo.AdvancedAutoCraftFrameMenu;
 import io.taraxacum.finaltech.util.MachineUtil;
 import io.taraxacum.finaltech.util.RecipeUtil;
+import io.taraxacum.libs.plugin.dto.LocationData;
 import io.taraxacum.libs.plugin.util.ItemStackUtil;
-import me.mrCookieSlime.CSCoreLibPlugin.Configuration.Config;
-import me.mrCookieSlime.Slimefun.api.BlockStorage;
-import me.mrCookieSlime.Slimefun.api.inventory.BlockMenu;
-import org.bukkit.Location;
 import org.bukkit.block.Block;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
 import javax.annotation.Nonnull;
 
 /**
  * @author Final_ROOT
- * @since 2.0
  */
 public class AdvancedAutoCraftFrame extends AbstractMachine implements RecipeItem {
     private AdvancedAutoCraftFrameMenu advancedAutoCraftFrameMenu = null;
@@ -43,7 +40,7 @@ public class AdvancedAutoCraftFrame extends AbstractMachine implements RecipeIte
     @Nonnull
     @Override
     protected BlockBreakHandler onBlockBreak() {
-        return MachineUtil.simpleBlockBreakerHandler(this, AdvancedAutoCraftFrameMenu.PARSE_ITEM_SLOT, AdvancedAutoCraftFrameMenu.MODULE_SLOT);
+        return MachineUtil.simpleBlockBreakerHandler(FinalTech.getLocationDataService(), this, AdvancedAutoCraftFrameMenu.PARSE_ITEM_SLOT, AdvancedAutoCraftFrameMenu.MODULE_SLOT);
     }
 
     @Nonnull
@@ -54,12 +51,11 @@ public class AdvancedAutoCraftFrame extends AbstractMachine implements RecipeIte
     }
 
     @Override
-    protected void tick(@Nonnull Block block, @Nonnull SlimefunItem slimefunItem, @Nonnull Config config) {
-        Location location = block.getLocation();
-        BlockMenu blockMenu = BlockStorage.getInventory(location);
+    protected void tick(@Nonnull Block block, @Nonnull SlimefunItem slimefunItem, @Nonnull LocationData locationData) {
+        Inventory inventory = FinalTech.getLocationDataService().getInventory(locationData);
 
-        if(blockMenu.hasViewer()) {
-            Icon.updateQuantityModule(blockMenu, AdvancedAutoCraftFrameMenu.MODULE_SLOT, AdvancedAutoCraftFrameMenu.STATUS_SLOT);
+        if(inventory != null && !inventory.getViewers().isEmpty()) {
+            Icon.updateQuantityModule(inventory, true, AdvancedAutoCraftFrameMenu.MODULE_SLOT, AdvancedAutoCraftFrameMenu.STATUS_SLOT);
         }
     }
 

@@ -10,11 +10,10 @@ import io.github.thebusybiscuit.slimefun4.core.networks.energy.EnergyNetComponen
 import io.github.thebusybiscuit.slimefun4.libraries.dough.protection.Interaction;
 import io.taraxacum.finaltech.FinalTech;
 import io.taraxacum.finaltech.core.item.usable.UsableSlimefunItem;
+import io.taraxacum.libs.plugin.dto.LocationData;
 import io.taraxacum.libs.plugin.util.ParticleUtil;
-import io.taraxacum.finaltech.util.ConstantTableUtil;
 import io.taraxacum.finaltech.util.PermissionUtil;
-import me.mrCookieSlime.CSCoreLibPlugin.Configuration.Config;
-import me.mrCookieSlime.Slimefun.api.BlockStorage;
+import io.taraxacum.libs.slimefun.util.LocationDataUtil;
 import org.bukkit.Location;
 import org.bukkit.Particle;
 import org.bukkit.block.Block;
@@ -26,7 +25,6 @@ import javax.annotation.Nonnull;
 
 /**
  * @author Final_ROOT
- * @since 2.0
  */
 public abstract class AbstractMachineChargeCard extends UsableSlimefunItem {
     public AbstractMachineChargeCard(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
@@ -48,17 +46,17 @@ public abstract class AbstractMachineChargeCard extends UsableSlimefunItem {
         }
 
         Location location = block.getLocation();
-        if(!BlockStorage.hasBlockInfo(location)) {
+        LocationData locationData = FinalTech.getLocationDataService().getLocationData(location);
+        if(locationData == null) {
             return;
         }
 
-        Config config = BlockStorage.getLocationInfo(location);
-        if (!config.contains(ConstantTableUtil.CONFIG_ID)) {
+        String id = LocationDataUtil.getId(FinalTech.getLocationDataService(), locationData);
+        if (id == null) {
             return;
         }
 
         if (!PermissionUtil.checkPermission(player, location, Interaction.INTERACT_BLOCK, Interaction.BREAK_BLOCK, Interaction.PLACE_BLOCK)) {
-            // TODO: message
             player.sendRawMessage(FinalTech.getLanguageString("message", "no-permission", "location"));
             return;
         }
@@ -68,7 +66,7 @@ public abstract class AbstractMachineChargeCard extends UsableSlimefunItem {
             return;
         }
 
-        SlimefunItem slimefunItem = SlimefunItem.getById(config.getString(ConstantTableUtil.CONFIG_ID));
+        SlimefunItem slimefunItem = SlimefunItem.getById(id);
         if (slimefunItem instanceof EnergyNetComponent energyNetComponent && energyNetComponent.getCapacity() > 0) {
             if (this.consume()) {
                 if (playerRightClickEvent.getItem().getAmount() > 0) {

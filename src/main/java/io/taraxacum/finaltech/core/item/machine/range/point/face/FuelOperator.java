@@ -20,10 +20,9 @@ import io.taraxacum.finaltech.util.ConfigUtil;
 import io.taraxacum.finaltech.util.MachineUtil;
 import io.taraxacum.finaltech.util.BlockTickerUtil;
 import io.taraxacum.finaltech.util.RecipeUtil;
-import io.taraxacum.libs.slimefun.dto.LocationInfo;
-import me.mrCookieSlime.CSCoreLibPlugin.Configuration.Config;
+import io.taraxacum.libs.plugin.dto.LocationData;
+import io.taraxacum.libs.slimefun.util.LocationDataUtil;
 import me.mrCookieSlime.Slimefun.Objects.SlimefunItem.abstractItems.MachineFuel;
-import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
@@ -52,7 +51,7 @@ public class FuelOperator extends AbstractFaceMachine implements RecipeItem {
     @Nonnull
     @Override
     protected BlockBreakHandler onBlockBreak() {
-        return MachineUtil.simpleBlockBreakerHandler(this);
+        return MachineUtil.simpleBlockBreakerHandler(FinalTech.getLocationDataService(), this);
     }
 
     @Nonnull
@@ -62,23 +61,26 @@ public class FuelOperator extends AbstractFaceMachine implements RecipeItem {
     }
 
     @Override
-    protected void tick(@Nonnull Block block, @Nonnull SlimefunItem slimefunItem, @Nonnull Config config) {
+    protected void tick(@Nonnull Block block, @Nonnull SlimefunItem slimefunItem, @Nonnull LocationData locationData) {
         this.pointFunction(block, 1, location -> {
-            LocationInfo locationInfo = LocationInfo.get(location);
-            if (locationInfo != null && !this.notAllowedId.contains(locationInfo.getId())) {
-                if (locationInfo.getSlimefunItem() instanceof EnergyNetProvider && locationInfo.getSlimefunItem() instanceof MachineProcessHolder machineProcessHolder) {
-                    BlockTickerUtil.runTask(FinalTech.getLocationRunnableFactory(), FinalTech.isAsyncSlimefunItem(locationInfo.getId()), () -> FuelOperator.this.doCharge(machineProcessHolder, location), location);
+            LocationData tempLocationData = FinalTech.getLocationDataService().getLocationData(location);
+            if (tempLocationData != null) {
+                String id = LocationDataUtil.getId(FinalTech.getLocationDataService(), tempLocationData);
+                if(id != null && !this.notAllowedId.contains(id)
+                    && LocationDataUtil.getSlimefunItem(FinalTech.getLocationDataService(), locationData) instanceof EnergyNetProvider
+                    && LocationDataUtil.getSlimefunItem(FinalTech.getLocationDataService(), locationData) instanceof MachineProcessHolder<?> machineProcessHolder) {
+
+                    BlockTickerUtil.runTask(FinalTech.getLocationRunnableFactory(), FinalTech.isAsyncSlimefunItem(id), () -> FuelOperator.this.doCharge((MachineProcessHolder<FuelOperation>) machineProcessHolder, tempLocationData), location);
                 }
             }
             return 0;
         });
     }
 
-    private void doCharge(@Nonnull MachineProcessHolder<FuelOperation> MachineProcessHolder, @Nonnull Location location) {
-        MachineOperation machineOperation = MachineProcessHolder.getMachineProcessor().getOperation(location);
+    private void doCharge(@Nonnull MachineProcessHolder<FuelOperation> MachineProcessHolder, @Nonnull LocationData locationData) {
+        MachineOperation machineOperation = MachineProcessHolder.getMachineProcessor().getOperation(locationData.getLocation());
         if(machineOperation == null) {
-            machineOperation = new FuelOperation(new MachineFuel(2, new ItemStack(Material.COBBLESTONE)));
-            MachineProcessHolder.getMachineProcessor().startOperation(location, (FuelOperation) machineOperation);
+            MachineProcessHolder.getMachineProcessor().startOperation(locationData.getLocation(), new FuelOperation(new MachineFuel(2, new ItemStack(Material.COBBLESTONE))));
         }
     }
 
@@ -97,7 +99,7 @@ public class FuelOperator extends AbstractFaceMachine implements RecipeItem {
     public void registerDefaultRecipes() {
         RecipeUtil.registerDescriptiveRecipeWithBorder(FinalTech.getLanguageManager(), this);
 
-        for (SlimefunItem slimefunItem : Slimefun.getRegistry().getAllSlimefunItems()) {
+        for (SlimefunItem slimefunItem : Slimefun.getRegistry().getEnabledSlimefunItems()) {
             if (!this.notAllowedId.contains(slimefunItem.getId()) && slimefunItem instanceof AbstractEnergyProvider && slimefunItem instanceof MachineProcessHolder) {
                 this.registerDescriptiveRecipe(slimefunItem.getItem());
             }

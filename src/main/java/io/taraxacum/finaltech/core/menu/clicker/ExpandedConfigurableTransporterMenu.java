@@ -4,9 +4,9 @@ import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItem;
 import io.taraxacum.finaltech.core.interfaces.DigitalItem;
 import io.taraxacum.finaltech.core.item.machine.clicker.AbstractClickerMachine;
 import io.taraxacum.finaltech.util.LocationUtil;
+import io.taraxacum.libs.plugin.util.InventoryUtil;
 import io.taraxacum.libs.plugin.util.ItemStackUtil;
 import io.taraxacum.libs.plugin.util.ParticleUtil;
-import me.mrCookieSlime.Slimefun.api.inventory.BlockMenu;
 import org.bukkit.Location;
 import org.bukkit.Particle;
 import org.bukkit.block.Block;
@@ -71,7 +71,7 @@ public class ExpandedConfigurableTransporterMenu extends AbstractClickerMenu {
     }
 
     @Override
-    protected void doFunction(@Nonnull BlockMenu blockMenu, @Nonnull Block block, @Nonnull Player player) {
+    protected void doFunction(@Nonnull Inventory inventory, @Nonnull Block block, @Nonnull Player player) {
         int digit = -1;
         ItemStack[] digitItems = new ItemStack[INPUT_SLOT.length];
         for(int i = 0; i < INPUT_SLOT.length; i++) {
@@ -81,7 +81,7 @@ public class ExpandedConfigurableTransporterMenu extends AbstractClickerMenu {
                 digit *= 16;
             }
 
-            ItemStack item = blockMenu.getItemInSlot(INPUT_SLOT[i]);
+            ItemStack item = inventory.getItem(INPUT_SLOT[i]);
             if(ItemStackUtil.isItemNull(item)) {
                 digit = -1;
                 break;
@@ -97,7 +97,7 @@ public class ExpandedConfigurableTransporterMenu extends AbstractClickerMenu {
 
 
         if(digit != -1) {
-            blockMenu.close();
+            InventoryUtil.closeInv(inventory);
 
             BlockData blockData = block.getState().getBlockData();
             List<Block> blockList = new ArrayList<>();

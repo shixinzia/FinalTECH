@@ -1,9 +1,12 @@
 package io.taraxacum.finaltech.core.menu.cargo;
 
 import io.github.thebusybiscuit.slimefun4.utils.ChestMenuUtils;
-import io.taraxacum.finaltech.core.helper.*;
+import io.taraxacum.finaltech.FinalTech;
+import io.taraxacum.finaltech.core.option.*;
 import io.taraxacum.finaltech.core.item.machine.AbstractMachine;
 import io.taraxacum.finaltech.core.menu.AbstractMachineMenu;
+import io.taraxacum.finaltech.util.ConstantTableUtil;
+import io.taraxacum.libs.slimefun.util.ChestMenuUtil;
 import me.mrCookieSlime.Slimefun.api.inventory.BlockMenu;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
@@ -13,7 +16,6 @@ import javax.annotation.Nonnull;
 
 /**
  * @author Final_ROOT
- * @since 2.0
  */
 public class AdvancedLineTransferMenu extends AbstractMachineMenu {
     private static final int[] BORDER = new int[] {5, 14, 23};
@@ -83,67 +85,67 @@ public class AdvancedLineTransferMenu extends AbstractMachineMenu {
             this.addMenuClickHandler(slot, ChestMenuUtils.getEmptyClickHandler());
         }
 
-        this.addItem(BLOCK_SEARCH_MODE_SLOT, BlockSearchMode.LINE_HELPER.defaultIcon());
-        this.addItem(BLOCK_SEARCH_ORDER_SLOT, BlockSearchOrder.HELPER.defaultIcon());
-        this.addItem(CARGO_ORDER_SLOT, CargoOrder.HELPER.defaultIcon());
-        this.addItem(BLOCK_SEARCH_CYCLE_SLOT, BlockSearchCycle.HELPER.defaultIcon());
-        this.addItem(BLOCK_SEARCH_SELF_SLOT, BlockSearchSelf.HELPER.defaultIcon());
+        this.addItem(BLOCK_SEARCH_MODE_SLOT, BlockSearchMode.LINE_OPTION.defaultIcon());
+        this.addItem(BLOCK_SEARCH_ORDER_SLOT, BlockSearchOrder.OPTION.defaultIcon());
+        this.addItem(CARGO_ORDER_SLOT, CargoOrder.OPTION.defaultIcon());
+        this.addItem(BLOCK_SEARCH_CYCLE_SLOT, BlockSearchCycle.OPTION.defaultIcon());
+        this.addItem(BLOCK_SEARCH_SELF_SLOT, BlockSearchSelf.OPTION.defaultIcon());
 
         this.addItem(CARGO_NUMBER_SUB_SLOT, CargoNumber.CARGO_NUMBER_SUB_ICON);
         this.addItem(CARGO_NUMBER_SLOT, CargoNumber.CARGO_NUMBER_ICON);
         this.addItem(CARGO_NUMBER_ADD_SLOT, CargoNumber.CARGO_NUMBER_ADD_ICON);
-        this.addItem(CARGO_MODE_SLOT, CargoMode.HELPER.defaultIcon());
-        this.addItem(CARGO_FILTER_SLOT, CargoFilter.HELPER.defaultIcon());
+        this.addItem(CARGO_MODE_SLOT, CargoMode.OPTION.defaultIcon());
+        this.addItem(CARGO_FILTER_SLOT, CargoFilter.OPTION.defaultIcon());
 
-        this.addItem(INPUT_SLOT_SEARCH_SIZE_SLOT, SlotSearchSize.INPUT_HELPER.defaultIcon());
-        this.addItem(INPUT_SLOT_SEARCH_ORDER_SLOT, SlotSearchOrder.INPUT_HELPER.defaultIcon());
-        this.addItem(CARGO_LIMIT_SLOT, CargoLimit.HELPER.defaultIcon());
-        this.addItem(OUTPUT_SLOT_SEARCH_SIZE_SLOT, SlotSearchSize.OUTPUT_HELPER.defaultIcon());
-        this.addItem(OUTPUT_SLOT_SEARCH_ORDER_SLOT, SlotSearchOrder.OUTPUT_HELPER.defaultIcon());
+        this.addItem(INPUT_SLOT_SEARCH_SIZE_SLOT, SlotSearchSize.INPUT_OPTION.defaultIcon());
+        this.addItem(INPUT_SLOT_SEARCH_ORDER_SLOT, SlotSearchOrder.INPUT_OPTION.defaultIcon());
+        this.addItem(CARGO_LIMIT_SLOT, CargoLimit.OPTION.defaultIcon());
+        this.addItem(OUTPUT_SLOT_SEARCH_SIZE_SLOT, SlotSearchSize.OUTPUT_OPTION.defaultIcon());
+        this.addItem(OUTPUT_SLOT_SEARCH_ORDER_SLOT, SlotSearchOrder.OUTPUT_OPTION.defaultIcon());
     }
 
     @Override
     public void newInstance(@Nonnull BlockMenu blockMenu, @Nonnull Block block) {
         super.newInstance(blockMenu, block);
-        Inventory inventory = blockMenu.toInventory();
         Location location = block.getLocation();
+        blockMenu.addMenuOpeningHandler(p -> FinalTech.getLocationDataService().setLocationData(location, ConstantTableUtil.CONFIG_UUID, p.getUniqueId().toString()));
 
-        blockMenu.addMenuClickHandler(BLOCK_SEARCH_MODE_SLOT, BlockSearchMode.LINE_HELPER.getHandler(inventory, location, this.getSlimefunItem(), BLOCK_SEARCH_MODE_SLOT));
-        blockMenu.addMenuClickHandler(BLOCK_SEARCH_ORDER_SLOT, BlockSearchOrder.HELPER.getHandler(inventory, location, this.getSlimefunItem(), BLOCK_SEARCH_ORDER_SLOT));
-        blockMenu.addMenuClickHandler(CARGO_ORDER_SLOT, CargoOrder.HELPER.getHandler(inventory, location, this.getSlimefunItem(), CARGO_ORDER_SLOT));
-        blockMenu.addMenuClickHandler(BLOCK_SEARCH_CYCLE_SLOT, BlockSearchCycle.HELPER.getHandler(inventory, location, this.getSlimefunItem(), BLOCK_SEARCH_CYCLE_SLOT));
-        blockMenu.addMenuClickHandler(BLOCK_SEARCH_SELF_SLOT, BlockSearchSelf.HELPER.getHandler(inventory, location, this.getSlimefunItem(), BLOCK_SEARCH_SELF_SLOT));
+        blockMenu.addMenuClickHandler(BLOCK_SEARCH_MODE_SLOT, ChestMenuUtil.warpByConsumer(BlockSearchMode.LINE_OPTION.getHandler(FinalTech.getLocationDataService(), location, this.getSlimefunItem())));
+        blockMenu.addMenuClickHandler(BLOCK_SEARCH_ORDER_SLOT, ChestMenuUtil.warpByConsumer(BlockSearchOrder.OPTION.getHandler(FinalTech.getLocationDataService(), location, this.getSlimefunItem())));
+        blockMenu.addMenuClickHandler(CARGO_ORDER_SLOT, ChestMenuUtil.warpByConsumer(CargoOrder.OPTION.getHandler(FinalTech.getLocationDataService(), location, this.getSlimefunItem())));
+        blockMenu.addMenuClickHandler(BLOCK_SEARCH_CYCLE_SLOT, ChestMenuUtil.warpByConsumer(BlockSearchCycle.OPTION.getHandler(FinalTech.getLocationDataService(), location, this.getSlimefunItem())));
+        blockMenu.addMenuClickHandler(BLOCK_SEARCH_SELF_SLOT, ChestMenuUtil.warpByConsumer(BlockSearchSelf.OPTION.getHandler(FinalTech.getLocationDataService(), location, this.getSlimefunItem())));
 
-        blockMenu.addMenuClickHandler(CARGO_NUMBER_SUB_SLOT, CargoNumber.HELPER.getPreviousHandler(inventory, location, this.getSlimefunItem(), CARGO_NUMBER_SLOT));
-        blockMenu.addMenuClickHandler(CARGO_NUMBER_ADD_SLOT, CargoNumber.HELPER.getNextHandler(inventory, location, this.getSlimefunItem(), CARGO_NUMBER_SLOT));
-        blockMenu.addMenuClickHandler(CARGO_NUMBER_SLOT, CargoNumberMode.HELPER.getHandler(inventory, location, this.getSlimefunItem(), CARGO_NUMBER_SLOT));
-        blockMenu.addMenuClickHandler(CARGO_MODE_SLOT, CargoMode.HELPER.getHandler(inventory, location, this.getSlimefunItem(), CARGO_MODE_SLOT));
-        blockMenu.addMenuClickHandler(CARGO_FILTER_SLOT, CargoFilter.HELPER.getHandler(inventory, location, this.getSlimefunItem(), CARGO_FILTER_SLOT));
+        blockMenu.addMenuClickHandler(CARGO_NUMBER_SUB_SLOT, ChestMenuUtil.warpByConsumer(CargoNumber.OPTION.getPreviousHandler(FinalTech.getLocationDataService(), location, CARGO_NUMBER_SLOT, this.getSlimefunItem())));
+        blockMenu.addMenuClickHandler(CARGO_NUMBER_ADD_SLOT, ChestMenuUtil.warpByConsumer(CargoNumber.OPTION.getNextHandler(FinalTech.getLocationDataService(), location, CARGO_NUMBER_SLOT, this.getSlimefunItem())));
+        blockMenu.addMenuClickHandler(CARGO_NUMBER_SLOT, ChestMenuUtil.warpByConsumer(CargoNumberMode.OPTION.getHandler(FinalTech.getLocationDataService(), location, this.getSlimefunItem())));
+        blockMenu.addMenuClickHandler(CARGO_MODE_SLOT, ChestMenuUtil.warpByConsumer(CargoMode.OPTION.getHandler(FinalTech.getLocationDataService(), location, this.getSlimefunItem())));
+        blockMenu.addMenuClickHandler(CARGO_FILTER_SLOT, ChestMenuUtil.warpByConsumer(CargoFilter.OPTION.getHandler(FinalTech.getLocationDataService(), location, this.getSlimefunItem())));
 
-        blockMenu.addMenuClickHandler(INPUT_SLOT_SEARCH_SIZE_SLOT, SlotSearchSize.INPUT_HELPER.getHandler(inventory, location, this.getSlimefunItem(), INPUT_SLOT_SEARCH_SIZE_SLOT));
-        blockMenu.addMenuClickHandler(INPUT_SLOT_SEARCH_ORDER_SLOT, SlotSearchOrder.INPUT_HELPER.getHandler(inventory, location, this.getSlimefunItem(), INPUT_SLOT_SEARCH_ORDER_SLOT));
-        blockMenu.addMenuClickHandler(CARGO_LIMIT_SLOT, CargoLimit.HELPER.getHandler(inventory, location, this.getSlimefunItem(), CARGO_LIMIT_SLOT));
-        blockMenu.addMenuClickHandler(OUTPUT_SLOT_SEARCH_SIZE_SLOT, SlotSearchSize.OUTPUT_HELPER.getHandler(inventory, location, this.getSlimefunItem(), OUTPUT_SLOT_SEARCH_SIZE_SLOT));
-        blockMenu.addMenuClickHandler(OUTPUT_SLOT_SEARCH_ORDER_SLOT, SlotSearchOrder.OUTPUT_HELPER.getHandler(inventory, location, this.getSlimefunItem(), OUTPUT_SLOT_SEARCH_ORDER_SLOT));
+        blockMenu.addMenuClickHandler(INPUT_SLOT_SEARCH_SIZE_SLOT, ChestMenuUtil.warpByConsumer(SlotSearchSize.INPUT_OPTION.getHandler(FinalTech.getLocationDataService(), location, this.getSlimefunItem())));
+        blockMenu.addMenuClickHandler(INPUT_SLOT_SEARCH_ORDER_SLOT, ChestMenuUtil.warpByConsumer(SlotSearchOrder.INPUT_OPTION.getHandler(FinalTech.getLocationDataService(), location, this.getSlimefunItem())));
+        blockMenu.addMenuClickHandler(CARGO_LIMIT_SLOT, ChestMenuUtil.warpByConsumer(CargoLimit.OPTION.getHandler(FinalTech.getLocationDataService(), location, this.getSlimefunItem())));
+        blockMenu.addMenuClickHandler(OUTPUT_SLOT_SEARCH_SIZE_SLOT, ChestMenuUtil.warpByConsumer(SlotSearchSize.OUTPUT_OPTION.getHandler(FinalTech.getLocationDataService(), location, this.getSlimefunItem())));
+        blockMenu.addMenuClickHandler(OUTPUT_SLOT_SEARCH_ORDER_SLOT, ChestMenuUtil.warpByConsumer(SlotSearchOrder.OUTPUT_OPTION.getHandler(FinalTech.getLocationDataService(), location, this.getSlimefunItem())));
     }
 
     @Override
     public void updateInventory(@Nonnull Inventory inventory, @Nonnull Location location) {
-        BlockSearchMode.LINE_HELPER.checkAndUpdateIcon(inventory, location, BLOCK_SEARCH_MODE_SLOT);
-        BlockSearchOrder.HELPER.checkAndUpdateIcon(inventory, location, BLOCK_SEARCH_ORDER_SLOT);
-        CargoOrder.HELPER.checkAndUpdateIcon(inventory, location, CARGO_ORDER_SLOT);
-        BlockSearchCycle.HELPER.checkAndUpdateIcon(inventory, location, BLOCK_SEARCH_CYCLE_SLOT);
-        BlockSearchSelf.HELPER.checkAndUpdateIcon(inventory, location, BLOCK_SEARCH_SELF_SLOT);
+        BlockSearchMode.LINE_OPTION.checkAndUpdateIcon(inventory, BLOCK_SEARCH_MODE_SLOT, FinalTech.getLocationDataService(), location);
+        BlockSearchOrder.OPTION.checkAndUpdateIcon(inventory, BLOCK_SEARCH_ORDER_SLOT, FinalTech.getLocationDataService(), location);
+        CargoOrder.OPTION.checkAndUpdateIcon(inventory, CARGO_ORDER_SLOT, FinalTech.getLocationDataService(), location);
+        BlockSearchCycle.OPTION.checkAndUpdateIcon(inventory, BLOCK_SEARCH_CYCLE_SLOT, FinalTech.getLocationDataService(), location);
+        BlockSearchSelf.OPTION.checkAndUpdateIcon(inventory, BLOCK_SEARCH_SELF_SLOT, FinalTech.getLocationDataService(), location);
 
-        CargoNumber.HELPER.checkAndUpdateIcon(inventory, location, CARGO_NUMBER_SLOT);
-        CargoNumberMode.HELPER.checkAndUpdateIcon(inventory, location, CARGO_NUMBER_SLOT);
-        CargoMode.HELPER.checkAndUpdateIcon(inventory, location, CARGO_MODE_SLOT);
-        CargoFilter.HELPER.checkAndUpdateIcon(inventory, location, CARGO_FILTER_SLOT);
+        CargoNumber.OPTION.checkAndUpdateIcon(inventory, CARGO_NUMBER_SLOT, FinalTech.getLocationDataService(), location);
+        CargoNumberMode.OPTION.checkAndUpdateIcon(inventory, CARGO_NUMBER_SLOT, FinalTech.getLocationDataService(), location);
+        CargoMode.OPTION.checkAndUpdateIcon(inventory, CARGO_MODE_SLOT, FinalTech.getLocationDataService(), location);
+        CargoFilter.OPTION.checkAndUpdateIcon(inventory, CARGO_FILTER_SLOT, FinalTech.getLocationDataService(), location);
 
-        SlotSearchSize.INPUT_HELPER.checkAndUpdateIcon(inventory, location, INPUT_SLOT_SEARCH_SIZE_SLOT);
-        SlotSearchOrder.INPUT_HELPER.checkAndUpdateIcon(inventory, location, INPUT_SLOT_SEARCH_ORDER_SLOT);
-        CargoLimit.HELPER.checkAndUpdateIcon(inventory, location, CARGO_LIMIT_SLOT);
-        SlotSearchSize.OUTPUT_HELPER.checkAndUpdateIcon(inventory, location, OUTPUT_SLOT_SEARCH_SIZE_SLOT);
-        SlotSearchOrder.OUTPUT_HELPER.checkAndUpdateIcon(inventory, location, OUTPUT_SLOT_SEARCH_ORDER_SLOT);
+        SlotSearchSize.INPUT_OPTION.checkAndUpdateIcon(inventory, INPUT_SLOT_SEARCH_SIZE_SLOT, FinalTech.getLocationDataService(), location);
+        SlotSearchOrder.INPUT_OPTION.checkAndUpdateIcon(inventory, INPUT_SLOT_SEARCH_ORDER_SLOT, FinalTech.getLocationDataService(), location);
+        CargoLimit.OPTION.checkAndUpdateIcon(inventory, CARGO_LIMIT_SLOT, FinalTech.getLocationDataService(), location);
+        SlotSearchSize.OUTPUT_OPTION.checkAndUpdateIcon(inventory, OUTPUT_SLOT_SEARCH_SIZE_SLOT, FinalTech.getLocationDataService(), location);
+        SlotSearchOrder.OUTPUT_OPTION.checkAndUpdateIcon(inventory, OUTPUT_SLOT_SEARCH_ORDER_SLOT, FinalTech.getLocationDataService(), location);
     }
 }
