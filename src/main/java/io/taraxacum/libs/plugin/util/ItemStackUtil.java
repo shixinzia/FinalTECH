@@ -1,9 +1,9 @@
 package io.taraxacum.libs.plugin.util;
 
 import io.github.thebusybiscuit.slimefun4.libraries.dough.items.nms.ItemNameAdapter;
-import io.github.thebusybiscuit.slimefun4.utils.itemstack.ItemStackWrapper;
 import io.taraxacum.libs.plugin.dto.ItemAmountWrapper;
 import io.taraxacum.libs.plugin.dto.ItemWrapper;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.InvalidConfigurationException;
@@ -33,7 +33,7 @@ public final class ItemStackUtil {
      * @return a cloned #{@link ItemStack}
      */
     public static ItemStack cloneItem(@Nonnull ItemStack item) {
-        return item instanceof ItemStackWrapper ? new ItemStack(item) : item.clone();
+        return new ItemStack(item);
     }
 
     /**
@@ -43,7 +43,7 @@ public final class ItemStackUtil {
      * @return a cloned #{@link ItemStack}
      */
     public static ItemStack cloneItem(@Nonnull ItemStack item, int amount) {
-        ItemStack itemStack = item instanceof ItemStackWrapper ? new ItemStack(item) : item.clone();
+        ItemStack itemStack = new ItemStack(item);
         itemStack.setAmount(amount);
         return itemStack;
     }
@@ -595,13 +595,18 @@ public final class ItemStackUtil {
         return "unknown";
     }
 
-    public static void setItemName(@Nonnull ItemStack item, @Nonnull String itemName) {
-        if(!item.hasItemMeta()) {
+    public static void setItemName(@Nonnull ItemStack itemStack, @Nonnull String itemName) {
+        ItemMeta itemMeta;
+        if(!itemStack.hasItemMeta()) {
+            itemMeta = Bukkit.getItemFactory().getItemMeta(itemStack.getType());
+        } else {
+            itemMeta = itemStack.getItemMeta();
+        }
+        if(itemMeta == null) {
             return;
         }
-        ItemMeta itemMeta = item.getItemMeta();
         itemMeta.setDisplayName(itemName);
-        item.setItemMeta(itemMeta);
+        itemStack.setItemMeta(itemMeta);
     }
 
     public static void addLoreToFirst(@Nullable ItemStack item, @Nonnull String s) {
@@ -873,29 +878,22 @@ public final class ItemStackUtil {
     }
 
     @Nonnull
-    public static ItemStack cloneAsDescriptiveItem(@Nonnull ItemStack itemStack, @Nonnull String... loreToLast) {
-        if(!itemStack.hasItemMeta()) {
-            return new ItemStack(itemStack);
+    public static ItemStack newItemStack(@Nonnull Material material, @Nonnull String name, int amount, @Nonnull String... lores) {
+        ItemStack itemStack = new ItemStack(material);
+        ItemMeta itemMeta = itemStack.getItemMeta();
+        if(itemMeta != null) {
+            itemMeta.setDisplayName(name);
+            itemMeta.setLore(Arrays.stream(lores).toList());
+            itemStack.setItemMeta(itemMeta);
         }
+        itemStack.setAmount(amount);
 
-        ItemStack result = new ItemStack(itemStack);
-        ItemMeta itemMeta = result.getItemMeta();
-        ItemStackUtil.clearNBT(itemMeta);
-        ItemStackUtil.addLoresToLast(itemMeta, loreToLast);
-        result.setItemMeta(itemMeta);
-
-        return result;
+        return itemStack;
     }
 
-    public static ItemStack getDried(@Nonnull ItemStack item) {
-        if (item.hasItemMeta() && item.getItemMeta().hasDisplayName()) {
-            return null;
-        }
-        return switch (item.getType()) {
-            case POTION, DRAGON_BREATH, HONEY_BOTTLE -> new ItemStack(Material.GLASS_BOTTLE, 1);
-            case WATER_BUCKET, LAVA_BUCKET, MILK_BUCKET -> new ItemStack(Material.BUCKET, 1);
-            default -> null;
-        };
+    @Nonnull
+    public static ItemStack newItemStack(@Nonnull Material material, @Nonnull String name, @Nonnull String... lores) {
+        return ItemStackUtil.newItemStack(material, name, 1, lores);
     }
 
     /**
