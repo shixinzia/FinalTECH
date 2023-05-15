@@ -59,7 +59,7 @@ public class RecipeUtil {
                             }
                         }
                         if (!disabled) {
-                            recipeItem.registerRecipeInCard(0, recipe.getInput(), recipe.getOutput());
+                            recipeItem.registerRecipeInCard(recipe.getInput(), recipe.getOutput());
                         }
                     }
                 }
@@ -85,7 +85,7 @@ public class RecipeUtil {
                         }
 
                         if (!disabled) {
-                            recipeItem.registerRecipeInCard(0, inputs, outputs);
+                            recipeItem.registerRecipeInCard(inputs, outputs);
                         }
                     }
                 }
@@ -112,7 +112,7 @@ public class RecipeUtil {
         List<SlimefunItem> list = Slimefun.getRegistry().getEnabledSlimefunItems();
         for (SlimefunItem slimefunItem : list) {
             if (!slimefunItem.isDisabled() && recipeType.equals(slimefunItem.getRecipeType())) {
-                recipeItem.registerRecipeInCard(0, slimefunItem);
+                recipeItem.registerRecipeInCard(slimefunItem);
             }
         }
     }
@@ -126,7 +126,7 @@ public class RecipeUtil {
                 disabled = sfItem.isDisabled();
             }
             if (!disabled) {
-                recipeItem.registerRecipeInCard(0, new ItemStack[] {displayRecipes.get(i)}, new ItemStack[] {displayRecipes.get(i+1)});
+                recipeItem.registerRecipeInCard(new ItemStack[] {displayRecipes.get(i)}, new ItemStack[] {displayRecipes.get(i+1)});
             }
         }
     }
