@@ -1,5 +1,6 @@
 package io.taraxacum.libs.slimefun.dto;
 
+import io.taraxacum.libs.plugin.util.InventoryUtil;
 import io.taraxacum.libs.plugin.util.ItemStackUtil;
 import io.taraxacum.finaltech.util.MachineUtil;
 import io.taraxacum.libs.plugin.dto.AdvancedMachineRecipe;
@@ -114,11 +115,10 @@ public class AdvancedCraft {
      * @param advancedMachineRecipeList list of {@link AdvancedMachineRecipe} that a machine can work to.
      * @param quantityModule how many times a machine will work in max.
      * @param offset machine-recipe will begin in the given offset.
-     * @return
      */
     @Nullable
     public static AdvancedCraft craftAsc(@Nonnull Inventory inventory, int[] inputSlots, @Nonnull List<AdvancedMachineRecipe> advancedMachineRecipeList, int quantityModule, int offset) {
-        Map<Integer, ItemWrapper> inputItemSlotMap = MachineUtil.getSlotItemWrapperMap(inventory, inputSlots);
+        Map<Integer, ItemWrapper> inputItemSlotMap = InventoryUtil.getSlotItemWrapperMap(inventory, inputSlots);
         int[][] consumeSlots;
         Set<Integer> skipSlotSet = new HashSet<>(inputItemSlotMap.size());
         int matchCount;
@@ -164,9 +164,18 @@ public class AdvancedCraft {
         }
         return null;
     }
+
+    /**
+     * Cal the craft work a machine will do.
+     * @param inventory the container that contains items and all operation will do here.
+     * @param inputSlots where the items will be consumed to match the {@link MachineRecipe}.
+     * @param advancedMachineRecipeList list of {@link AdvancedMachineRecipe} that a machine can work to.
+     * @param quantityModule how many times a machine will work in max.
+     * @param offset machine-recipe will begin in the given offset.
+     */
     @Nullable
     public static AdvancedCraft craftDesc(@Nonnull Inventory inventory, int[] inputSlots, @Nonnull List<AdvancedMachineRecipe> advancedMachineRecipeList, int quantityModule, int offset) {
-        Map<Integer, ItemWrapper> inputItemSlotMap = MachineUtil.getSlotItemWrapperMap(inventory, inputSlots);
+        Map<Integer, ItemWrapper> inputItemSlotMap = InventoryUtil.getSlotItemWrapperMap(inventory, inputSlots);
         int[][] consumeSlots;
         Set<Integer> skipSlotSet = new HashSet<>(inputItemSlotMap.size());
         int matchCount;
