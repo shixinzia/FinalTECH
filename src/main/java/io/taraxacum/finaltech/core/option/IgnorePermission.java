@@ -1,16 +1,19 @@
-package io.taraxacum.finaltech.core.helper;
+package io.taraxacum.finaltech.core.option;
 
-import io.taraxacum.libs.slimefun.dto.BlockStorageHelper;
+import io.taraxacum.libs.slimefun.dto.LocationDataOption;
 
 import java.util.ArrayList;
 
+/**
+ * @author Final_ROOT
+ */
 public class IgnorePermission {
     public static final String KEY = "ip";
 
     public static final String VALUE_FALSE = "f";
     public static final String VALUE_TRUE = "t";
 
-    public static final BlockStorageHelper HELPER = BlockStorageHelper.newInstanceOrGet(BlockStorageHelper.ID_CARGO, KEY, new ArrayList<>() {{
+    public static final LocationDataOption OPTION = new LocationDataOption(LocationDataOption.CARGO_ID, KEY, new ArrayList<>() {{
         this.add(VALUE_FALSE);
         this.add(VALUE_TRUE);
     }});
