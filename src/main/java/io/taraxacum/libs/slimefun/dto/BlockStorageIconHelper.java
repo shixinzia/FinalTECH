@@ -22,6 +22,7 @@ import java.util.Map;
  * @author Final_ROOT
  * @since 2.0
  */
+@Deprecated
 public abstract class BlockStorageIconHelper extends BlockStorageHelper {
     private final Map<String, ItemStack> valueIconMap;
     private static final ItemStack ERROR_ICON = new CustomItemStack(Material.BARRIER, " ");

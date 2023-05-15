@@ -20,6 +20,7 @@ import java.util.Map;
  * @author Final_ROOT
  * @since 2.0
  */
+@Deprecated
 public abstract class BlockStorageLoreHelper extends BlockStorageHelper {
     private int loreOffset = -1;
     private final Map<String, List<String>> valueLoreMap;

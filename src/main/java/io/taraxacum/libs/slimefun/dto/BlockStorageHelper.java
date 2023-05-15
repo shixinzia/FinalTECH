@@ -17,6 +17,7 @@ import java.util.Map;
  * @author Final_ROOT
  * @since 2.0
  */
+@Deprecated
 public abstract class BlockStorageHelper {
     /**
      * The id of a {@link SlimefunItem},
