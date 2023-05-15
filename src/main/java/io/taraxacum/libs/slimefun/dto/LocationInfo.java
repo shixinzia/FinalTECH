@@ -1,6 +1,7 @@
 package io.taraxacum.libs.slimefun.dto;
 
 import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItem;
+import io.taraxacum.libs.plugin.interfaces.LocationDataService;
 import me.mrCookieSlime.CSCoreLibPlugin.Configuration.Config;
 import me.mrCookieSlime.Slimefun.api.BlockStorage;
 import org.bukkit.Location;
@@ -11,7 +12,9 @@ import javax.annotation.Nullable;
 /**
  * @author Final_ROOT
  * @since 2.4
+ * @deprecated It is powerful, but now we will use {@link LocationBlockStorageData} to call {@link LocationDataService}. Goodbye, locationInfo
  */
+@Deprecated
 public class LocationInfo {
     private Location location;
     private Config config;
