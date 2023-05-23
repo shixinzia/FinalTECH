@@ -10,7 +10,7 @@ import java.util.Random;
  * @since 2.0
  */
 public class VectorUtil {
-    private static Random random = new Random();
+    private static final Random random = new Random();
 
     public static Vector fromYawPitch(float yaw, float pitch) {
         if (pitch == 90) {
