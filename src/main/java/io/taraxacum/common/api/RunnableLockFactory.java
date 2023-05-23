@@ -2,6 +2,7 @@ package io.taraxacum.common.api;
 
 import javax.annotation.Nonnull;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
 
 /**
@@ -17,4 +18,8 @@ public interface RunnableLockFactory<T> {
     FutureTask<Void> waitThenRun(@Nonnull Runnable runnable, @Nonnull T... objects);
 
     <C> FutureTask<C> waitThenRun(@Nonnull Callable<C> callable, @Nonnull T... objects);
+
+    void waitAllTask() throws ExecutionException, InterruptedException;
+
+    int taskSize();
 }
