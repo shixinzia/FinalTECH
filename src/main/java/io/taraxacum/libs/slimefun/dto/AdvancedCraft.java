@@ -2,7 +2,6 @@ package io.taraxacum.libs.slimefun.dto;
 
 import io.taraxacum.libs.plugin.util.InventoryUtil;
 import io.taraxacum.libs.plugin.util.ItemStackUtil;
-import io.taraxacum.finaltech.util.MachineUtil;
 import io.taraxacum.libs.plugin.dto.AdvancedMachineRecipe;
 import io.taraxacum.libs.plugin.dto.ItemAmountWrapper;
 import io.taraxacum.libs.plugin.dto.ItemWrapper;
@@ -96,15 +95,6 @@ public class AdvancedCraft {
                     }
                 }
             }
-        }
-    }
-
-    @Nonnull
-    public MachineRecipe calMachineRecipe(int ticks) {
-        if (this.matchCount > 0) {
-            return new MachineRecipe(ticks, ItemStackUtil.calEnlargeItemArray(this.inputItemList, this.matchCount), ItemStackUtil.calEnlargeItemArray(this.outputItemList, this.matchCount));
-        } else {
-            return new MachineRecipe(ticks, new ItemStack[0], new ItemStack[0]);
         }
     }
 
