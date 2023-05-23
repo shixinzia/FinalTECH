@@ -74,14 +74,14 @@ public class EnergyCard extends UsableSlimefunItem implements RecipeItem {
             JavaPlugin javaPlugin = this.getAddon().getJavaPlugin();
             javaPlugin.getServer().getScheduler().runTaskAsynchronously(javaPlugin, () -> ParticleUtil.drawCubeByBlock(this.getAddon().getJavaPlugin(), Particle.WAX_OFF, 0, block));
 
-            EnergyDepositEvent energyDepositEvent = new EnergyDepositEvent(location, this.energy);
-            this.getAddon().getJavaPlugin().getServer().getPluginManager().callEvent(energyDepositEvent);
-            String transferEnergy = energyDepositEvent.getEnergy();
-
             int capacity = energyNetComponent.getCapacity();
             String energyStr = EnergyUtil.getCharge(FinalTech.getLocationDataService(), locationData);
             int energy = Integer.parseInt(energyStr);
             if(energy < capacity) {
+                EnergyDepositEvent energyDepositEvent = new EnergyDepositEvent(location, this.energy);
+                this.getAddon().getJavaPlugin().getServer().getPluginManager().callEvent(energyDepositEvent);
+                String transferEnergy = energyDepositEvent.getEnergy();
+
                 energyStr = StringNumberUtil.min(StringNumberUtil.add(transferEnergy, energyStr), String.valueOf(capacity));
                 EnergyUtil.setCharge(FinalTech.getLocationDataService(), locationData, energyStr);
 
