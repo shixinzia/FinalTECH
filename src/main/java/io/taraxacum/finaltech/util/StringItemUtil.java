@@ -455,6 +455,21 @@ public class StringItemUtil {
         cardItem.setItemMeta(cardItemMeta);
     }
 
+    public static void clearCard(@Nonnull ItemStack itemStack) {
+        if (!itemStack.hasItemMeta()) {
+            return;
+        }
+        ItemMeta itemMeta = itemStack.getItemMeta();
+        StringItemUtil.clearCard(itemMeta);
+        itemStack.setItemMeta(itemMeta);
+    }
+
+    public static void clearCard(@Nonnull ItemMeta itemMeta) {
+        PersistentDataContainer persistentDataContainer = itemMeta.getPersistentDataContainer();
+        persistentDataContainer.remove(ITEM_KEY);
+        persistentDataContainer.remove(AMOUNT_KEY);
+    }
+
     public static boolean storageItem(@Nonnull ItemStack itemStack) {
         Material material = itemStack.getType();
         return !Tag.SHULKER_BOXES.isTagged(material) && !Material.BUNDLE.equals(material);
