@@ -28,7 +28,7 @@ public class TransformToStorageItem implements CommandExecutor {
             FinalTech.logger().info("Not support for console");
             return false;
         }
-        ItemStack item = player.getItemInHand();
+        ItemStack item = player.getInventory().getItemInMainHand();
         if (ItemStackUtil.isItemNull(item) || !FinalTechItems.STORAGE_CARD.isTargetItem(item)) {
             return false;
         }
@@ -37,7 +37,7 @@ public class TransformToStorageItem implements CommandExecutor {
             return false;
         }
         ItemStack storageCardItem = FinalTechItems.STORAGE_CARD.getValidItem(item, amount);
-        player.setItemInHand(storageCardItem);
+        player.getInventory().setItemInMainHand(storageCardItem);
         return true;
     }
 }

@@ -21,12 +21,12 @@ public class TransformToCopyCardItem implements CommandExecutor {
     @Override
     public boolean onCommand(@Nonnull CommandSender commandSender, @Nonnull Command command, @Nonnull String s, @Nonnull String[] strings) {
         if (commandSender instanceof Player player) {
-            ItemStack item = player.getItemInHand();
+            ItemStack item = player.getInventory().getItemInMainHand();
             if (ItemStackUtil.isItemNull(item) || !FinalTechItems.COPY_CARD.isTargetItem(item)) {
                 return false;
             }
             ItemStack copyCardItem = FinalTechItems.COPY_CARD.getValidItem(item, "1");
-            player.setItemInHand(copyCardItem);
+            player.getInventory().setItemInMainHand(copyCardItem);
             return true;
         } else {
             FinalTech.logger().info("Not support for console");

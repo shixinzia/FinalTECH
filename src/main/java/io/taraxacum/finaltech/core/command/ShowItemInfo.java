@@ -29,7 +29,7 @@ public class ShowItemInfo implements CommandExecutor {
     @Override
     public boolean onCommand(@Nonnull CommandSender commandSender, @Nonnull Command command, @Nonnull String s, @Nonnull String[] strings) {
         if (commandSender instanceof Player player) {
-            ItemStack item = player.getItemInHand();
+            ItemStack item = player.getInventory().getItemInMainHand();
             SlimefunItem slimefunItem = SlimefunItem.getByItem(item);
             if(slimefunItem == null) {
                 player.sendRawMessage(FinalTech.getLanguageString("message", "invalid-item"));
@@ -49,17 +49,16 @@ public class ShowItemInfo implements CommandExecutor {
                 }
 
                 RecipeItemGroup recipeItemGroup = RecipeItemGroup.getByItemStack(player, playerProfile.get(), SlimefunGuideMode.SURVIVAL_MODE, item);
+                GuideHistory guideHistory = playerProfile.get().getGuideHistory();
                 if (recipeItemGroup != null) {
-                    GuideHistory guideHistory = playerProfile.get().getGuideHistory();
                     guideHistory.clear();
                     recipeItemGroup.open(player, playerProfile.get(), SlimefunGuideMode.SURVIVAL_MODE);
                 } else {
-                    GuideHistory guideHistory = playerProfile.get().getGuideHistory();
                     SlimefunGuide.openMainMenu(playerProfile.get(), SlimefunGuideMode.SURVIVAL_MODE, guideHistory.getMainMenuPage());
                 }
             }
         } else if(commandSender instanceof ConsoleCommandSender) {
-
+            // TODO
         }
         return true;
     }
