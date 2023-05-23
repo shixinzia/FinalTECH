@@ -103,7 +103,11 @@ public class MainItemGroup extends FlexItemGroup {
         for(int i = 0; i < this.fatherItemGroupList.size(); i++) {
             List<ItemGroup> itemGroupList = new ArrayList<>();
             this.sonItemGroupList.get(i).forEach(itemGroup -> {
-                if(itemGroup instanceof FlexItemGroup flexItemGroup ? flexItemGroup.isVisible(player, playerProfile, slimefunGuideMode) : itemGroup.isVisible(player)) {
+                if(itemGroup instanceof SubFlexItemGroup subFlexItemGroup) {
+                    if(subFlexItemGroup.isTrulyVisible(player)) {
+                        itemGroupList.add(itemGroup);
+                    }
+                } else if(itemGroup instanceof FlexItemGroup flexItemGroup ? flexItemGroup.isVisible(player, playerProfile, slimefunGuideMode) : itemGroup.isVisible(player)) {
                     itemGroupList.add(itemGroup);
                 }
             });

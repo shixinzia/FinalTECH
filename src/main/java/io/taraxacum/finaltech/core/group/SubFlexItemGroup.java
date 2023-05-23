@@ -76,19 +76,6 @@ public class SubFlexItemGroup extends FlexItemGroup {
 
     @Override
     public boolean isVisible(@Nonnull Player player, @Nonnull PlayerProfile playerProfile, @Nonnull SlimefunGuideMode slimefunGuideMode) {
-        if(SlimefunGuideMode.SURVIVAL_MODE.equals(slimefunGuideMode)) {
-            for(List<SlimefunItem> slimefunItemList : this.slimefunItemList) {
-                for(SlimefunItem slimefunItem : slimefunItemList) {
-                    if(slimefunItem.isHidden()) {
-                        continue;
-                    }
-                    if(slimefunItem instanceof VisibleItem visibleItem && !visibleItem.isVisible(player)) {
-                        continue;
-                    }
-                    return true;
-                }
-            }
-        }
         return false;
     }
 
@@ -302,8 +289,19 @@ public class SubFlexItemGroup extends FlexItemGroup {
         }
     }
 
-    public boolean isVisible(@Nonnull SlimefunItem slimefunItem, @Nonnull Player player) {
-        return true;
+    public boolean isTrulyVisible(@Nonnull Player player) {
+        for(List<SlimefunItem> slimefunItemList : this.slimefunItemList) {
+            for(SlimefunItem slimefunItem : slimefunItemList) {
+                if(slimefunItem.isHidden()) {
+                    continue;
+                }
+                if(slimefunItem instanceof VisibleItem visibleItem && !visibleItem.isVisible(player)) {
+                    continue;
+                }
+                return true;
+            }
+        }
+        return false;
     }
 
     // TODO
