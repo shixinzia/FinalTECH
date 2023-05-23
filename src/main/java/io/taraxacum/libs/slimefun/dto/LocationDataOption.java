@@ -79,7 +79,7 @@ public class LocationDataOption {
     public boolean checkOrSetDefault(@Nonnull LocationDataService locationDataService, @Nonnull Location location) {
         String value = locationDataService.getLocationData(location, this.key);
         if(!this.validValue(value)) {
-            locationDataService.setLocationData(location, this.key, value);
+            locationDataService.setLocationData(location, this.key, this.defaultValue());
             return false;
         }
         return true;
@@ -88,7 +88,7 @@ public class LocationDataOption {
     public boolean checkOrSetDefault(@Nonnull LocationDataService locationDataService, @Nonnull LocationData locationData) {
         String value = locationDataService.getLocationData(locationData, this.key);
         if(!this.validValue(value)) {
-            locationDataService.setLocationData(locationData, this.key, value);
+            locationDataService.setLocationData(locationData, this.key, this.defaultValue());
             return false;
         }
         return true;
