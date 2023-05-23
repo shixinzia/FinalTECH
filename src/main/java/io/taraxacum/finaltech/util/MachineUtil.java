@@ -1,5 +1,6 @@
 package io.taraxacum.finaltech.util;
 
+import io.github.thebusybiscuit.slimefun4.api.items.ItemState;
 import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItem;
 import io.github.thebusybiscuit.slimefun4.core.handlers.BlockBreakHandler;
 import io.github.thebusybiscuit.slimefun4.core.handlers.BlockPlaceHandler;
@@ -183,7 +184,7 @@ public final class MachineUtil {
             return ItemStackUtil.AIR;
         }
         SlimefunItem slimefunItem = SlimefunItem.getByItem(itemStack);
-        if(slimefunItem != null) {
+        if(slimefunItem != null && ItemState.ENABLED.equals(slimefunItem.getState())) {
             return MachineUtil.cloneAsDescriptiveItem(slimefunItem);
         } else if(ItemStackUtil.isItemSimilar(itemStack, new ItemStack(itemStack.getType()))) {
             ItemStack result = ItemStackUtil.cloneItem(itemStack);
