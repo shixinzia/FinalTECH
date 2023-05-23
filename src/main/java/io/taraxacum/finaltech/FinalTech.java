@@ -3,6 +3,7 @@ package io.taraxacum.finaltech;
 import io.github.thebusybiscuit.slimefun4.api.SlimefunAddon;
 import io.github.thebusybiscuit.slimefun4.core.config.SlimefunDatabaseManager;
 import io.github.thebusybiscuit.slimefun4.implementation.Slimefun;
+import io.taraxacum.common.api.RunnableLockFactory;
 import io.taraxacum.common.util.ReflectionUtil;
 import io.taraxacum.common.util.StringNumberUtil;
 import io.taraxacum.finaltech.core.patch.EnergyRegulatorBlockTicker;
@@ -64,8 +65,8 @@ public class FinalTech extends JavaPlugin implements SlimefunAddon {
     private boolean debugMode = false;
     private boolean safeSql = false;
     private CustomLogger logger;
-    private ServerRunnableLockFactory<Location> locationRunnableFactory;
-    private ServerRunnableLockFactory<Entity> entityRunnableFactory;
+    private RunnableLockFactory<Location> locationRunnableFactory;
+    private RunnableLockFactory<Entity> entityRunnableFactory;
     private ConfigFileManager config;
     private ConfigFileManager value;
     private ConfigFileManager item;
@@ -441,11 +442,11 @@ public class FinalTech extends JavaPlugin implements SlimefunAddon {
         return instance.random;
     }
 
-    public static ServerRunnableLockFactory<Location> getLocationRunnableFactory() {
+    public static RunnableLockFactory<Location> getLocationRunnableFactory() {
         return instance.locationRunnableFactory;
     }
 
-    public static ServerRunnableLockFactory<Entity> getEntityRunnableFactory() {
+    public static RunnableLockFactory<Entity> getEntityRunnableFactory() {
         return instance.entityRunnableFactory;
     }
 
