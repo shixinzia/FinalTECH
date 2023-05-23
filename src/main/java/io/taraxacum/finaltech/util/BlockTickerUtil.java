@@ -3,8 +3,8 @@ package io.taraxacum.finaltech.util;
 import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItem;
 import io.github.thebusybiscuit.slimefun4.core.attributes.MachineProcessHolder;
 import io.github.thebusybiscuit.slimefun4.libraries.dough.protection.Interaction;
+import io.taraxacum.common.api.RunnableLockFactory;
 import io.taraxacum.finaltech.FinalTech;
-import io.taraxacum.libs.plugin.dto.ServerRunnableLockFactory;
 import io.taraxacum.libs.plugin.interfaces.LocationDataService;
 import io.taraxacum.libs.plugin.util.InventoryUtil;
 import io.taraxacum.libs.plugin.util.ItemStackUtil;
@@ -40,7 +40,7 @@ public class BlockTickerUtil {
     private final static String KEY_LIVE_TIME = "finaltech-lt";
 
     @SafeVarargs
-    public static <T> void runTask(@Nonnull ServerRunnableLockFactory<T> serverRunnableLockFactory, boolean async, @Nonnull Runnable runnable, T... locks) {
+    public static <T> void runTask(@Nonnull RunnableLockFactory<T> serverRunnableLockFactory, boolean async, @Nonnull Runnable runnable, T... locks) {
         if (async) {
             serverRunnableLockFactory.waitThenRun(runnable, locks);
         } else {
@@ -49,7 +49,7 @@ public class BlockTickerUtil {
     }
 
 
-    public static <T> void runTask(@Nonnull ServerRunnableLockFactory<T> serverRunnableLockFactory, boolean async, @Nonnull Runnable runnable, Supplier<T[]> supplier) {
+    public static <T> void runTask(@Nonnull RunnableLockFactory<T> serverRunnableLockFactory, boolean async, @Nonnull Runnable runnable, Supplier<T[]> supplier) {
         if (async) {
             serverRunnableLockFactory.waitThenRun(runnable, supplier.get());
         } else {
