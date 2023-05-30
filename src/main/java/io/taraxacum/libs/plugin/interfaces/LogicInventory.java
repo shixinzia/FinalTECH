@@ -6,8 +6,15 @@ import org.bukkit.inventory.ItemStack;
 
 import javax.annotation.Nonnull;
 
+/**
+ * An inventory template that may do some special functions.
+ * @author Final_ROOT
+ */
 public interface LogicInventory extends InventoryTemplate {
 
+    /**
+     * While being requested, it will tell other the slots that can be interacted.
+     */
     @Nonnull
     int[] requestSlots();
 
@@ -21,9 +28,15 @@ public interface LogicInventory extends InventoryTemplate {
         return this.requestSlots(requestType);
     }
 
+    /**
+     * This may be used to update the inventory according to the data in the location.
+     */
     void updateInventory(@Nonnull Inventory inventory, @Nonnull Location location);
 
-    public static enum RequestType {
+    /**
+     * How others request the slot of the inventory template.
+     */
+    enum RequestType {
         INPUT,
         OUTPUT,
     }

@@ -11,6 +11,10 @@ import javax.annotation.Nullable;
 import java.util.Map;
 import java.util.function.Consumer;
 
+/**
+ * An inventory template can be used to generate inventory in some ways.
+ * @author Final_ROOT
+ */
 public interface InventoryTemplate {
     Consumer<InventoryClickEvent> CANCEL_CLICK_CONSUMER = inventoryClickEvent -> inventoryClickEvent.setCancelled(true);
 
