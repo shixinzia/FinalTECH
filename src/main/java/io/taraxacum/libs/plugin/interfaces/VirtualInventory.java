@@ -25,11 +25,19 @@ public interface VirtualInventory {
     Consumer<InventoryClickEvent> onClick(int slot);
 
     default void open(@Nonnull Player player) {
-        player.closeInventory();
-        VirtualInventoryManager.getInstance().bindTo(player, this);
         InventoryView inventoryView = player.openInventory(this.getInventory());
         if (inventoryView == null) {
             VirtualInventoryManager.getInstance().unbindTo(player, this);
+        } else {
+            VirtualInventoryManager.getInstance().bindTo(player, this);
+            InventoryOpenEvent fakeOpenEvent = new InventoryOpenEvent(inventoryView);
+            Consumer<InventoryOpenEvent> eventConsumer = this.onOpen();
+            if (eventConsumer != null) {
+                eventConsumer.accept(fakeOpenEvent);
+                if (fakeOpenEvent.isCancelled() && inventoryView == player.getOpenInventory()) {
+                    player.closeInventory();
+                }
+            }
         }
     }
 
@@ -47,4 +55,8 @@ public interface VirtualInventory {
     boolean allowCollect();
 
     boolean allowMoveToOtherInventory();
+
+    default boolean allowClickPlayerInventory() {
+        return true;
+    }
 }
