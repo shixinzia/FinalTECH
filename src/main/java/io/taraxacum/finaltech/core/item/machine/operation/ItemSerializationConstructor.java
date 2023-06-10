@@ -37,7 +37,6 @@ import java.util.List;
  * it will be used in gameplay
  * It's not a function class!
  * @author Final_ROOT
- * @since 1.0
  */
 public class ItemSerializationConstructor extends AbstractOperationMachine {
     private final CustomItemStack nullInfoIcon = new CustomItemStack(Material.RED_STAINED_GLASS_PANE, FinalTech.getLanguageString("items", this.getId(), "null-icon", "name"), FinalTech.getLanguageStringArray("items", this.getId(), "null-icon", "lore"));

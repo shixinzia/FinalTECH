@@ -13,7 +13,6 @@ import java.util.List;
 
 /**
  * @author Final_ROOT
- * @since 2.2
  */
 public class DigitalExtraction extends AbstractExtractionMachine implements RecipeItem {
     public DigitalExtraction(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {

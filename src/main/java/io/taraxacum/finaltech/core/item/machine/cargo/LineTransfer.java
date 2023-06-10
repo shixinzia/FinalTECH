@@ -41,7 +41,6 @@ import java.util.List;
 
 /**
  * @author Final_ROOT
- * @since 1.0
  */
 public class LineTransfer extends AbstractCargo implements RecipeItem {
     private final int particleInterval = 2;

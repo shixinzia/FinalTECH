@@ -27,7 +27,6 @@ import java.util.Map;
 
 /**
  * @author Final_ROOT
- * @since 2.0
  */
 public class FuelAccelerator extends AbstractFaceMachine implements RecipeItem {
     private final Map<Location, BukkitTask> locationBukkitTaskMap = new HashMap<>();

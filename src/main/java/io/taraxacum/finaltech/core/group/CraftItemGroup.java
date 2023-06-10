@@ -32,7 +32,6 @@ import java.util.Map;
 
 /**
  * @author Final_ROOT
- * @since 2.2
  */
 public class CraftItemGroup extends FlexItemGroup {
     private static final int BACK_SLOT = 1;

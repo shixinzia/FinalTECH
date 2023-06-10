@@ -22,7 +22,6 @@ import javax.annotation.Nonnull;
 
 /**
  * @author Final_ROOT
- * @since 2.0
  */
 public class LimitedStackStorageUnit extends AbstractStorageUnit implements RecipeItem {
     public LimitedStackStorageUnit(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {

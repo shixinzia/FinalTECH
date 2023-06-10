@@ -34,7 +34,6 @@ import java.util.List;
 
 /**
  * @author Final_ROOT
- * @since 2.2
  */
 public class MultiFrameMachine extends AbstractMachine implements RecipeItem {
     private final String[] offsetKeys = new String[] {"o1", "o2", "o3", "o4", "o5", "o6"};

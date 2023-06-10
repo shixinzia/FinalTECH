@@ -23,7 +23,6 @@ import java.util.*;
 
 /**
  * @author Final_ROOT
- * @since 2.0
  */
 // TODO: abstract as lib
 public class MainItemGroup extends FlexItemGroup {

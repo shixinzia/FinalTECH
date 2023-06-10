@@ -28,7 +28,6 @@ import javax.annotation.Nonnull;
 
 /**
  * @author Final_ROOT
- * @since 1.0
  */
 public class MatrixGenerator extends AbstractCubeElectricGenerator {
     private final int energy = ConfigUtil.getOrDefaultItemSetting(1, this, "energy");

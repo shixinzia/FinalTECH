@@ -34,7 +34,6 @@ import java.util.function.Function;
 
 /**
  * @author Final_ROOT
- * @since 2.0
  */
 public class MatrixAccelerator extends AbstractCubeMachine implements RecipeItem, MenuUpdater {
     private final int range = ConfigUtil.getOrDefaultItemSetting(1, this, "range");

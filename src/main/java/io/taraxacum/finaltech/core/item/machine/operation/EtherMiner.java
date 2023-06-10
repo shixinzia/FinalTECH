@@ -35,7 +35,6 @@ import java.util.OptionalInt;
 
 /**
  * @author Final_ROOT
- * @since 2.4
  */
 public class EtherMiner extends AbstractOperationMachine implements RecipeItem, MenuUpdater {
     // time = baseTime / logN(supplies * mul + 1)

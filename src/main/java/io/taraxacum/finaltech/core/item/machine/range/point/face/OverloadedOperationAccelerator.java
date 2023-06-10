@@ -11,7 +11,6 @@ import java.util.Set;
 
 /**
  * @author Final_ROOT
- * @since 2.0
  */
 public class OverloadedOperationAccelerator extends AbstractOperationAccelerator {
     private final Set<String> notAllowedId = new HashSet<>(ConfigUtil.getItemStringList(this, "not-allowed-id"));

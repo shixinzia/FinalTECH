@@ -15,7 +15,6 @@ import java.util.*;
 /**
  * @see LanguageManager
  * @author Final_ROOT
- * @since 2.0
  */
 public class ConfigFileManager {
     private Plugin plugin;

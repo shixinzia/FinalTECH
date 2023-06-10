@@ -9,7 +9,6 @@ import org.bukkit.inventory.ItemStack;
 
 /**
  * @author Final_ROOT
- * @since 1.0
  */
 public class ManualComposter extends AbstractManualCraftMachine{
     public ManualComposter(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {

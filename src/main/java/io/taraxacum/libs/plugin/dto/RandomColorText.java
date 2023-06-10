@@ -7,7 +7,6 @@ import javax.annotation.Nonnull;
 
 /**
  * @author Final_ROOT
- * @since 2.0
  */
 public abstract class RandomColorText {
     private final String[] text;

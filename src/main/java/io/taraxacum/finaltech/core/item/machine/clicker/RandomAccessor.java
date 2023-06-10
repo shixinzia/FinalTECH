@@ -15,7 +15,6 @@ import javax.annotation.Nullable;
 
 /**
  * @author Final_ROOT
- * @since 2.4
  */
 public class RandomAccessor extends AbstractClickerMachine implements RecipeItem {
     public RandomAccessor(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item, @Nonnull RecipeType recipeType, @Nonnull ItemStack[] recipe) {

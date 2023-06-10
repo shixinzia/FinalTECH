@@ -33,7 +33,6 @@ import java.util.List;
 
 /**
  * @author Final_ROOT
- * @since 2.0
  */
 public class EquivalentExchangeTable extends AbstractManualMachine implements RecipeItem {
     private final String key = "v";

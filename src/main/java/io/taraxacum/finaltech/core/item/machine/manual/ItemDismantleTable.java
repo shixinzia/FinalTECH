@@ -27,7 +27,6 @@ import java.util.*;
 
 /**
  * @author Final_ROOT
- * @since 2.0
  */
 public class ItemDismantleTable extends AbstractManualMachine implements RecipeItem {
     private final Set<String> allowedRecipeType = new HashSet<>(ConfigUtil.getItemStringList(this, "allowed-recipe-type"));

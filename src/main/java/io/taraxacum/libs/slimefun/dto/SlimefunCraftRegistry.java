@@ -12,7 +12,6 @@ import java.util.Map;
 
 /**
  * @author Final_ROOT
- * @since 2.2
  */
 public class SlimefunCraftRegistry {
     private boolean init = false;

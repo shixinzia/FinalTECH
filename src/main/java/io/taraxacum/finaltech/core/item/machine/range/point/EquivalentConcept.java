@@ -41,7 +41,6 @@ import java.util.Random;
 
 /**
  * @author Final_ROOT
- * @since 2.0
  */
 public class EquivalentConcept extends AbstractPointMachine implements RecipeItem, SimpleValidItem {
     public static final String KEY_LIFE = "l";

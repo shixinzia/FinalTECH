@@ -8,7 +8,6 @@ import javax.annotation.Nonnull;
 
 /**
  * @author Final_ROOT
- * @since 2.4
  */
 public interface CubeMachine extends RangeMachine, LocationMachine {
     default int cubeFunction(@Nonnull Block block, int range, @Nonnull RangeFunction function) {

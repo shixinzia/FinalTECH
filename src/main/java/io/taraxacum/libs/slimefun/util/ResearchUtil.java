@@ -13,7 +13,6 @@ import javax.annotation.Nullable;
 
 /**
  * @author Final_ROOT
- * @since 2.0
  */
 public class ResearchUtil {
 

@@ -8,7 +8,6 @@ import org.bukkit.inventory.ItemStack;
 
 /**
  * @author Final_ROOT
- * @since 2.0
  */
 public class AdvancedJuicer extends AbstractAdvanceMachine{
     public AdvancedJuicer(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {

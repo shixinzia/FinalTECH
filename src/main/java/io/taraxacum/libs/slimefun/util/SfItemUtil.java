@@ -15,7 +15,6 @@ import java.util.Random;
 
 /**
  * @author Final_ROOT
- * @since 2.0
  */
 public class SfItemUtil {
     private static final NamespacedKey SLIMEFUN_ITEM_KEY = new NamespacedKey(Slimefun.instance(), "slimefun_item");

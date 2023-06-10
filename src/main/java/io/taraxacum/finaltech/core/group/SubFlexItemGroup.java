@@ -34,7 +34,6 @@ import java.util.Map;
 
 /**
  * @author Final_ROOT
- * @since 2.0
  */
 // TODO: abstract as lib
 public class SubFlexItemGroup extends FlexItemGroup {

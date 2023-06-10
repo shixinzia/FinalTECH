@@ -8,7 +8,6 @@ import org.bukkit.inventory.ItemStack;
 
 /**
  * @author Final_ROOT
- * @since 2.0
  */
 public class DigitalGenerator extends AbstractGeneratorMachine{
     public DigitalGenerator(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {

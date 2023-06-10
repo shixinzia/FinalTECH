@@ -10,7 +10,6 @@ import java.util.function.Function;
 
 /**
  * @author Final_ROOT
- * @since 2.0
  */
 public class LanguageManager extends ConfigFileManager implements StringReplacer {
     private final List<Function<String, String>> functionSet = new ArrayList<>();

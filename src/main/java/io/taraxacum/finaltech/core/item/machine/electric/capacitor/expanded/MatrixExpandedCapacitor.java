@@ -20,7 +20,6 @@ import javax.annotation.Nonnull;
 
 /**
  * @author Final_ROOT
- * @since 2.0
  */
 public class MatrixExpandedCapacitor extends AbstractExpandedElectricCapacitor {
     private final int capacity = ConfigUtil.getOrDefaultItemSetting(Integer.MAX_VALUE - 1, this, "capacity");

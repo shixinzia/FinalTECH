@@ -30,7 +30,6 @@ import java.util.Set;
 
 /**
  * @author Final_ROOT
- * @since 2.0
  */
 public class MatrixItemDismantleTable extends AbstractMachine implements RecipeItem {
     private final Set<String> notAllowedRecipeType = new HashSet<>(ConfigUtil.getItemStringList(this, "not-allowed-recipe-type"));

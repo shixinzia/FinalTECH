@@ -2,6 +2,9 @@ package io.taraxacum.finaltech.core.enums;
 
 import javax.annotation.Nonnull;
 
+/**
+ * TODO It may be refined in the future.
+ */
 public enum LogSourceType {
     SLIMEFUN_MACHINE("slimefun machine"),
 

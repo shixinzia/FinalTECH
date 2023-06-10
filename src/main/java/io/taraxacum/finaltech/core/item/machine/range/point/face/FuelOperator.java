@@ -33,7 +33,6 @@ import java.util.List;
 
 /**
  * @author Final_ROOT
- * @since 2.0
  */
 public class FuelOperator extends AbstractFaceMachine implements RecipeItem {
     private final List<String> notAllowedId = ConfigUtil.getItemStringList(this, "not-allowed-id");

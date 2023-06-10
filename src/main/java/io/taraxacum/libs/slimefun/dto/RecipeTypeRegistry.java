@@ -10,7 +10,6 @@ import java.util.*;
 
 /**
  * @author Final_ROOT
- * @since 2.0
  */
 public class RecipeTypeRegistry {
     private Set<RecipeType> recipeTypeSet;

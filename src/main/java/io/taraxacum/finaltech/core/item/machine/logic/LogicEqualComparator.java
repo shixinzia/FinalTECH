@@ -15,7 +15,6 @@ import javax.annotation.Nullable;
 
 /**
  * @author Final_ROOT
- * @since 2.0
  */
 public class LogicEqualComparator extends AbstractLogicComparator implements RecipeItem {
     public LogicEqualComparator(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item, @Nonnull RecipeType recipeType, @Nonnull ItemStack[] recipe) {

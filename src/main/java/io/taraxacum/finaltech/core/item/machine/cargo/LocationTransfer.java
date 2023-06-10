@@ -32,7 +32,6 @@ import java.util.List;
 
 /**
  * @author Final_ROOT
- * @since 2.0
  */
 public class LocationTransfer extends AbstractCargo implements RecipeItem {
     private final double particleDistance = 0.25;

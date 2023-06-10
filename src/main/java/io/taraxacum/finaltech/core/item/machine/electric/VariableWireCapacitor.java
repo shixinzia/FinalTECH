@@ -31,7 +31,6 @@ import javax.annotation.Nonnull;
 
 /**
  * @author Final_ROOT
- * @since 2.0
  */
 public class VariableWireCapacitor extends AbstractElectricMachine implements RecipeItem, MenuUpdater {
     private final int capacity = ConfigUtil.getOrDefaultItemSetting(65536, this, "capacity");

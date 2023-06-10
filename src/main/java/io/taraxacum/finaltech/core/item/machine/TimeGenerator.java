@@ -35,7 +35,6 @@ import javax.annotation.Nonnull;
 
 /**
  * @author Final_ROOT
- * @since 2.2
  */
 public class TimeGenerator extends AbstractMachine implements EnergyNetProvider, RecipeItem, MenuUpdater, BeautifulEnergyProvider {
     private final String key = "t";

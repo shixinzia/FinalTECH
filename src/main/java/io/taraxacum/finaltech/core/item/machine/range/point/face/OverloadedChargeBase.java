@@ -33,7 +33,6 @@ import java.util.Set;
 
 /**
  * @author Final_ROOT
- * @since 2.0
  */
 public class OverloadedChargeBase extends AbstractFaceMachine implements RecipeItem, MenuUpdater, LocationMachine {
     private final Set<String> notAllowedId = new HashSet<>(ConfigUtil.getItemStringList(this, "not-allowed-id"));

@@ -7,7 +7,6 @@ import org.bukkit.inventory.ItemStack;
 
 /**
  * @author Final_ROOT
- * @since 2.4
  */
 public class ManualCraftMachine extends AbstractManualCraftMachine {
     public ManualCraftMachine(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {

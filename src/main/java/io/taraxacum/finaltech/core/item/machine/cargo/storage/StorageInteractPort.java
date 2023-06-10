@@ -34,7 +34,6 @@ import javax.annotation.Nonnull;
 
 /**
  * @author Final_ROOT
- * @since 1.0
  */
 public class StorageInteractPort extends AbstractCargo implements RecipeItem {
     private final int searchLimit = ConfigUtil.getOrDefaultItemSetting(3, this, "search-limit");

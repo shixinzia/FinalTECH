@@ -8,7 +8,6 @@ import org.bukkit.inventory.ItemStack;
 
 /**
  * @author Final_ROOT
- * @since 2.0
  */
 public class OverloadedGenerator extends AbstractCubeElectricGenerator{
     private final int energy = ConfigUtil.getOrDefaultItemSetting(2048, this, "energy");

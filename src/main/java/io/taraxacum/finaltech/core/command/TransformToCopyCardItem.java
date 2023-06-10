@@ -15,7 +15,6 @@ import javax.annotation.Nonnull;
 /**
  * A {@link Command} that will transfer item in player's hand to a {@link CopyCard}.
  * @author Final_ROOT
- * @since 2.0
  */
 public class TransformToCopyCardItem implements CommandExecutor {
     @Override

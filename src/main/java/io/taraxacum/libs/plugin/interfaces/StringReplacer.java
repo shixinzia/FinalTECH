@@ -7,7 +7,6 @@ import java.util.function.Function;
 
 /**
  * @author Final_ROOT
- * @since 2.0
  */
 public interface StringReplacer {
     void addFunction(@Nonnull Function<String, String>... function);

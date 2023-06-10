@@ -11,7 +11,6 @@ import javax.annotation.Nonnull;
 
 /**
  * @author Final_ROOT
- * @since 1.0
  */
 public class StorageInsertPort extends StorageInteractPort {
     public StorageInsertPort(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {

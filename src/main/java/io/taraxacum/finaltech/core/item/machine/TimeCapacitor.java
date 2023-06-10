@@ -28,7 +28,6 @@ import javax.annotation.Nonnull;
 
 /**
  * @author Final_ROOT
- * @since 2.2
  */
 public class TimeCapacitor extends AbstractMachine implements EnergyNetComponent, RecipeItem, MenuUpdater {
     private final String key = "t";

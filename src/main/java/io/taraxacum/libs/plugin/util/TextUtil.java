@@ -9,7 +9,6 @@ import java.util.Random;
 
 /**
  * @author Final_ROOT
- * @since 2.0
  */
 public class TextUtil {
     public static final String COLOR_NORMAL = "§x§8§8§f§f§f§f";

@@ -16,10 +16,11 @@ import java.util.concurrent.*;
  * This is not the best way to work with Slimefun in async,
  * And may be deprecated in the future.
  * @author Final_ROOT
- * @since 2.2
  * @version 2
  * @param <T>
+ * @deprecated {@link BukkitTaskManager}
  */
+@Deprecated
 public class ServerRunnableLockFactory<T> implements RunnableLockFactory<T> {
     private final Plugin plugin;
     private final BukkitScheduler scheduler;
@@ -78,6 +79,7 @@ public class ServerRunnableLockFactory<T> implements RunnableLockFactory<T> {
         }, delay);
         return futureTask;
     }
+
     @Override
     @SafeVarargs
     public final FutureTask<Void> waitThenRun(@Nonnull Runnable runnable, @Nonnull T... objects) {

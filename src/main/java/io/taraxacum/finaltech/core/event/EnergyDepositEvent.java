@@ -9,7 +9,6 @@ import javax.annotation.Nonnull;
 /**
  * This event may be called in sync.
  * @author Final_ROOT
- * @since 2.4
  */
 public class EnergyDepositEvent extends Event {
 

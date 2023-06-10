@@ -21,7 +21,6 @@ import java.util.List;
 /**
  * A {@link SlimefunItem} that will show its working-recipe in {@link SlimefunGuide}.
  * @author Final_ROOT
- * @since 1.0
  */
 public interface RecipeItem extends RecipeDisplayItem {
     @Nonnull

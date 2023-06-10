@@ -10,7 +10,6 @@ import java.util.*;
 
 /**
  * @author Final_ROOT
- * @since 2.0
  */
 public class MachineRecipeFactory {
     private final Map<String, List<MachineRecipe>> recipeMap = new HashMap<>();

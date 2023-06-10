@@ -15,7 +15,6 @@ import javax.annotation.Nonnull;
 
 /**
  * @author Final_ROOT
- * @since 2.2
  */
 public class Transporter extends AbstractClickerMachine implements RecipeItem {
     private final int range = ConfigUtil.getOrDefaultItemSetting(16, this, "range");

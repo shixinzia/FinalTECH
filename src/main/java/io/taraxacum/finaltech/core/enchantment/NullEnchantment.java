@@ -13,7 +13,6 @@ import javax.annotation.Nonnull;
 
 /**
  * @author Final_ROOT
- * @since 1.0
  */
 public class NullEnchantment extends Enchantment {
     public static final Enchantment ENCHANTMENT = new NullEnchantment(new NamespacedKey(JavaPlugin.getPlugin(FinalTech.class), "FINALTECH_NULL_ENCHANTMENT"));

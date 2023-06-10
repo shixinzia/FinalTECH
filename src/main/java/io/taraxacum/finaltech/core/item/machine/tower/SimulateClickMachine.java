@@ -37,7 +37,6 @@ import java.util.Set;
 
 /**
  * @author Final_ROOT
- * @since 2.2
  */
 public class SimulateClickMachine extends AbstractTower implements RecipeItem {
     private final Set<String> notAllowedId = new HashSet<>(ConfigUtil.getItemStringList(this, "not-allowed-id"));

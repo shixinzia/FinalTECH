@@ -39,7 +39,6 @@ import java.util.Set;
 
 /**
  * @author Final_ROOT
- * @since 2.0
  */
 public class MatrixReactor extends AbstractMachine implements RecipeItem, MenuUpdater {
     private final String keyItem = "i";

@@ -9,7 +9,6 @@ import javax.annotation.Nonnull;
  * And should be token great care in async program.
  * @see io.taraxacum.finaltech.core.item.machine.AbstractMachine
  * @author Final_ROOT
- * @since 2.2
  */
 public interface LocationMachine {
 

@@ -8,7 +8,6 @@ import java.lang.reflect.Method;
 
 /**
  * @author Final_ROOT
- * @since 2.0
  */
 public class GuideUtil {
     public static void removeLastEntry(@Nonnull GuideHistory guideHistory) {

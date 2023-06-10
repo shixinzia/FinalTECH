@@ -8,7 +8,6 @@ import org.bukkit.inventory.ItemStack;
 
 /**
  * @author Final_ROOT
- * @since 1.0
  */
 public class CarbonadoGenerator extends AbstractCubeElectricGenerator {
     private final int energy = ConfigUtil.getOrDefaultItemSetting(16, this, "energy");

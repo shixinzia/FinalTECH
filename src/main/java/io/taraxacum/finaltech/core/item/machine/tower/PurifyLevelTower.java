@@ -30,7 +30,6 @@ import javax.annotation.Nonnull;
 
 /**
  * @author Final_ROOT
- * @since 2.0
  */
 public class PurifyLevelTower extends AbstractTower implements RecipeItem, MenuUpdater {
     private final double baseRange = ConfigUtil.getOrDefaultItemSetting(3.2, this, "range-base");

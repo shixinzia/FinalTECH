@@ -8,7 +8,6 @@ import org.bukkit.inventory.ItemStack;
 
 /**
  * @author Final_ROOT
- * @since 2.0
  */
 public class MediumExpandedCapacitor extends AbstractExpandedElectricCapacitor {
     private final int capacity = ConfigUtil.getOrDefaultItemSetting(512, this, "capacity");

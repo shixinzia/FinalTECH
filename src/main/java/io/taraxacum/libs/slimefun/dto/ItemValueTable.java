@@ -20,7 +20,6 @@ import java.util.*;
 
 /**
  * @author Final_ROOT
- * @since 2.0
  */
 // TODO: remove FinalTech
 public class ItemValueTable {
@@ -89,7 +88,7 @@ public class ItemValueTable {
         this.manualInitId(FinalTechItemStacks.PHONY.getItemId(), StringNumberUtil.add(this.getOrCalItemInputValue(FinalTechItemStacks.SINGULARITY), this.getOrCalItemInputValue(FinalTechItemStacks.SPIROCHETE)), StringNumberUtil.mul(this.getOrCalItemOutputValue(FinalTechItemStacks.SINGULARITY), this.getOrCalItemOutputValue(FinalTechItemStacks.SPIROCHETE)), false);
         this.manualInitId(FinalTechItemStacks.BUG.getItemId(), StringNumberUtil.ZERO, StringNumberUtil.ZERO, true);
 
-        List<SlimefunItem> allSlimefunItems = Slimefun.getRegistry().getAllSlimefunItems();
+        List<SlimefunItem> allSlimefunItems = Slimefun.getRegistry().getEnabledSlimefunItems();
         for (SlimefunItem slimefunItem : allSlimefunItems) {
             if (!slimefunItem.isDisabled()) {
                 try {
@@ -151,6 +150,7 @@ public class ItemValueTable {
         }
     }
 
+    @Nonnull
     public String getOrCalItemInputValue(@Nullable ItemStack item) {
         if (ItemStackUtil.isItemNull(item)) {
             return StringNumberUtil.ZERO;
@@ -161,6 +161,7 @@ public class ItemValueTable {
         }
         return this.getOrCalItemInputValue(slimefunItem);
     }
+    @Nonnull
     public String getOrCalItemInputValue(@Nonnull String id) {
         if (this.itemInputValueMap.containsKey(id)) {
             return this.itemInputValueMap.get(id);
@@ -171,6 +172,7 @@ public class ItemValueTable {
         }
         return this.getOrCalItemInputValue(slimefunItem);
     }
+    @Nonnull
     public String getOrCalItemInputValue(@Nonnull SlimefunItem slimefunItem) {
         String id = slimefunItem.getId();
         if (this.itemInputValueMap.containsKey(id)) {
@@ -195,6 +197,7 @@ public class ItemValueTable {
         return value;
     }
 
+    @Nonnull
     public String getOrCalItemOutputValue(@Nullable ItemStack item) {
         if (ItemStackUtil.isItemNull(item)) {
             return StringNumberUtil.ZERO;
@@ -205,6 +208,7 @@ public class ItemValueTable {
         }
         return this.getOrCalItemOutputValue(slimefunItem);
     }
+    @Nonnull
     public String getOrCalItemOutputValue(@Nonnull String id) {
         if (this.itemOutputValueMap.containsKey(id)) {
             return this.itemOutputValueMap.get(id);
@@ -215,6 +219,7 @@ public class ItemValueTable {
         }
         return this.getOrCalItemOutputValue(slimefunItem);
     }
+    @Nonnull
     public String getOrCalItemOutputValue(@Nonnull SlimefunItem slimefunItem) {
         String id = slimefunItem.getId();
         if (this.itemOutputValueMap.containsKey(id)) {

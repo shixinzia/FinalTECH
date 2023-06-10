@@ -18,7 +18,6 @@ import javax.annotation.Nonnull;
 
 /**
  * @author Final_ROOT
- * @since 2.0
  */
 public class NormalElectricityShootPile extends AbstractElectricityShootPile {
     private final int range = ConfigUtil.getOrDefaultItemSetting(16, this, "range");

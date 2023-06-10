@@ -14,7 +14,6 @@ import javax.annotation.Nonnull;
  * @see io.taraxacum.finaltech.core.item.usable.MachineConfigurator
  * @see io.taraxacum.finaltech.core.item.machine.range.ConfigurationPaster
  * @author Final_ROOT
- * @since 2.4
  */
 public class ConfigSaveActionEvent extends Event {
 

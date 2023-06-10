@@ -14,7 +14,6 @@ import java.util.List;
 /**
  * A {@link MachineRecipe} that its output item is random.
  * @author Final_ROOT
- * @since 2.0
  */
 public class RandomMachineRecipe extends MachineRecipe {
     @Nonnull
@@ -105,7 +104,6 @@ public class RandomMachineRecipe extends MachineRecipe {
 
     /**
      * @author Final_ROOT
-     * @since 2.0
      */
     public static class RandomOutput {
         @Nonnull

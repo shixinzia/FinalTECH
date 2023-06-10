@@ -13,13 +13,11 @@ import javax.annotation.Nullable;
 
 /**
  * @author Final_ROOT
- * @since 2.5
  */
 public class StringItemCardCache {
     @Nonnull
     private ItemStack cardItem;
 
-    @Nonnull
     private ItemMeta cardItemMeta;
 
     @Nullable

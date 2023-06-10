@@ -6,7 +6,6 @@ import java.util.logging.Logger;
 
 /**
  * @author Final_ROOT
- * @since 2.0
  */
 public class CustomLogger extends Logger {
     private String banner = "";

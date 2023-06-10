@@ -23,7 +23,6 @@ import java.util.Optional;
  * A #{@link Command} that will show the value of an item.
  * #{@link ItemValueTable}
  * @author Final_ROOT
- * @since 2.0
  */
 public class ShowItemInfo implements CommandExecutor {
     @Override

@@ -13,7 +13,6 @@ import java.util.List;
 
 /**
  * @author Final_ROOT
- * @since 1.0
  */
 public class ManualOreWasher extends AbstractManualCraftMachine{
     public ManualOreWasher(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {

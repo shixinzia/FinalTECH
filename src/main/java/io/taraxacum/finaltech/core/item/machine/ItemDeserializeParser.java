@@ -32,7 +32,6 @@ import javax.annotation.Nonnull;
  * it will be used in gameplay
  * It's not a function class!
  * @author Final_ROOT
- * @since 1.0
  */
 public class ItemDeserializeParser extends AbstractMachine implements RecipeItem {
     public ItemDeserializeParser(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {

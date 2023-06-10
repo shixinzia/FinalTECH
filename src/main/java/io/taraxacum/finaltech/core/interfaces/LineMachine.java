@@ -7,6 +7,9 @@ import org.bukkit.block.data.Directional;
 
 import javax.annotation.Nonnull;
 
+/**
+ * @author Final_ROOT
+ */
 public interface LineMachine extends RangeMachine {
     default int lineFunction(@Nonnull Block block, int range, @Nonnull LineMachine.RangeFunction function) {
         int count = 0;

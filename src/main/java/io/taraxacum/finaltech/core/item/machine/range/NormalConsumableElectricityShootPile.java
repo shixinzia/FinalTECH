@@ -34,7 +34,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @author Final_ROOT
- * @since 2.2
  */
 public class NormalConsumableElectricityShootPile extends AbstractRangeMachine implements RecipeItem, MenuUpdater, PointMachine, LineMachine, LocationMachine {
     private final int range = ConfigUtil.getOrDefaultItemSetting(16, this, "range");

@@ -7,7 +7,6 @@ import java.util.Random;
 
 /**
  * @author Final_ROOT
- * @since 2.0
  */
 public class VectorUtil {
     private static final Random random = new Random();

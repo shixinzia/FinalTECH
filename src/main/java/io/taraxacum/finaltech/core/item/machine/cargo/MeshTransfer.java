@@ -40,7 +40,6 @@ import java.util.List;
 
 /**
  * @author Final_ROOT
- * @since 1.0
  */
 public class MeshTransfer extends AbstractCargo implements RecipeItem {
     private final double particleDistance = 0.25;

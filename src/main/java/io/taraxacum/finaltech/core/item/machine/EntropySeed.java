@@ -29,7 +29,6 @@ import java.util.List;
 
 /**
  * @author Final_ROOT
- * @since 2.0
  */
 public class EntropySeed extends AbstractMachine implements RecipeItem {
     private final double equivalentConceptLife = ConfigUtil.getOrDefaultItemSetting(8.0, this, "life");

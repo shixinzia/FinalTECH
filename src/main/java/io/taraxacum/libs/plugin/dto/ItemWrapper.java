@@ -12,7 +12,6 @@ import java.util.List;
 
 /**
  * @author Final_ROOT
- * @since 2.0
  */
 public class ItemWrapper {
     @Nonnull

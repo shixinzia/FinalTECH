@@ -15,7 +15,6 @@ import javax.annotation.Nonnull;
 
 /**
  * @author Final_ROOT
- * @since 2.0
  */
 public class RandomAccessStorageUnit extends AbstractStorageUnit implements RecipeItem {
     public RandomAccessStorageUnit(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {

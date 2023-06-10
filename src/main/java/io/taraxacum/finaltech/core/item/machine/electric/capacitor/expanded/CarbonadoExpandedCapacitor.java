@@ -8,7 +8,6 @@ import org.bukkit.inventory.ItemStack;
 
 /**
  * @author Final_ROOT
- * @since 2.0
  */
 public class CarbonadoExpandedCapacitor extends AbstractExpandedElectricCapacitor {
     private final int capacity = ConfigUtil.getOrDefaultItemSetting(65536, this, "capacity");

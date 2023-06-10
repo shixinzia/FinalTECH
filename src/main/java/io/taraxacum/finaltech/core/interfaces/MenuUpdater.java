@@ -13,7 +13,6 @@ import javax.annotation.Nonnull;
 /**
  * A Slimefun item that will update its menu to show some info.
  * @author Final_ROOT
- * @since 2.0
  */
 public interface MenuUpdater {
 
