@@ -80,10 +80,13 @@ public class VirtualInventoryManager implements Listener {
 
         if (virtualInventory != null) {
             InventoryAction action = inventoryClickEvent.getAction();
-            if(InventoryAction.COLLECT_TO_CURSOR.equals(action) && !virtualInventory.allowCollect()) {
+            if (InventoryAction.COLLECT_TO_CURSOR.equals(action) && !virtualInventory.allowCollect()) {
                 inventoryClickEvent.setCancelled(true);
             }
-            if(InventoryAction.MOVE_TO_OTHER_INVENTORY.equals(action) && !virtualInventory.allowMoveToOtherInventory()) {
+            if (InventoryAction.MOVE_TO_OTHER_INVENTORY.equals(action) && !virtualInventory.allowMoveToOtherInventory()) {
+                inventoryClickEvent.setCancelled(true);
+            }
+            if (inventoryClickEvent.getSlot() != inventoryClickEvent.getRawSlot() && !virtualInventory.allowClickPlayerInventory()) {
                 inventoryClickEvent.setCancelled(true);
             }
             Consumer<InventoryClickEvent> eventConsumer = virtualInventory.onClick(inventoryClickEvent.getRawSlot());

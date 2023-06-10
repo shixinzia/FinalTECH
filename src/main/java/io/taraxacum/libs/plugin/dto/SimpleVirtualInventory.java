@@ -31,10 +31,20 @@ public class SimpleVirtualInventory implements VirtualInventory {
 
     private final String title;
 
+    private boolean allowClickPlayerInventory = true;
+
     public SimpleVirtualInventory(int size, @Nonnull String title) {
         this.size = size;
         this.title = title;
         this.clickEventConsumerMap = new HashMap<>();
+    }
+
+    public int getSize() {
+        return size;
+    }
+
+    public String getTitle() {
+        return title;
     }
 
     @Nullable
@@ -77,6 +87,15 @@ public class SimpleVirtualInventory implements VirtualInventory {
     @Override
     public boolean allowMoveToOtherInventory() {
         return false;
+    }
+
+    @Override
+    public boolean allowClickPlayerInventory() {
+        return this.allowClickPlayerInventory;
+    }
+
+    public void setAllowClickPlayerInventory(boolean allowClickPlayerInventory) {
+        this.allowClickPlayerInventory = allowClickPlayerInventory;
     }
 
     public void setOnClick(int slot, @Nullable Consumer<InventoryClickEvent> eventConsumer) {
