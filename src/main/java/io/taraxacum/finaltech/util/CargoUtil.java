@@ -29,9 +29,7 @@ import java.util.concurrent.FutureTask;
 
 /**
  * @author Final_ROOT
- * @since 1.0
  */
-// TODO: abstract as lib
 public class CargoUtil {
     private static final int SEARCH_MAP_LIMIT = 3;
     private static final Future<Integer> ZERO_FUTURE = new FutureTask<>(() -> 0);

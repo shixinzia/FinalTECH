@@ -11,7 +11,6 @@ import java.util.LinkedHashMap;
 
 /**
  * @author Final_ROOT
- * @since 2.0
  */
 public final class SlotSearchOrder {
     public static final String KEY = "sso";

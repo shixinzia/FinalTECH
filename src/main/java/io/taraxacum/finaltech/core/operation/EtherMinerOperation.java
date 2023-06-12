@@ -4,7 +4,6 @@ import io.github.thebusybiscuit.slimefun4.core.machines.MachineOperation;
 
 /**
  * @author Final_ROOT
- * @since 2.4
  */
 public class EtherMinerOperation implements MachineOperation {
     private final int etherAmount;

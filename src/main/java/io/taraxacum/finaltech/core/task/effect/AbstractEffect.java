@@ -7,7 +7,6 @@ import org.bukkit.plugin.Plugin;
 
 /**
  * @author Final_ROOT
- * @since 2.0
  */
 public abstract class AbstractEffect extends TickerTask<LivingEntity> {
     private int level;

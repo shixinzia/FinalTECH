@@ -14,7 +14,6 @@ import javax.annotation.Nullable;
 
 /**
  * @author Final_ROOT
- * @since 2.0
  */
 public class PlayerUtil {
     public static final NamespacedKey KEY_UUID = new NamespacedKey(FinalTech.getInstance(), "UUID");

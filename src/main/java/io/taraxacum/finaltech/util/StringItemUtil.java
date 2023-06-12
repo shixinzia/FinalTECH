@@ -24,7 +24,6 @@ import java.util.List;
  * one item will have "item" key and "amount" key in the same time
  * or one item will not have only one of them.
  * @author Final_ROOT
- * @since 1.0
  */
 public class StringItemUtil {
     public static final NamespacedKey ITEM_KEY = new NamespacedKey(FinalTech.getPlugin(FinalTech.class), "item");

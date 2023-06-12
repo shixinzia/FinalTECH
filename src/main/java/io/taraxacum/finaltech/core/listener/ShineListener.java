@@ -31,7 +31,6 @@ import java.util.*;
 /**
  * @see io.taraxacum.finaltech.core.item.unusable.Shine
  * @author Final_ROOT
- * @since 2.0
  */
 public class ShineListener implements Listener {
     private final double damage = ConfigUtil.getOrDefaultItemSetting(0.3, FinalTechItemStacks.SHINE.getItemId(), "damage");

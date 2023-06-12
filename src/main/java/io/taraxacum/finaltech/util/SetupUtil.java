@@ -48,7 +48,6 @@ import java.util.function.Function;
 
 /**
  * @author Final_ROOT
- * @since 1.0
  */
 public final class SetupUtil {
     private static final List<String> BELIEVABLE_PLUGIN_ID_LIST = new ArrayList<>();

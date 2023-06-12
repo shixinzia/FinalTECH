@@ -19,9 +19,7 @@ import java.util.*;
 
 /**
  * @author Final_ROOT
- * @since 2.0
  */
-// TODO: abstract as lib
 public class LocationUtil {
     private static final NamespacedKey KEY = new NamespacedKey(FinalTech.getInstance(), "location");
 

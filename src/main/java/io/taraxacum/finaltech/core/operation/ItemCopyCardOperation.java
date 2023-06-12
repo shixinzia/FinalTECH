@@ -13,7 +13,6 @@ import javax.annotation.Nullable;
 
 /**
  * @author Final_ROOT
- * @since 1.0
  */
 public class ItemCopyCardOperation implements ItemSerializationConstructorOperation {
     private double count;

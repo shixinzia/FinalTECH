@@ -4,7 +4,6 @@ import io.github.thebusybiscuit.slimefun4.implementation.Slimefun;
 
 /**
  * @author Final_ROOT
- * @since 2.0
  */
 public class ConstantTableUtil {
     public static final String CONFIG_ID = "id";

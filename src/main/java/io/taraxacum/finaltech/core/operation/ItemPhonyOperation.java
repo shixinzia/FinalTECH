@@ -15,7 +15,6 @@ import java.util.List;
 
 /**
  * @author Final_ROOT
- * @since 1.0
  */
 public class ItemPhonyOperation implements ItemSerializationConstructorOperation {
     private int itemTypeCount;

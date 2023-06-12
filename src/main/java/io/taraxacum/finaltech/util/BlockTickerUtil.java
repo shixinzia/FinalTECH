@@ -32,7 +32,6 @@ import java.util.function.Supplier;
 
 /**
  * @author Final_ROOT
- * @since 2.0
  */
 public class BlockTickerUtil {
     private final static String KEY_SLEEP = "finaltech-s";

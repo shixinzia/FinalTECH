@@ -9,7 +9,6 @@ import javax.annotation.Nullable;
 
 /**
  * @author Final_ROOT
- * @since 2.0
  */
 public interface ItemSerializationConstructorOperation extends MachineOperation {
     int COPY_CARD = 1;

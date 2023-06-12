@@ -27,9 +27,7 @@ import java.util.*;
 
 /**
  * @author Final_ROOT
- * @since 1.0
  */
-// TODO: abstract as lib
 public final class MachineUtil {
     public static final BlockPlaceHandler BLOCK_PLACE_HANDLER_PLACER_ALLOW = new BlockPlaceHandler(true) {
         @Override

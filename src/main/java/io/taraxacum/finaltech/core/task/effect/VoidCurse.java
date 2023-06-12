@@ -12,7 +12,6 @@ import javax.annotation.Nonnull;
 
 /**
  * @author Final_ROOT
- * @since 2.0
  */
 public class VoidCurse extends AbstractEffect implements StartTask<LivingEntity> {
     private double health;

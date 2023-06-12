@@ -18,7 +18,6 @@ import java.util.UUID;
 
 /**
  * @author Final_ROOT
- * @since 2.0
  */
 public class PermissionUtil {
     public static boolean checkOfflinePermission(@Nonnull ItemStack itemStack, @Nonnull Location... targetLocations) {
