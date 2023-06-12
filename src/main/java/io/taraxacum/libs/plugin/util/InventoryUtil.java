@@ -238,11 +238,11 @@ public class InventoryUtil {
     public static int calMaxMatch(@Nonnull Inventory inventory, int[] slots, @Nonnull ItemAmountWrapper itemAmountWrapper) {
         int count = 0;
         int maxStack = itemAmountWrapper.getItemStack().getMaxStackSize();
-        for(int slot : slots) {
+        for (int slot : slots) {
             ItemStack item = inventory.getItem(slot);
             if (ItemStackUtil.isItemNull(item)) {
                 count += maxStack;
-            } else if(item.getAmount() < maxStack && ItemStackUtil.isItemSimilar(itemAmountWrapper, item)) {
+            } else if (item.getAmount() < maxStack && ItemStackUtil.isItemSimilar(itemAmountWrapper, item)) {
                 count += maxStack - item.getAmount();
             }
         }
@@ -276,11 +276,11 @@ public class InventoryUtil {
      * Use {@link #calMaxMatch} to make sure that it is available to do this
      */
     public static void pushItem(@Nonnull Inventory inventory, int[] slots, int amount, @Nonnull ItemAmountWrapper... itemAmountWrappers) {
-        if(itemAmountWrappers.length == 0 || amount == 0) {
+        if (itemAmountWrappers.length == 0 || amount == 0) {
             return;
         }
         int[] totalAmount = new int[itemAmountWrappers.length];
-        for(int i = 0; i < totalAmount.length; i++) {
+        for (int i = 0; i < totalAmount.length; i++) {
             totalAmount[i] = amount * itemAmountWrappers[i].getAmount();
         }
         int finish = 0;
@@ -288,19 +288,19 @@ public class InventoryUtil {
         ItemWrapper itemWrapper = new ItemWrapper();
         int count;
         Map<Integer, Integer> slotAmountMap = new HashMap<>();
-        for(int slot : slots) {
+        for (int slot : slots) {
             ItemStack itemStack = inventory.getItem(slot);
-            if(ItemStackUtil.isItemNull(itemStack)) {
+            if (ItemStackUtil.isItemNull(itemStack)) {
                 emptySlotList.add(slot);
-            } else if(itemStack.getAmount() < itemStack.getMaxStackSize()) {
+            } else if (itemStack.getAmount() < itemStack.getMaxStackSize()) {
                 slotAmountMap.put(slot, itemStack.getAmount());
                 itemWrapper.newWrap(itemStack);
-                for(int i = 0; i < itemAmountWrappers.length; i++) {
-                    if(totalAmount[i] > 0 && ItemStackUtil.isItemSimilar(itemWrapper, itemAmountWrappers[i])) {
+                for (int i = 0; i < itemAmountWrappers.length; i++) {
+                    if (totalAmount[i] > 0 && ItemStackUtil.isItemSimilar(itemWrapper, itemAmountWrappers[i])) {
                         count = Math.min(totalAmount[i], itemStack.getMaxStackSize() - itemStack.getAmount());
                         itemStack.setAmount(itemStack.getAmount() + count);
                         totalAmount[i] -= count;
-                        if(totalAmount[i] == 0) {
+                        if (totalAmount[i] == 0) {
                             finish++;
                         }
                         break;
@@ -309,25 +309,25 @@ public class InventoryUtil {
             }
         }
 
-        if(finish == totalAmount.length) {
+        if (finish == totalAmount.length) {
             return;
         }
 
         List<Integer> emptySlotListCopy = new ArrayList<>(emptySlotList);
         Iterator<Integer> iterator;
         int i;
-        for(i = 0; i < itemAmountWrappers.length; i++) {
-            if(totalAmount[i] > 0) {
+        for (i = 0; i < itemAmountWrappers.length; i++) {
+            if (totalAmount[i] > 0) {
                 iterator = emptySlotList.iterator();
                 while (iterator.hasNext()) {
                     Integer slot = iterator.next();
-                    if(totalAmount[i] > 0) {
+                    if (totalAmount[i] > 0) {
                         count = Math.min(totalAmount[i], itemAmountWrappers[i].getItemStack().getMaxStackSize());
                         inventory.setItem(slot, itemAmountWrappers[i].getItemStack());
                         inventory.getItem(slot).setAmount(count);
                         totalAmount[i] -= count;
                         iterator.remove();
-                        if(totalAmount[i] == 0) {
+                        if (totalAmount[i] == 0) {
                             finish++;
                             break;
                         }
@@ -338,11 +338,11 @@ public class InventoryUtil {
 
         // This should not happen as if the items could not be put in the inventory
         // If it happened, just rollback
-        if(finish != totalAmount.length) {
-            for(int slot : emptySlotListCopy) {
+        if (finish != totalAmount.length) {
+            for (int slot : emptySlotListCopy) {
                 inventory.setItem(slot, null);
             }
-            for(Map.Entry<Integer, Integer> entry : slotAmountMap.entrySet()) {
+            for (Map.Entry<Integer, Integer> entry : slotAmountMap.entrySet()) {
                 inventory.getItem(entry.getKey()).setAmount(entry.getValue());
             }
         }
@@ -370,13 +370,13 @@ public class InventoryUtil {
      *      in this case, 4 * 12 = 48 cobblestones will be pushed to the inventory, and it will return true
      */
     public static boolean tryPushAllItem(@Nonnull Inventory inventory, int[] slots, int amount, @Nonnull ItemAmountWrapper... itemAmountWrappers) {
-        if(itemAmountWrappers.length == 0) {
+        if (itemAmountWrappers.length == 0) {
             return false;
         }
         int[] totalAmount = new int[itemAmountWrappers.length];
         List<Integer>[] pushSlot = new List[itemAmountWrappers.length];
         List<Integer>[] emptyUseSlot = new List[itemAmountWrappers.length];
-        for(int i = 0; i < totalAmount.length; i++) {
+        for (int i = 0; i < totalAmount.length; i++) {
             totalAmount[i] = amount * itemAmountWrappers[i].getAmount();
             pushSlot[i] = new ArrayList<>();
             emptyUseSlot[i] = new ArrayList<>();
@@ -384,14 +384,14 @@ public class InventoryUtil {
 
         ItemWrapper itemWrapper = new ItemWrapper();
         List<Integer> emptySlotList = new ArrayList<>();
-        for(int slot : slots) {
+        for (int slot : slots) {
             ItemStack itemStack = inventory.getItem(slot);
-            if(ItemStackUtil.isItemNull(itemStack)) {
+            if (ItemStackUtil.isItemNull(itemStack)) {
                 emptySlotList.add(slot);
-            } else if(itemStack.getAmount() < itemStack.getMaxStackSize()) {
+            } else if (itemStack.getAmount() < itemStack.getMaxStackSize()) {
                 itemWrapper.newWrap(itemStack);
-                for(int i = 0; i < itemAmountWrappers.length; i++) {
-                    if(totalAmount[i] > 0 && ItemStackUtil.isItemSimilar(itemWrapper, itemAmountWrappers[i])) {
+                for (int i = 0; i < itemAmountWrappers.length; i++) {
+                    if (totalAmount[i] > 0 && ItemStackUtil.isItemSimilar(itemWrapper, itemAmountWrappers[i])) {
                         pushSlot[i].add(slot);
                         totalAmount[i] -= Math.min(totalAmount[i], itemStack.getMaxStackSize() - itemStack.getAmount());
                         break;
@@ -400,35 +400,35 @@ public class InventoryUtil {
             }
         }
 
-        for(int i = 0; i < totalAmount.length; i++) {
-            if(totalAmount[i] > 0) {
+        for (int i = 0; i < totalAmount.length; i++) {
+            if (totalAmount[i] > 0) {
                 Iterator<Integer> iterator = emptySlotList.iterator();
                 while (iterator.hasNext()) {
                     Integer slot = iterator.next();
                     iterator.remove();
                     emptyUseSlot[i].add(slot);
                     totalAmount[i] -= Math.min(totalAmount[i], itemAmountWrappers[i].getItemStack().getMaxStackSize());
-                    if(totalAmount[i] == 0) {
+                    if (totalAmount[i] == 0) {
                         break;
                     }
                 }
-                if(totalAmount[i] > 0) {
+                if (totalAmount[i] > 0) {
                     return false;
                 }
             }
         }
 
         int count;
-        for(int i = 0; i < totalAmount.length; i++) {
+        for (int i = 0; i < totalAmount.length; i++) {
             count =  amount * itemAmountWrappers[i].getAmount();
-            for(int slot : pushSlot[i]) {
+            for (int slot : pushSlot[i]) {
                 ItemStack itemStack = inventory.getItem(slot);
                 int n = Math.min(count, itemStack.getMaxStackSize() - itemStack.getAmount());
                 itemStack.setAmount(itemStack.getAmount() + n);
                 count -= n;
             }
 
-            for(int slot : emptyUseSlot[i]) {
+            for (int slot : emptyUseSlot[i]) {
                 int n = Math.min(count, itemAmountWrappers[i].getItemStack().getMaxStackSize());
                 inventory.setItem(slot, itemAmountWrappers[i].getItemStack());
                 inventory.getItem(slot).setAmount(n);
@@ -462,7 +462,7 @@ public class InventoryUtil {
      *      or maybe 2 * 12 = 24 cobblestones will be pushed to the inventory, and it will return 2
      */
     public static int tryPushItem(@Nonnull Inventory inventory, int[] slots, int amount, @Nonnull ItemAmountWrapper... itemAmountWrappers) {
-        if(itemAmountWrappers.length == 0) {
+        if (itemAmountWrappers.length == 0) {
             return 0;
         }
         int[] totalAmount = new int[itemAmountWrappers.length];
@@ -470,7 +470,7 @@ public class InventoryUtil {
         int[] matchAmount = new int[itemAmountWrappers.length];
         List<Integer>[] pushSlot = new List[itemAmountWrappers.length];
         List<Integer>[] emptyUseSlot = new List[itemAmountWrappers.length];
-        for(int i = 0; i < totalAmount.length; i++) {
+        for (int i = 0; i < totalAmount.length; i++) {
             totalAmount[i] = 0;
             maxMatchAmount[i] = amount * itemAmountWrappers[i].getAmount();
             matchAmount[i] = 0;
@@ -480,14 +480,14 @@ public class InventoryUtil {
 
         ItemWrapper itemWrapper = new ItemWrapper();
         List<Integer> emptySlotList = new ArrayList<>();
-        for(int slot : slots) {
+        for (int slot : slots) {
             ItemStack itemStack = inventory.getItem(slot);
-            if(ItemStackUtil.isItemNull(itemStack)) {
+            if (ItemStackUtil.isItemNull(itemStack)) {
                 emptySlotList.add(slot);
-            } else if(itemStack.getAmount() < itemStack.getMaxStackSize()) {
+            } else if (itemStack.getAmount() < itemStack.getMaxStackSize()) {
                 itemWrapper.newWrap(itemStack);
-                for(int i = 0; i < itemAmountWrappers.length; i++) {
-                    if(totalAmount[i] < maxMatchAmount[i] && ItemStackUtil.isItemSimilar(itemWrapper, itemAmountWrappers[i])) {
+                for (int i = 0; i < itemAmountWrappers.length; i++) {
+                    if (totalAmount[i] < maxMatchAmount[i] && ItemStackUtil.isItemSimilar(itemWrapper, itemAmountWrappers[i])) {
                         pushSlot[i].add(slot);
                         totalAmount[i] = Math.min(totalAmount[i] + itemStack.getMaxStackSize() - itemStack.getAmount(), maxMatchAmount[i]);
                         matchAmount[i] = totalAmount[i] / itemAmountWrappers[i].getAmount();
@@ -500,22 +500,22 @@ public class InventoryUtil {
         int minMatch;
         int minMatchP;
         boolean allFull;
-        for(int slot : emptySlotList) {
+        for (int slot : emptySlotList) {
             minMatchP = 0;
             minMatch = matchAmount[0];
             allFull = true;
 
-            for(int i = 0; i < totalAmount.length; i++) {
-                if(matchAmount[i] < amount) {
+            for (int i = 0; i < totalAmount.length; i++) {
+                if (matchAmount[i] < amount) {
                     allFull = false;
-                    if(minMatch > matchAmount[i]) {
+                    if (minMatch > matchAmount[i]) {
                         minMatchP = i;
                         minMatch = matchAmount[i];
                     }
                 }
             }
 
-            if(allFull) {
+            if (allFull) {
                 break;
             } else {
                 emptyUseSlot[minMatchP].add(slot);
@@ -525,21 +525,21 @@ public class InventoryUtil {
         }
 
         minMatch = matchAmount[0];
-        for(int i = 1; i < totalAmount.length; i++) {
+        for (int i = 1; i < totalAmount.length; i++) {
             minMatch = Math.min(minMatch, matchAmount[i]);
         }
 
         int count;
-        for(int i = 0; i < totalAmount.length; i++) {
+        for (int i = 0; i < totalAmount.length; i++) {
             count =  minMatch * itemAmountWrappers[i].getAmount();
-            for(int slot : pushSlot[i]) {
+            for (int slot : pushSlot[i]) {
                 ItemStack itemStack = inventory.getItem(slot);
                 int n = Math.min(count, itemStack.getMaxStackSize() - itemStack.getAmount());
                 itemStack.setAmount(itemStack.getAmount() + n);
                 count -= n;
             }
 
-            for(int slot : emptyUseSlot[i]) {
+            for (int slot : emptyUseSlot[i]) {
                 int n = Math.min(count, itemAmountWrappers[i].getItemStack().getMaxStackSize());
                 inventory.setItem(slot, itemAmountWrappers[i].getItemStack());
                 inventory.getItem(slot).setAmount(n);
@@ -554,7 +554,7 @@ public class InventoryUtil {
      * @return how many items truly dropped in stack
      */
     public static int dropItems(@Nonnull Inventory inventory, @Nonnull Location location, int... slots) {
-        return dropItems(inventory, location.getWorld(), location, slots);
+        return InventoryUtil.dropItems(inventory, location.getWorld(), location, slots);
     }
 
     /**
@@ -562,9 +562,9 @@ public class InventoryUtil {
      */
     public static int dropItems(@Nonnull Inventory inventory, @Nonnull World world, @Nonnull Location location, int... slots) {
         int amount = 0;
-        for(int slot : slots) {
+        for (int slot : slots) {
             ItemStack itemStack = inventory.getItem(slot);
-            if(itemStack != null) {
+            if (itemStack != null) {
                 inventory.clear(slot);
                 world.dropItemNaturally(location, itemStack);
                 amount++;
@@ -575,7 +575,7 @@ public class InventoryUtil {
 
     public static int closeInv(@Nonnull Inventory inventory) {
         List<HumanEntity> humanEntityList = new ArrayList<>(inventory.getViewers());
-        for(HumanEntity humanEntity : humanEntityList) {
+        for (HumanEntity humanEntity : humanEntityList) {
             humanEntity.closeInventory();
         }
         return humanEntityList.size();
