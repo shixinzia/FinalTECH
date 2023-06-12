@@ -197,6 +197,7 @@ public final class MachineUtil {
             }
 
             ItemStackUtil.clearNBT(itemMeta);
+
             if(FinalTech.getLanguageManager().containPath("option", "ICON", "descriptive-item", "minecraft")) {
                 ItemStackUtil.addLoresToLast(itemMeta, FinalTech.getLanguageManager().getString("option", "ICON", "descriptive-item", "minecraft"));
             } else {
@@ -220,12 +221,15 @@ public final class MachineUtil {
 
         ItemMeta itemMeta = itemStack.getItemMeta();
         ItemStackUtil.clearNBT(itemMeta);
-        if(FinalTech.getLanguageManager().containPath("option", "ICON", "descriptive-item", slimefunItem.getAddon().getName())) {
-            ItemStackUtil.addLoresToLast(itemMeta, FinalTech.getLanguageManager().getString("option", "ICON", "descriptive-item", slimefunItem.getAddon().getName()));
-        } else {
-            String lore = FinalTech.getLanguageManager().replaceString(FinalTech.getLanguageString("option", "ICON", "descriptive-item", "default"),
-                    slimefunItem.getAddon().getName());
-            ItemStackUtil.addLoresToLast(itemMeta, lore);
+
+        if (ItemState.ENABLED.equals(slimefunItem.getState())) {
+            if (FinalTech.getLanguageManager().containPath("option", "ICON", "descriptive-item", slimefunItem.getAddon().getName())) {
+                ItemStackUtil.addLoresToLast(itemMeta, FinalTech.getLanguageManager().getString("option", "ICON", "descriptive-item", slimefunItem.getAddon().getName()));
+            } else {
+                String lore = FinalTech.getLanguageManager().replaceString(FinalTech.getLanguageString("option", "ICON", "descriptive-item", "default"),
+                        slimefunItem.getAddon().getName());
+                ItemStackUtil.addLoresToLast(itemMeta, lore);
+            }
         }
         itemStack.setItemMeta(itemMeta);
 
