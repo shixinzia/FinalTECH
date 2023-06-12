@@ -9,13 +9,13 @@ import io.github.thebusybiscuit.slimefun4.core.guide.SlimefunGuide;
 import io.github.thebusybiscuit.slimefun4.core.guide.SlimefunGuideMode;
 import io.taraxacum.finaltech.FinalTech;
 import io.taraxacum.finaltech.util.MachineUtil;
+import io.taraxacum.libs.plugin.dto.SimpleVirtualInventory;
 import io.taraxacum.libs.slimefun.dto.ItemValueTable;
 import io.taraxacum.libs.slimefun.interfaces.ShowInfoItem;
 import io.taraxacum.finaltech.core.option.Icon;
-import io.taraxacum.finaltech.core.menu.common.SlimefunItemBigRecipeMenu;
-import io.taraxacum.finaltech.core.menu.common.SlimefunItemSmallRecipeMenu;
+import io.taraxacum.finaltech.core.inventory.common.SlimefunItemBigRecipeMenu;
+import io.taraxacum.finaltech.core.inventory.common.SlimefunItemSmallRecipeMenu;
 import io.taraxacum.libs.plugin.util.ItemStackUtil;
-import me.mrCookieSlime.CSCoreLibPlugin.general.Inventory.ChestMenu;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
@@ -28,7 +28,6 @@ import java.util.Map;
 
 /**
  * @author Final_ROOT
- * @since 2.0
  */
 // TODO: abstract as lib
 public class RecipeItemGroup extends FlexItemGroup {
@@ -60,9 +59,9 @@ public class RecipeItemGroup extends FlexItemGroup {
     @Override
     public void open(@Nonnull Player player, @Nonnull PlayerProfile playerProfile, @Nonnull SlimefunGuideMode slimefunGuideMode) {
         playerProfile.getGuideHistory().add(this, this.page);
-        ChestMenu chestMenu = this.generateMenu(player, playerProfile, slimefunGuideMode);
-        if (chestMenu != null) {
-            chestMenu.open(player);
+        SimpleVirtualInventory simpleVirtualInventory = this.generateMenu(player, playerProfile, slimefunGuideMode);
+        if (simpleVirtualInventory != null) {
+            simpleVirtualInventory.open(player);
         } else {
             GuideHistory guideHistory = playerProfile.getGuideHistory();
             SlimefunGuide.openMainMenu(playerProfile, slimefunGuideMode, guideHistory.getMainMenuPage());
@@ -70,7 +69,7 @@ public class RecipeItemGroup extends FlexItemGroup {
     }
 
     @Nullable
-    private ChestMenu generateMenu(@Nonnull Player player, @Nonnull PlayerProfile playerProfile, @Nonnull SlimefunGuideMode slimefunGuideMode) {
+    private SimpleVirtualInventory generateMenu(@Nonnull Player player, @Nonnull PlayerProfile playerProfile, @Nonnull SlimefunGuideMode slimefunGuideMode) {
         SlimefunItem slimefunItem = SlimefunItem.getById(this.id);
         if (slimefunItem != null) {
             if (slimefunItem.getRecipe().length <= SMALL_LIMIT) {

@@ -11,14 +11,16 @@ import io.github.thebusybiscuit.slimefun4.core.guide.SlimefunGuide;
 import io.github.thebusybiscuit.slimefun4.core.guide.SlimefunGuideMode;
 import io.github.thebusybiscuit.slimefun4.implementation.Slimefun;
 import io.github.thebusybiscuit.slimefun4.utils.ChestMenuUtils;
+import io.taraxacum.common.util.JavaUtil;
 import io.taraxacum.finaltech.FinalTech;
 import io.taraxacum.finaltech.core.interfaces.SpecialResearch;
 import io.taraxacum.finaltech.core.option.Icon;
 import io.taraxacum.finaltech.util.MachineUtil;
+import io.taraxacum.libs.plugin.dto.SimpleVirtualInventory;
+import io.taraxacum.libs.plugin.interfaces.VirtualInventory;
 import io.taraxacum.libs.plugin.util.ItemStackUtil;
 import io.taraxacum.libs.slimefun.dto.RecipeTypeRegistry;
 import io.taraxacum.libs.slimefun.util.GuideUtil;
-import me.mrCookieSlime.CSCoreLibPlugin.general.Inventory.ChestMenu;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Sound;
@@ -36,20 +38,21 @@ import java.util.Map;
  * @author Final_ROOT
  */
 public class TypeItemGroup extends FlexItemGroup {
-    private static final int BACK_SLOT = 1;
-    private static final int PREVIOUS_SLOT = 3;
-    private static final int NEXT_SLOT = 5;
-    private static final int ICON_SLOT = 7;
-    private static final int[] BORDER = new int[] {0, 2, 4, 6, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17};
-    private static final int[] MAIN_CONTENT = new int[] {
+    private static final JavaPlugin JAVA_PLUGIN = FinalTech.getInstance();
+
+    private final int backSlot = 1;
+    private final int previousSlot = 3;
+    private final int nextSlot = 5;
+    private final int iconSlot = 7;
+    private final int[] border = new int[] {0, 2, 4, 6, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17};
+    private final int[] mainContentSlot = new int[] {
             18, 19, 20, 21, 22, 23, 24, 25, 26,
             27, 28, 29, 30, 31, 32, 33, 34, 35,
             36, 37, 38, 39, 40, 41, 42, 43, 44,
             45, 46, 47, 48, 49, 50, 51, 52, 53};
 
-    private static final JavaPlugin JAVA_PLUGIN = FinalTech.getInstance();
 
-    private static final Map<RecipeType, TypeItemGroup> RECIPE_TYPE_MAP = new LinkedHashMap<>();
+    private final Map<RecipeType, TypeItemGroup> recipeTypeMap = new LinkedHashMap<>();
 
     private final int page;
     private Map<Integer, TypeItemGroup> pageMap = new LinkedHashMap<>();
@@ -70,7 +73,7 @@ public class TypeItemGroup extends FlexItemGroup {
         }
 
         this.pageMap.put(1, this);
-        RECIPE_TYPE_MAP.put(recipeType, this);
+        recipeTypeMap.put(recipeType, this);
     }
 
     protected TypeItemGroup(NamespacedKey key, RecipeType recipeType, int page) {
@@ -104,62 +107,69 @@ public class TypeItemGroup extends FlexItemGroup {
     }
 
     @Nonnull
-    private ChestMenu generateMenu(@Nonnull Player player, @Nonnull PlayerProfile playerProfile, @Nonnull SlimefunGuideMode slimefunGuideMode) {
-        ChestMenu chestMenu = new ChestMenu(ItemStackUtil.getItemName(super.item));
+    private VirtualInventory generateMenu(@Nonnull Player player, @Nonnull PlayerProfile playerProfile, @Nonnull SlimefunGuideMode slimefunGuideMode) {
+        int size = 54;
+        SimpleVirtualInventory virtualInventory = new SimpleVirtualInventory(size, ItemStackUtil.getItemName(super.item));
+        virtualInventory.setAllowClickPlayerInventory(false);
 
-        chestMenu.setEmptySlotsClickable(false);
-        chestMenu.addMenuOpeningHandler(pl -> pl.playSound(pl.getLocation(), Sound.ITEM_BOOK_PAGE_TURN, 1, 1));
+        for (int slot : JavaUtil.generateInts(size)) {
+            virtualInventory.setOnClick(slot, virtualInventory.CANCEL_CLICK_CONSUMER);
+        }
 
-        chestMenu.addItem(BACK_SLOT, ChestMenuUtils.getBackButton(player));
-        chestMenu.addMenuClickHandler(BACK_SLOT, (pl, s, is, action) -> {
+        virtualInventory.setOnOpen(inventoryOpenEvent -> player.playSound(player.getLocation(), Sound.ITEM_BOOK_PAGE_TURN, 1, 1));
+
+        virtualInventory.getInventory().setItem(this.backSlot, ChestMenuUtils.getBackButton(player));
+        virtualInventory.setOnClick(this.backSlot, inventoryClickEvent -> {
+            inventoryClickEvent.setCancelled(true);
+
             GuideHistory guideHistory = playerProfile.getGuideHistory();
-            if (action.isShiftClicked()) {
+            if (inventoryClickEvent.getClick().isShiftClick()) {
                 SlimefunGuide.openMainMenu(playerProfile, slimefunGuideMode, guideHistory.getMainMenuPage());
             } else {
                 guideHistory.goBack(Slimefun.getRegistry().getSlimefunGuide(SlimefunGuideMode.SURVIVAL_MODE));
             }
-            return false;
         });
 
-        chestMenu.addItem(PREVIOUS_SLOT, ChestMenuUtils.getPreviousButton(player, this.page, (this.slimefunItemList.size() - 1) / MAIN_CONTENT.length + 1));
-        chestMenu.addMenuClickHandler(PREVIOUS_SLOT, (p, slot, item, action) -> {
+        virtualInventory.getInventory().setItem(this.previousSlot, ChestMenuUtils.getPreviousButton(player, this.page, (this.slimefunItemList.size() - 1) / this.mainContentSlot.length + 1));
+        virtualInventory.setOnClick(this.previousSlot, inventoryClickEvent -> {
+            inventoryClickEvent.setCancelled(true);
+
             GuideUtil.removeLastEntry(playerProfile.getGuideHistory());
             TypeItemGroup craftItemGroup = this.getByPage(Math.max(this.page - 1, 1));
             craftItemGroup.open(player, playerProfile, slimefunGuideMode);
-            return false;
         });
 
-        chestMenu.addItem(NEXT_SLOT, ChestMenuUtils.getNextButton(player, this.page, (this.slimefunItemList.size() - 1) / MAIN_CONTENT.length + 1));
-        chestMenu.addMenuClickHandler(NEXT_SLOT, (p, slot, item, action) -> {
+        virtualInventory.getInventory().setItem(this.nextSlot, ChestMenuUtils.getNextButton(player, this.page, (this.slimefunItemList.size() - 1) / this.mainContentSlot.length + 1));
+        virtualInventory.setOnClick(this.nextSlot, inventoryClickEvent -> {
+            inventoryClickEvent.setCancelled(true);
+
             GuideUtil.removeLastEntry(playerProfile.getGuideHistory());
-            TypeItemGroup craftItemGroup = this.getByPage(Math.min(this.page + 1, (this.slimefunItemList.size() - 1) / MAIN_CONTENT.length + 1));
+            TypeItemGroup craftItemGroup = this.getByPage(Math.min(this.page + 1, (this.slimefunItemList.size() - 1) / this.mainContentSlot.length + 1));
             craftItemGroup.open(player, playerProfile, slimefunGuideMode);
-            return false;
         });
 
-        chestMenu.addItem(ICON_SLOT, ItemStackUtil.cloneWithoutNBT(super.item));
-        chestMenu.addMenuClickHandler(ICON_SLOT, ChestMenuUtils.getEmptyClickHandler());
+        virtualInventory.getInventory().setItem(this.iconSlot, ItemStackUtil.cloneWithoutNBT(super.item));
 
-        for (int slot : BORDER) {
-            chestMenu.addItem(slot, ChestMenuUtils.getBackground());
-            chestMenu.addMenuClickHandler(slot, ChestMenuUtils.getEmptyClickHandler());
+        for (int slot : this.border) {
+            virtualInventory.getInventory().setItem(slot, ChestMenuUtils.getBackground());
         }
 
-        for (int i = 0; i < MAIN_CONTENT.length; i++) {
-            int index = i + this.page * MAIN_CONTENT.length - MAIN_CONTENT.length;
+        for (int i = 0; i < this.mainContentSlot.length; i++) {
+            int index = i + this.page * this.mainContentSlot.length - this.mainContentSlot.length;
             if (index < this.slimefunItemList.size()) {
                 SlimefunItem slimefunItem = this.slimefunItemList.get(index);
                 Research research = slimefunItem.getResearch();
                 if (playerProfile.hasUnlocked(research)) {
                     ItemStack itemStack = MachineUtil.cloneAsDescriptiveItem(slimefunItem);
                     ItemStackUtil.addLoreToFirst(itemStack, "§7" + slimefunItem.getId());
-                    chestMenu.addItem(MAIN_CONTENT[i], itemStack);
-                    chestMenu.addMenuClickHandler(MAIN_CONTENT[i], (p, slot, item, action) -> {
+                    virtualInventory.getInventory().setItem(this.mainContentSlot[i], itemStack);
+                    virtualInventory.setOnClick(this.mainContentSlot[i], inventoryClickEvent -> {
+                        inventoryClickEvent.setCancelled(true);
+
                         RecipeItemGroup recipeItemGroup = RecipeItemGroup.getByItemStack(player, playerProfile, slimefunGuideMode, slimefunItem.getItem());
                         if (recipeItemGroup != null) {
                             Bukkit.getScheduler().runTask(JAVA_PLUGIN, () -> recipeItemGroup.open(player, playerProfile, slimefunGuideMode));
                         }
-                        return false;
                     });
                 } else {
                     ItemStack icon = ItemStackUtil.cloneItem(ChestMenuUtils.getNotResearchedItem());
@@ -174,8 +184,10 @@ public class TypeItemGroup extends FlexItemGroup {
                         stringList.add("§7Cost: §b" + research.getCost() + " Level(s)");
                     }
                     ItemStackUtil.setLore(icon, stringList);
-                    chestMenu.addItem(MAIN_CONTENT[i], icon);
-                    chestMenu.addMenuClickHandler(MAIN_CONTENT[i], (p, slot, item, action) -> {
+                    virtualInventory.getInventory().setItem(this.mainContentSlot[i], icon);
+                    virtualInventory.setOnClick(this.mainContentSlot[i], inventoryClickEvent -> {
+                        inventoryClickEvent.setCancelled(true);
+
                         PlayerPreResearchEvent event = new PlayerPreResearchEvent(player, research, slimefunItem);
                         Bukkit.getPluginManager().callEvent(event);
 
@@ -190,13 +202,12 @@ public class TypeItemGroup extends FlexItemGroup {
                             GuideUtil.removeLastEntry(playerProfile.getGuideHistory());
                             this.open(player, playerProfile, slimefunGuideMode);
                         }
-                        return false;
                     });
                 }
             }
         }
 
-        return chestMenu;
+        return virtualInventory;
     }
 
     @Nonnull
