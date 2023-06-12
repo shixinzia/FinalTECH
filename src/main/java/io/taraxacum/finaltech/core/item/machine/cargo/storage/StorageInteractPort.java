@@ -117,7 +117,7 @@ public class StorageInteractPort extends AbstractCargo implements RecipeItem {
             ItemWrapper stringItem = stringItemCardCache.getTemplateStringItem();
 
             int pushCount = 0;
-            if (canOutput && stringItemCardCache.getCardItem().getAmount() == 1 && stringItemCardCache.storedItem()) {
+            if (canOutput && stringItemCardCache.getCardItem().getAmount() == 1 && stringItemCardCache.storeItem()) {
                 pushItemAmount--;
                 pushCount = StringItemUtil.pullItemFromCard(stringItemCardCache, blockInventory, this.getOutputSlot());
                 if (pushCount > 0) {
@@ -136,8 +136,8 @@ public class StorageInteractPort extends AbstractCargo implements RecipeItem {
                     canInput = !InventoryUtil.isEmpty(blockInventory, this.getInputSlot());
                 }
             }
-            if (pushCount - stackCount != 0 || stringItem != stringItemCardCache.getTemplateStringItem()) {
-                FinalTechItems.STORAGE_CARD.updateLore(itemMeta, stringItemCardCache.storedItem() ? stringItemCardCache.getTemplateStringItem().getItemStack() : null, stringItemCardCache.getAmount());
+            if (pushCount != stackCount || stringItem != stringItemCardCache.getTemplateStringItem()) {
+                FinalTechItems.STORAGE_CARD.updateLore(itemMeta, stringItemCardCache.storeItem() ? stringItemCardCache.getTemplateStringItem().getItemStack() : null, stringItemCardCache.getAmount());
                 stringItemCardCache.updateCardItemMeta();
             }
         }

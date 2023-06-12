@@ -91,7 +91,7 @@ public class StringItemCardCache {
 
     public void updateCardItem() {
         PersistentDataContainer persistentDataContainer = this.cardItemMeta.getPersistentDataContainer();
-        if(this.storedItem()) {
+        if(this.storeItem()) {
             persistentDataContainer.set(StringItemUtil.ITEM_KEY, PersistentDataType.STRING, ItemStackUtil.itemStackToString(this.templateStringItem.getItemStack()));
             persistentDataContainer.set(StringItemUtil.AMOUNT_KEY, PersistentDataType.STRING, amount);
         } else {
@@ -103,7 +103,7 @@ public class StringItemCardCache {
 
     public void updateAmountCardItem() {
         PersistentDataContainer persistentDataContainer = this.cardItemMeta.getPersistentDataContainer();
-        if(this.storedItem()) {
+        if(this.storeItem()) {
             persistentDataContainer.set(StringItemUtil.AMOUNT_KEY, PersistentDataType.STRING, amount);
         } else {
             persistentDataContainer.remove(StringItemUtil.AMOUNT_KEY);
@@ -115,7 +115,7 @@ public class StringItemCardCache {
         this.cardItem.setItemMeta(this.cardItemMeta);
     }
 
-    public boolean storedItem() {
+    public boolean storeItem() {
         return this.amount != null && this.templateStringItem != null;
     }
 
