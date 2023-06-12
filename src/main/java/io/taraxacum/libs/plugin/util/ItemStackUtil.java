@@ -881,7 +881,10 @@ public final class ItemStackUtil {
     public static ItemStack newItemStack(@Nonnull Material material, @Nonnull String name, int amount, @Nonnull String... lores) {
         ItemStack itemStack = new ItemStack(material);
         ItemMeta itemMeta = itemStack.getItemMeta();
-        if(itemMeta != null) {
+        if (itemMeta == null) {
+            itemMeta = Bukkit.getItemFactory().getItemMeta(itemStack.getType());
+        }
+        if (itemMeta != null) {
             itemMeta.setDisplayName(name);
             itemMeta.setLore(Arrays.stream(lores).toList());
             itemStack.setItemMeta(itemMeta);
@@ -894,6 +897,19 @@ public final class ItemStackUtil {
     @Nonnull
     public static ItemStack newItemStack(@Nonnull Material material, @Nonnull String name, @Nonnull String... lores) {
         return ItemStackUtil.newItemStack(material, name, 1, lores);
+    }
+
+    public static ItemStack newItemStack(@Nonnull ItemStack itemStack, @Nonnull String name, @Nonnull String... lore) {
+        ItemStack result = ItemStackUtil.cloneItem(itemStack);
+        if (itemStack.hasItemMeta()) {
+            ItemMeta itemMeta = result.getItemMeta();
+            if (itemMeta != null) {
+                itemMeta.setDisplayName(name);
+                itemMeta.setLore(Arrays.stream(lore).toList());
+            }
+        }
+
+        return result;
     }
 
     /**
@@ -914,9 +930,10 @@ public final class ItemStackUtil {
         YamlConfiguration yamlConfiguration = new YamlConfiguration();
         try {
             yamlConfiguration.loadFromString(local);
+            return yamlConfiguration.getItemStack("item");
         } catch (InvalidConfigurationException e) {
             e.printStackTrace();
+            return null;
         }
-        return yamlConfiguration.getItemStack("item");
     }
 }
