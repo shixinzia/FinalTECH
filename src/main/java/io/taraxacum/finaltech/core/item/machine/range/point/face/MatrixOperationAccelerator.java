@@ -13,8 +13,8 @@ import io.github.thebusybiscuit.slimefun4.implementation.Slimefun;
 import io.taraxacum.finaltech.FinalTech;
 import io.taraxacum.finaltech.core.interfaces.LocationMachine;
 import io.taraxacum.finaltech.core.interfaces.RecipeItem;
-import io.taraxacum.finaltech.core.menu.AbstractMachineMenu;
-import io.taraxacum.finaltech.core.menu.unit.VoidMenu;
+import io.taraxacum.finaltech.core.inventory.AbstractMachineInventory;
+import io.taraxacum.finaltech.core.inventory.unit.VoidInventory;
 import io.taraxacum.finaltech.util.ConfigUtil;
 import io.taraxacum.finaltech.util.MachineUtil;
 import io.taraxacum.finaltech.util.BlockTickerUtil;
@@ -27,6 +27,7 @@ import org.bukkit.block.BlockFace;
 import org.bukkit.inventory.ItemStack;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -38,6 +39,12 @@ public class MatrixOperationAccelerator extends AbstractFaceMachine implements R
 
     public MatrixOperationAccelerator(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
         super(itemGroup, item, recipeType, recipe);
+    }
+
+    @Nullable
+    @Override
+    protected AbstractMachineInventory setMachineInventory() {
+        return new VoidInventory(this);
     }
 
     @Nonnull
@@ -52,19 +59,13 @@ public class MatrixOperationAccelerator extends AbstractFaceMachine implements R
         return MachineUtil.simpleBlockBreakerHandler(FinalTech.getLocationDataService(), this);
     }
 
-    @Nonnull
-    @Override
-    protected AbstractMachineMenu setMachineMenu() {
-        return new VoidMenu(this);
-    }
-
     @Override
     protected void tick(@Nonnull Block block, @Nonnull SlimefunItem slimefunItem, @Nonnull LocationData locationData) {
         this.pointFunction(block, 1, location -> {
             LocationData tempLocationData = FinalTech.getLocationDataService().getLocationData(location);
             if(tempLocationData != null
                     && !this.notAllowedId.contains(LocationDataUtil.getId(FinalTech.getLocationDataService(), tempLocationData))
-                    && LocationDataUtil.getSlimefunItem(FinalTech.getLocationDataService(), tempLocationData) instanceof MachineProcessHolder machineProcessHolder) {
+                    && LocationDataUtil.getSlimefunItem(FinalTech.getLocationDataService(), tempLocationData) instanceof MachineProcessHolder<?> machineProcessHolder) {
                 MachineProcessor<?> machineProcessor = machineProcessHolder.getMachineProcessor();
                 Runnable runnable = () -> {
                     MachineOperation operation = machineProcessor.getOperation(location);

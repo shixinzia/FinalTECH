@@ -16,8 +16,8 @@ import io.taraxacum.finaltech.FinalTech;
 import io.taraxacum.finaltech.core.interfaces.LocationMachine;
 import io.taraxacum.finaltech.core.interfaces.MenuUpdater;
 import io.taraxacum.finaltech.core.interfaces.RecipeItem;
-import io.taraxacum.finaltech.core.menu.AbstractMachineMenu;
-import io.taraxacum.finaltech.core.menu.unit.StatusL2Menu;
+import io.taraxacum.finaltech.core.inventory.AbstractMachineInventory;
+import io.taraxacum.finaltech.core.inventory.unit.StatusL2Inventory;
 import io.taraxacum.finaltech.util.BlockTickerUtil;
 import io.taraxacum.finaltech.util.MachineUtil;
 import io.taraxacum.finaltech.util.RecipeUtil;
@@ -32,14 +32,25 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.Set;
 
 /**
  * @author Final_ROOT
  */
 public abstract class AbstractOperationAccelerator extends AbstractFaceMachine implements RecipeItem, EnergyNetComponent, MenuUpdater, LocationMachine {
+    private int statusSlot;
+
     public AbstractOperationAccelerator(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
         super(itemGroup, item, recipeType, recipe);
+    }
+
+    @Nullable
+    @Override
+    protected AbstractMachineInventory setMachineInventory() {
+        StatusL2Inventory statusL2Inventory = new StatusL2Inventory(this);
+        this.statusSlot = statusL2Inventory.statusSlot;
+        return statusL2Inventory;
     }
 
     @Nonnull
@@ -54,24 +65,19 @@ public abstract class AbstractOperationAccelerator extends AbstractFaceMachine i
         return MachineUtil.simpleBlockBreakerHandler(FinalTech.getLocationDataService(), this);
     }
 
-    @Nonnull
-    @Override
-    protected AbstractMachineMenu setMachineMenu() {
-        return new StatusL2Menu(this);
-    }
-
     @Override
     protected void tick(@Nonnull Block block, @Nonnull SlimefunItem slimefunItem, @Nonnull LocationData locationData) {
         Inventory inventory = FinalTech.getLocationDataService().getInventory(locationData);
         if(inventory == null) {
             return;
         }
+
         boolean hasViewer = !inventory.getViewers().isEmpty();
-        ItemStack item = inventory.getItem(this.getInputSlot()[0]);
 
         int amount;
-        if(ItemStackUtil.isItemSimilar(item, this.getItem())) {
-            amount = item.getAmount();
+        ItemStack itemStack = inventory.getItem(this.getInputSlot()[0]);
+        if(ItemStackUtil.isItemSimilar(itemStack, this.getItem())) {
+            amount = itemStack.getAmount();
         } else {
             amount = 1;
         }
@@ -83,6 +89,7 @@ public abstract class AbstractOperationAccelerator extends AbstractFaceMachine i
                     && LocationDataUtil.getSlimefunItem(FinalTech.getLocationDataService(), tempLocationData) instanceof MachineProcessHolder<?> machineProcessHolder
                     && LocationDataUtil.getSlimefunItem(FinalTech.getLocationDataService(), tempLocationData) instanceof EnergyNetComponent energyNetComponent) {
                 MachineProcessor<?> machineProcessor = machineProcessHolder.getMachineProcessor();
+
                 Runnable runnable = () -> {
                     int energy = Integer.parseInt(EnergyUtil.getCharge(FinalTech.getLocationDataService(), locationData));
                     int time = 0;
@@ -91,17 +98,17 @@ public abstract class AbstractOperationAccelerator extends AbstractFaceMachine i
                         time = Math.min(Math.min(amount * this.getBaseEfficiency() + FinalTech.getRandom().nextInt(1 + amount * this.getRandomEfficiency()), energy / energyNetComponent.getCapacity()), operation.getRemainingTicks());
                         if(time > 0) {
                             operation.addProgress(Math.min(time, operation.getRemainingTicks()));
-                            EnergyUtil.setCharge(FinalTech.getLocationDataService(), locationData, String.valueOf(Math.max(0, energy - time * energyNetComponent.getCapacity())));
+                            energy = Math.max(0, energy - time * energyNetComponent.getCapacity());
+                            EnergyUtil.setCharge(FinalTech.getLocationDataService(), locationData, String.valueOf(energy));
                         }
                     }
 
                     if(hasViewer) {
-                        this.updateInv(inventory, StatusL2Menu.STATUS_SLOT, this,
+                        this.updateInv(inventory, this.statusSlot, this,
                                 String.valueOf(energy),
                                 String.valueOf(time));
                     }
                 };
-
                 BlockTickerUtil.runTask(FinalTech.getLocationRunnableFactory(), FinalTech.isAsyncSlimefunItem(LocationDataUtil.getId(FinalTech.getLocationDataService(), tempLocationData)), runnable, () -> new Location[]{location, block.getLocation()});
                 return 1;
             }
@@ -109,7 +116,7 @@ public abstract class AbstractOperationAccelerator extends AbstractFaceMachine i
         });
 
         if(count == 0 && hasViewer) {
-            this.updateInv(inventory, StatusL2Menu.STATUS_SLOT, this,
+            this.updateInv(inventory, this.statusSlot, this,
                     EnergyUtil.getCharge(FinalTech.getLocationDataService(), locationData),
                     "0");
         }
@@ -150,6 +157,7 @@ public abstract class AbstractOperationAccelerator extends AbstractFaceMachine i
         return new Location[] {this.getTargetLocation(sourceLocation, 1)};
     }
 
+    @Nonnull
     abstract Set<String> getNotAllowedId();
 
     abstract int getBaseEfficiency();
