@@ -9,8 +9,8 @@ import io.github.thebusybiscuit.slimefun4.core.handlers.BlockPlaceHandler;
 import io.taraxacum.finaltech.FinalTech;
 import io.taraxacum.finaltech.core.interfaces.MenuUpdater;
 import io.taraxacum.finaltech.core.interfaces.RecipeItem;
-import io.taraxacum.finaltech.core.menu.AbstractMachineMenu;
-import io.taraxacum.finaltech.core.menu.unit.StatusL2Menu;
+import io.taraxacum.finaltech.core.inventory.AbstractMachineInventory;
+import io.taraxacum.finaltech.core.inventory.unit.StatusL2Inventory;
 import io.taraxacum.libs.plugin.dto.LocationData;
 import io.taraxacum.libs.plugin.util.ItemStackUtil;
 import io.taraxacum.finaltech.util.LocationUtil;
@@ -27,6 +27,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.potion.PotionEffect;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 /**
  * @author Final_ROOT
@@ -34,9 +35,18 @@ import javax.annotation.Nonnull;
 public class PurifyLevelTower extends AbstractTower implements RecipeItem, MenuUpdater {
     private final double baseRange = ConfigUtil.getOrDefaultItemSetting(3.2, this, "range-base");
     private final double mulRange = ConfigUtil.getOrDefaultItemSetting(0.2, this, "range-mul");
+    private int statusSlot;
 
     public PurifyLevelTower(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item, @Nonnull RecipeType recipeType, @Nonnull ItemStack[] recipe) {
         super(itemGroup, item, recipeType, recipe);
+    }
+
+    @Nullable
+    @Override
+    protected AbstractMachineInventory setMachineInventory() {
+        StatusL2Inventory statusL2Inventory = new StatusL2Inventory(this);
+        this.statusSlot = statusL2Inventory.statusSlot;
+        return statusL2Inventory;
     }
 
     @Nonnull
@@ -51,28 +61,24 @@ public class PurifyLevelTower extends AbstractTower implements RecipeItem, MenuU
         return MachineUtil.simpleBlockBreakerHandler(FinalTech.getLocationDataService(), this);
     }
 
-    @Nonnull
-    @Override
-    protected AbstractMachineMenu setMachineMenu() {
-        return new StatusL2Menu(this);
-    }
-
     @Override
     protected void tick(@Nonnull Block block, @Nonnull SlimefunItem slimefunItem, @Nonnull LocationData locationData) {
         Inventory inventory = FinalTech.getLocationDataService().getInventory(locationData);
         if(inventory == null) {
             return;
         }
-        Location location = block.getLocation();
-        JavaPlugin javaPlugin = this.getAddon().getJavaPlugin();
 
         double range = this.baseRange;
-        ItemStack itemStack = inventory.getItem(this.getInputSlot()[0]);
-        if (ItemStackUtil.isItemSimilar(itemStack, this.getItem())) {
-            range += itemStack.getAmount() * this.mulRange;
+        for(int slot : this.getInputSlot()) {
+            ItemStack itemStack = inventory.getItem(slot);
+            if (ItemStackUtil.isItemSimilar(itemStack, this.getItem())) {
+                range += itemStack.getAmount() * this.mulRange;
+            }
         }
         final double finalRange = range;
 
+        Location location = block.getLocation();
+        JavaPlugin javaPlugin = this.getAddon().getJavaPlugin();
         javaPlugin.getServer().getScheduler().runTask(javaPlugin, () -> {
             int count = 0;
             for (Entity entity : location.getWorld().getNearbyEntities(LocationUtil.getCenterLocation(block), finalRange, finalRange, finalRange, entity -> entity instanceof LivingEntity)) {
@@ -87,7 +93,7 @@ public class PurifyLevelTower extends AbstractTower implements RecipeItem, MenuU
             }
 
             if (!inventory.getViewers().isEmpty()) {
-                this.updateInv(inventory, StatusL2Menu.STATUS_SLOT, this,
+                this.updateInv(inventory, this.statusSlot, this,
                         String.valueOf(count),
                         String.valueOf(finalRange));
             }
