@@ -5,13 +5,15 @@ import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItem;
 import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItemStack;
 import io.github.thebusybiscuit.slimefun4.api.recipes.RecipeType;
 import io.github.thebusybiscuit.slimefun4.core.handlers.BlockBreakHandler;
+import io.taraxacum.common.util.StringNumberUtil;
 import io.taraxacum.finaltech.FinalTech;
 import io.taraxacum.finaltech.core.enums.LogSourceType;
 import io.taraxacum.finaltech.core.interfaces.MenuUpdater;
 import io.taraxacum.finaltech.core.interfaces.RecipeItem;
-import io.taraxacum.finaltech.core.menu.AbstractMachineMenu;
+import io.taraxacum.finaltech.core.inventory.AbstractMachineInventory;
+import io.taraxacum.finaltech.core.inventory.limit.DustFactoryDirtInventory;
 import io.taraxacum.finaltech.core.operation.DustFactoryOperation;
-import io.taraxacum.finaltech.core.menu.limit.DustFactoryDirtMenu;
+import io.taraxacum.finaltech.util.LocationUtil;
 import io.taraxacum.libs.plugin.dto.LocationData;
 import io.taraxacum.libs.plugin.util.InventoryUtil;
 import io.taraxacum.libs.plugin.util.ItemStackUtil;
@@ -27,20 +29,37 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * @author Final_ROOT
  */
 public class DustFactoryDirt extends AbstractOperationMachine implements RecipeItem, MenuUpdater {
-    public final int baseAmountDifficulty = ConfigUtil.getOrDefaultItemSetting(1024, this, "difficulty", "base", "amount");
-    public final int baseTypeDifficulty = ConfigUtil.getOrDefaultItemSetting(16, this, "difficulty", "base", "type");
-    public final int multiAmountDifficulty = ConfigUtil.getOrDefaultItemSetting(64, this, "difficulty", "multi", "amount");
-    public final int multiTypeDifficulty = ConfigUtil.getOrDefaultItemSetting(1, this, "difficulty", "multi", "type");
-    public final int deviationDifficulty = ConfigUtil.getOrDefaultItemSetting(-4, this, "difficulty", "deviation");
+    private final int baseAmountDifficulty = ConfigUtil.getOrDefaultItemSetting(1024, this, "difficulty", "base", "amount");
+    private final int baseTypeDifficulty = ConfigUtil.getOrDefaultItemSetting(16, this, "difficulty", "base", "type");
+    private final int multiAmountDifficulty = ConfigUtil.getOrDefaultItemSetting(64, this, "difficulty", "multi", "amount");
+    private final int multiTypeDifficulty = ConfigUtil.getOrDefaultItemSetting(1, this, "difficulty", "multi", "type");
+    private final int deviationDifficulty = ConfigUtil.getOrDefaultItemSetting(-4, this, "difficulty", "deviation");
+
+    private final String key = "d";
+    private final int maxDynamicDifficulty = (Integer.MAX_VALUE - this.baseAmountDifficulty) / this.baseTypeDifficulty / 2;
+    private final List<Location> locationList;
+    private int statusSlot;
 
     public DustFactoryDirt(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
         super(itemGroup, item, recipeType, recipe);
+        this.locationList = FinalTech.isAsyncSlimefunItem(this.getId()) ? new ArrayList<>() : new CopyOnWriteArrayList<>();
+    }
+
+    @Nullable
+    @Override
+    protected AbstractMachineInventory setMachineInventory() {
+        DustFactoryDirtInventory dustFactoryDirtInventory = new DustFactoryDirtInventory(this);
+        this.statusSlot = dustFactoryDirtInventory.statusSlot;
+        return dustFactoryDirtInventory;
     }
 
     @Nonnull
@@ -64,12 +83,6 @@ public class DustFactoryDirt extends AbstractOperationMachine implements RecipeI
         };
     }
 
-    @Nonnull
-    @Override
-    protected AbstractMachineMenu setMachineMenu() {
-        return new DustFactoryDirtMenu(this);
-    }
-
     @Override
     protected void tick(@Nonnull Block block, @Nonnull SlimefunItem slimefunItem, @Nonnull LocationData locationData) {
         Inventory inventory = FinalTech.getLocationDataService().getInventory(locationData);
@@ -77,6 +90,8 @@ public class DustFactoryDirt extends AbstractOperationMachine implements RecipeI
             return;
         }
 
+        String dynamicDifficultyStr = FinalTech.getLocationDataService().getLocationData(locationData, this.key);
+        int dynamicDifficulty = dynamicDifficultyStr == null ? 0 : Integer.parseInt(dynamicDifficultyStr);
         DustFactoryOperation operation = (DustFactoryOperation) this.getMachineProcessor().getOperation(block);
 
         for (int slot : this.getInputSlot()) {
@@ -88,9 +103,10 @@ public class DustFactoryDirt extends AbstractOperationMachine implements RecipeI
             if (operation == null) {
                 int amount = this.baseAmountDifficulty;
                 int type = this.baseTypeDifficulty;
-                if(this.deviationDifficulty != 0) {
-                    int deviation = this.deviationDifficulty / Math.abs(this.deviationDifficulty) * FinalTech.getRandom().nextInt(Math.abs(this.deviationDifficulty) + 1);
-                    amount += this.multiAmountDifficulty * (this.deviationDifficulty - deviation);
+                int dynamicDeviation = this.deviationDifficulty + dynamicDifficulty;
+                if(dynamicDeviation != 0) {
+                    int deviation = dynamicDeviation / Math.abs(dynamicDeviation) * FinalTech.getRandom().nextInt(Math.abs(dynamicDeviation) + 1);
+                    amount += this.multiAmountDifficulty * (dynamicDeviation - deviation);
                     type += this.multiTypeDifficulty * deviation;
                 }
 
@@ -125,12 +141,30 @@ public class DustFactoryDirt extends AbstractOperationMachine implements RecipeI
         }
 
         if (!inventory.getViewers().isEmpty()) {
-            this.updateInv(inventory, DustFactoryDirtMenu.STATUS_SLOT, this,
+            this.updateInv(inventory, this.statusSlot, this,
                     String.valueOf(operation.getAmountCount()),
                     String.valueOf(operation.getTypeCount()),
                     String.valueOf(operation.getAmountDifficulty()),
-                    String.valueOf(operation.getTypeDifficulty()));
+                    String.valueOf(operation.getTypeDifficulty()),
+                    String.valueOf(dynamicDifficulty));
         }
+
+        if (this.locationList.size() > 1) {
+            Location anotherLocation = this.locationList.get(FinalTech.getRandom().nextInt(this.locationList.size()));
+            double distance = LocationUtil.getManhattanDistance(locationData.getLocation(), anotherLocation);
+            if (distance > 0 && FinalTech.getRandom().nextDouble(distance * distance) <= this.locationList.size()) {
+                dynamicDifficultyStr = StringNumberUtil.min(StringNumberUtil.add(String.valueOf(dynamicDifficulty)), String.valueOf(this.maxDynamicDifficulty));
+                FinalTech.getLocationDataService().setLocationData(locationData, this.key, dynamicDifficultyStr);
+            }
+        }
+
+        this.locationList.add(locationData.getLocation());
+    }
+
+    @Override
+    protected void uniqueTick() {
+        super.uniqueTick();
+        this.locationList.clear();
     }
 
     @Override
