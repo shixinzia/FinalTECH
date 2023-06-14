@@ -9,8 +9,8 @@ import io.github.thebusybiscuit.slimefun4.core.handlers.BlockPlaceHandler;
 import io.taraxacum.finaltech.FinalTech;
 import io.taraxacum.finaltech.core.interfaces.DigitalItem;
 import io.taraxacum.finaltech.core.interfaces.RecipeItem;
-import io.taraxacum.finaltech.core.menu.AbstractMachineMenu;
-import io.taraxacum.finaltech.core.menu.machine.SimulateClickMachineMenu;
+import io.taraxacum.finaltech.core.inventory.AbstractMachineInventory;
+import io.taraxacum.finaltech.core.inventory.simple.SimulateClickMachineInventory;
 import io.taraxacum.finaltech.util.ConfigUtil;
 import io.taraxacum.finaltech.util.LocationUtil;
 import io.taraxacum.finaltech.util.MachineUtil;
@@ -46,6 +46,12 @@ public class SimulateClickMachine extends AbstractTower implements RecipeItem {
         super(itemGroup, item, recipeType, recipe);
     }
 
+    @Nullable
+    @Override
+    protected AbstractMachineInventory setMachineInventory() {
+        return new SimulateClickMachineInventory(this);
+    }
+
     @Nonnull
     @Override
     protected BlockPlaceHandler onBlockPlace() {
@@ -58,23 +64,15 @@ public class SimulateClickMachine extends AbstractTower implements RecipeItem {
         return MachineUtil.simpleBlockBreakerHandler(FinalTech.getLocationDataService(), this);
     }
 
-    @Nullable
-    @Override
-    protected AbstractMachineMenu setMachineMenu() {
-        return new SimulateClickMachineMenu(this);
-    }
-
     @Override
     protected void tick(@Nonnull Block block, @Nonnull SlimefunItem slimefunItem, @Nonnull LocationData locationData) {
         Inventory inventory = FinalTech.getLocationDataService().getInventory(locationData);
         if(inventory == null) {
             return;
         }
-        Location location = block.getLocation();
 
         ItemStack inputItemStack = inventory.getItem(this.getInputSlot()[0]);
         ItemStack outputItemStack = inventory.getItem(this.getOutputSlot()[0]);
-
         if (ItemStackUtil.isItemNull(inputItemStack) || !ItemStackUtil.isItemNull(outputItemStack)) {
             return;
         }
@@ -86,30 +84,31 @@ public class SimulateClickMachine extends AbstractTower implements RecipeItem {
         }
 
         if(digit > 0) {
+            Location location = block.getLocation();
             location.setY(location.getY() - 1);
             LocationData tempLocationData = FinalTech.getLocationDataService().getLocationData(location);
 
-            if(tempLocationData != null && !this.notAllowedId.contains(LocationDataUtil.getId(FinalTech.getLocationDataService(), tempLocationData))) {
-                if(InventoryUtil.tryPushAllItem(inventory, this.getOutputSlot(), new ItemAmountWrapper(inputItemStack, 1))) {
-                    inputItemStack.setAmount(inputItemStack.getAmount() - 1);
+            if(tempLocationData != null
+                    && !this.notAllowedId.contains(LocationDataUtil.getId(FinalTech.getLocationDataService(), tempLocationData))
+                    && InventoryUtil.tryPushAllItem(inventory, this.getOutputSlot(), new ItemAmountWrapper(inputItemStack, 1))) {
+                inputItemStack.setAmount(inputItemStack.getAmount() - 1);
 
-                    double range = digit * this.rangeRate;
+                double range = digit * this.rangeRate;
 
-                    JavaPlugin javaPlugin = this.getAddon().getJavaPlugin();
-                    javaPlugin.getServer().getScheduler().runTask(javaPlugin, () -> {
-                        if(FinalTech.getLocationDataService() instanceof SlimefunLocationDataService slimefunLocationDataService) {
-                            BlockMenu blockMenu = slimefunLocationDataService.getBlockMenu(location);
-                            if(blockMenu != null) {
-                                Block targetBlock = location.getBlock();
-                                for (Entity entity : location.getWorld().getNearbyEntities(LocationUtil.getCenterLocation(targetBlock), range, range, range, entity -> entity instanceof Player)) {
-                                    if(blockMenu.canOpen(targetBlock, (Player) entity)) {
-                                        blockMenu.open((Player) entity);
-                                    }
+                JavaPlugin javaPlugin = this.getAddon().getJavaPlugin();
+                javaPlugin.getServer().getScheduler().runTask(javaPlugin, () -> {
+                    if(FinalTech.getLocationDataService() instanceof SlimefunLocationDataService slimefunLocationDataService) {
+                        BlockMenu blockMenu = slimefunLocationDataService.getBlockMenu(location);
+                        if(blockMenu != null) {
+                            Block targetBlock = location.getBlock();
+                            for (Entity entity : location.getWorld().getNearbyEntities(LocationUtil.getCenterLocation(targetBlock), range, range, range, entity -> entity instanceof Player)) {
+                                if(blockMenu.canOpen(targetBlock, (Player) entity)) {
+                                    blockMenu.open((Player) entity);
                                 }
                             }
                         }
-                    });
-                }
+                    }
+                });
             }
         }
     }

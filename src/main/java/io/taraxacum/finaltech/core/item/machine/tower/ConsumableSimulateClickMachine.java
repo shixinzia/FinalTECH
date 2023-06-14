@@ -9,8 +9,8 @@ import io.github.thebusybiscuit.slimefun4.core.handlers.BlockPlaceHandler;
 import io.taraxacum.finaltech.FinalTech;
 import io.taraxacum.finaltech.core.interfaces.DigitalItem;
 import io.taraxacum.finaltech.core.interfaces.RecipeItem;
-import io.taraxacum.finaltech.core.menu.AbstractMachineMenu;
-import io.taraxacum.finaltech.core.menu.machine.ConsumableSimulateClickMachineMenu;
+import io.taraxacum.finaltech.core.inventory.AbstractMachineInventory;
+import io.taraxacum.finaltech.core.inventory.simple.ConsumableSimulateClickMachineInventory;
 import io.taraxacum.finaltech.util.ConfigUtil;
 import io.taraxacum.finaltech.util.LocationUtil;
 import io.taraxacum.finaltech.util.MachineUtil;
@@ -44,6 +44,12 @@ public class ConsumableSimulateClickMachine extends AbstractTower implements Rec
         super(itemGroup, item, recipeType, recipe);
     }
 
+    @Nullable
+    @Override
+    protected AbstractMachineInventory setMachineInventory() {
+        return new ConsumableSimulateClickMachineInventory(this);
+    }
+
     @Nonnull
     @Override
     protected BlockPlaceHandler onBlockPlace() {
@@ -56,12 +62,6 @@ public class ConsumableSimulateClickMachine extends AbstractTower implements Rec
         return MachineUtil.simpleBlockBreakerHandler(FinalTech.getLocationDataService(), this);
     }
 
-    @Nullable
-    @Override
-    protected AbstractMachineMenu setMachineMenu() {
-        return new ConsumableSimulateClickMachineMenu(this);
-    }
-
     @Override
     protected void tick(@Nonnull Block block, @Nonnull SlimefunItem slimefunItem, @Nonnull LocationData locationData) {
         Inventory inventory = FinalTech.getLocationDataService().getInventory(locationData);
@@ -69,10 +69,7 @@ public class ConsumableSimulateClickMachine extends AbstractTower implements Rec
             return;
         }
 
-        Location location = locationData.getLocation();
-
         ItemStack itemStack = inventory.getItem(this.getInputSlot()[0]);
-
         if (ItemStackUtil.isItemNull(itemStack)) {
             return;
         }
@@ -84,9 +81,9 @@ public class ConsumableSimulateClickMachine extends AbstractTower implements Rec
         }
 
         if(digit > 0) {
+            Location location = block.getLocation();
             location.setY(location.getY() - 1);
             LocationData tempLocationData = FinalTech.getLocationDataService().getLocationData(location);
-
             if(tempLocationData != null && !this.notAllowedId.contains(LocationDataUtil.getId(FinalTech.getLocationDataService(), tempLocationData))) {
                 itemStack.setAmount(itemStack.getAmount() - 1);
 
