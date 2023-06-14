@@ -10,8 +10,8 @@ import io.taraxacum.common.util.StringNumberUtil;
 import io.taraxacum.finaltech.FinalTech;
 import io.taraxacum.finaltech.core.interfaces.RecipeItem;
 import io.taraxacum.finaltech.core.interfaces.MenuUpdater;
-import io.taraxacum.finaltech.core.menu.AbstractMachineMenu;
-import io.taraxacum.finaltech.core.menu.unit.StatusMenu;
+import io.taraxacum.finaltech.core.inventory.AbstractMachineInventory;
+import io.taraxacum.finaltech.core.inventory.unit.StatusInventory;
 import io.taraxacum.finaltech.setup.FinalTechItemStacks;
 import io.taraxacum.finaltech.setup.FinalTechItems;
 import io.taraxacum.finaltech.util.BlockTickerUtil;
@@ -28,21 +28,25 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 /**
  * @author Final_ROOT
  */
 public class VariableWireCapacitor extends AbstractElectricMachine implements RecipeItem, MenuUpdater {
     private final int capacity = ConfigUtil.getOrDefaultItemSetting(65536, this, "capacity");
+    private int statusSlot;
 
     public VariableWireCapacitor(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
         super(itemGroup, item, recipeType, recipe);
     }
 
-    @Nonnull
+    @Nullable
     @Override
-    protected AbstractMachineMenu setMachineMenu() {
-        return new StatusMenu(this);
+    protected AbstractMachineInventory setMachineInventory() {
+        StatusInventory statusInventory = new StatusInventory(this);
+        this.statusSlot = statusInventory.statusSlot;
+        return statusInventory;
     }
 
     @Override
@@ -51,8 +55,8 @@ public class VariableWireCapacitor extends AbstractElectricMachine implements Re
         String charge = EnergyUtil.getCharge(FinalTech.getLocationDataService(), locationData);
         if (StringNumberUtil.ZERO.equals(charge)) {
             JavaPlugin javaPlugin = this.getAddon().getJavaPlugin();
+            FinalTech.getLocationDataService().clearLocationData(location);
             Runnable runnable = () -> {
-                FinalTech.getLocationDataService().clearLocationData(location);
                 if(FinalTech.getLocationDataService() instanceof SlimefunLocationDataService slimefunLocationDataService) {
                     slimefunLocationDataService.getOrCreateEmptyLocationData(location, FinalTechItems.VARIABLE_WIRE_RESISTANCE.getId());
                     Slimefun.getNetworkManager().updateAllNetworks(location);
@@ -71,7 +75,7 @@ public class VariableWireCapacitor extends AbstractElectricMachine implements Re
         } else {
             Inventory inventory = FinalTech.getLocationDataService().getInventory(locationData);
             if (inventory != null && !inventory.getViewers().isEmpty()) {
-                this.updateInv(inventory, StatusMenu.STATUS_SLOT, this, charge);
+                this.updateInv(inventory, this.statusSlot, this, charge);
             }
         }
     }
