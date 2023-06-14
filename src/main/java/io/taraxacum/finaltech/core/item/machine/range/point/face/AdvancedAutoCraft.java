@@ -8,16 +8,15 @@ import io.github.thebusybiscuit.slimefun4.core.handlers.BlockBreakHandler;
 import io.github.thebusybiscuit.slimefun4.core.handlers.BlockPlaceHandler;
 import io.taraxacum.finaltech.FinalTech;
 import io.taraxacum.finaltech.core.interfaces.LocationMachine;
+import io.taraxacum.finaltech.core.inventory.AbstractMachineInventory;
+import io.taraxacum.finaltech.core.inventory.cargo.AdvancedAutoCraftInventory;
 import io.taraxacum.finaltech.util.*;
 import io.taraxacum.libs.plugin.dto.LocationData;
 import io.taraxacum.libs.plugin.util.InventoryUtil;
 import io.taraxacum.libs.slimefun.dto.AdvancedCraft;
 import io.taraxacum.libs.plugin.dto.AdvancedMachineRecipe;
-import io.taraxacum.libs.plugin.dto.LocationRecipeRegistry;
 import io.taraxacum.finaltech.core.option.Icon;
-import io.taraxacum.finaltech.core.menu.AbstractMachineMenu;
 import io.taraxacum.finaltech.core.interfaces.RecipeItem;
-import io.taraxacum.finaltech.core.menu.cargo.AdvancedAutoCraftMenu;
 import io.taraxacum.libs.plugin.dto.InvWithSlots;
 import io.taraxacum.libs.plugin.util.ItemStackUtil;
 import io.taraxacum.finaltech.core.option.SlotSearchOrder;
@@ -30,14 +29,26 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
 import javax.annotation.Nonnull;
-import java.util.List;
+import javax.annotation.Nullable;
+import java.util.*;
 
 /**
  * @author Final_ROOT
  */
 public class AdvancedAutoCraft extends AbstractFaceMachine implements RecipeItem, LocationMachine {
+    public final Map<Location, AdvancedMachineRecipe> locationRecipeMap = new HashMap<>();
+    private final Set<String> notAllowedId = new HashSet<>(ConfigUtil.getItemStringList(this, "not-allowed-id"));
+    private AdvancedAutoCraftInventory advancedAutoCraftInventory;
+
     public AdvancedAutoCraft(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
         super(itemGroup, item, recipeType, recipe);
+    }
+
+    @Nullable
+    @Override
+    protected AbstractMachineInventory setMachineInventory() {
+        this.advancedAutoCraftInventory = new AdvancedAutoCraftInventory(this, this.locationRecipeMap);
+        return this.advancedAutoCraftInventory;
     }
 
     @Nonnull
@@ -49,25 +60,19 @@ public class AdvancedAutoCraft extends AbstractFaceMachine implements RecipeItem
     @Nonnull
     @Override
     protected BlockBreakHandler onBlockBreak() {
-        return MachineUtil.simpleBlockBreakerHandler(FinalTech.getLocationDataService(), this, AdvancedAutoCraftMenu.PARSE_ITEM_SLOT, AdvancedAutoCraftMenu.MODULE_SLOT);
-    }
-
-    @Nonnull
-    @Override
-    protected AbstractMachineMenu setMachineMenu() {
-        return new AdvancedAutoCraftMenu(this);
+        return MachineUtil.simpleBlockBreakerHandler(FinalTech.getLocationDataService(), this, this.advancedAutoCraftInventory.parseItemSlot, this.advancedAutoCraftInventory.moduleSlot);
     }
 
     @Override
     protected void tick(@Nonnull Block block, @Nonnull SlimefunItem slimefunItem, @Nonnull LocationData locationData) {
-        Location location = block.getLocation();
         Inventory inventory = FinalTech.getLocationDataService().getInventory(locationData);
         if(inventory == null) {
             return;
         }
         boolean hasViewer = !inventory.getViewers().isEmpty();
 
-        AdvancedMachineRecipe machineRecipe = LocationRecipeRegistry.getInstance().getRecipe(location);
+        Location location = block.getLocation();
+        AdvancedMachineRecipe machineRecipe = this.locationRecipeMap.get(location);
         if (machineRecipe == null) {
             return;
         }
@@ -83,7 +88,7 @@ public class AdvancedAutoCraft extends AbstractFaceMachine implements RecipeItem
         }
 
         String containerId = LocationDataUtil.getId(FinalTech.getLocationDataService(), containerLocationData);
-        if (containerId != null) {
+        if (containerId != null && !this.notAllowedId.contains(containerId)) {
             Runnable runnable = () -> {
                 LocationData tempLocationData = FinalTech.getLocationDataService().getLocationData(containerLocationData.getLocation());
                 if(tempLocationData == null || !containerId.equals(LocationDataUtil.getId(FinalTech.getLocationDataService(), tempLocationData))) {
@@ -99,7 +104,7 @@ public class AdvancedAutoCraft extends AbstractFaceMachine implements RecipeItem
                 int[] inputSlots = inputMap.getSlots();
                 int[] outputSlots = outputMap.getSlots();
 
-                int quantity = Icon.updateQuantityModule(inventory, hasViewer, AdvancedAutoCraftMenu.MODULE_SLOT, AdvancedAutoCraftMenu.STATUS_SLOT);
+                int quantity = Icon.updateQuantityModule(inventory, hasViewer, this.advancedAutoCraftInventory.moduleSlot, this.advancedAutoCraftInventory.statusSlot);
 
                 AdvancedCraft craft = AdvancedCraft.craftAsc(containerInventory, inputSlots, List.of(machineRecipe), quantity, 0);
                 if (craft != null) {
@@ -111,7 +116,7 @@ public class AdvancedAutoCraft extends AbstractFaceMachine implements RecipeItem
                 }
             };
 
-            BlockTickerUtil.runTask(FinalTech.getLocationRunnableFactory(), FinalTech.isAsyncSlimefunItem(containerId), runnable, containerBlock.getLocation());
+            BlockTickerUtil.runTask(FinalTech.getLocationRunnableFactory(), FinalTech.isAsyncSlimefunItem(containerId), runnable, location, containerBlock.getLocation());
         }
     }
 
@@ -124,8 +129,9 @@ public class AdvancedAutoCraft extends AbstractFaceMachine implements RecipeItem
     public void registerDefaultRecipes() {
         RecipeUtil.registerDescriptiveRecipeWithBorder(FinalTech.getLanguageManager(), this);
 
-        AdvancedAutoCraftMenu.registerRecipe();
-        for (String id : AdvancedAutoCraftMenu.RECIPE_MAP.keySet()) {
+        // TODO
+        this.advancedAutoCraftInventory.registerRecipe();
+        for (String id : this.advancedAutoCraftInventory.getRecipeMap().keySet()) {
             SlimefunItem slimefunItem = SlimefunItem.getById(id);
             if (slimefunItem != null) {
                 ItemStack itemStack = slimefunItem.getItem();
