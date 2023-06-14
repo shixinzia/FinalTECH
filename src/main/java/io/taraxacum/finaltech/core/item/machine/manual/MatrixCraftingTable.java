@@ -5,10 +5,10 @@ import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItem;
 import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItemStack;
 import io.github.thebusybiscuit.slimefun4.api.recipes.RecipeType;
 import io.taraxacum.finaltech.FinalTech;
+import io.taraxacum.finaltech.core.inventory.manual.AbstractManualMachineInventory;
+import io.taraxacum.finaltech.core.inventory.manual.MatrixCraftingTableInventory;
 import io.taraxacum.finaltech.core.option.Icon;
 import io.taraxacum.finaltech.core.interfaces.RecipeItem;
-import io.taraxacum.finaltech.core.menu.manual.AbstractManualMachineMenu;
-import io.taraxacum.finaltech.core.menu.manual.MatrixCraftingTableMenu;
 import io.taraxacum.finaltech.setup.FinalTechRecipeTypes;
 import io.taraxacum.finaltech.util.RecipeUtil;
 import io.taraxacum.libs.plugin.dto.LocationData;
@@ -31,15 +31,15 @@ public class MatrixCraftingTable extends AbstractManualMachine implements Recipe
 
     @Nonnull
     @Override
-    protected AbstractManualMachineMenu newMachineMenu() {
-        return new MatrixCraftingTableMenu(this);
+    protected AbstractManualMachineInventory newMachineInventory() {
+        return new MatrixCraftingTableInventory(this);
     }
 
     @Override
     protected void tick(@Nonnull Block block, @Nonnull SlimefunItem slimefunItem, @Nonnull LocationData locationData) {
         Inventory inventory = FinalTech.getLocationDataService().getInventory(locationData);
         if (inventory != null && !inventory.getViewers().isEmpty()) {
-            this.getMachineMenu().updateInventory(inventory, block.getLocation());
+            this.getMachineInventory().updateInventory(inventory, block.getLocation());
         }
     }
 
