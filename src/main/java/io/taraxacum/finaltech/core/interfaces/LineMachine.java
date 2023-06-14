@@ -12,18 +12,22 @@ import javax.annotation.Nonnull;
  */
 public interface LineMachine extends RangeMachine {
     default int lineFunction(@Nonnull Block block, int range, @Nonnull LineMachine.RangeFunction function) {
+        if (block.getBlockData() instanceof Directional directional) {
+            return this.lineFunction(block, range, directional.getFacing(), function);
+        } else {
+            return 0;
+        }
+    }
+
+    default int lineFunction(@Nonnull Block block, int range, @Nonnull BlockFace blockFace, @Nonnull LineMachine.RangeFunction function) {
         int count = 0;
-        BlockData blockData = block.getBlockData();
-        if (blockData instanceof Directional) {
-            BlockFace blockFace = ((Directional) blockData).getFacing();
-            for (int i = 0; i < range; i++) {
-                block = block.getRelative(blockFace);
-                int result = function.apply(block.getLocation());
-                if (result < 0) {
-                    return count;
-                }
-                count += result;
+        for (int i = 0; i < range; i++) {
+            block = block.getRelative(blockFace);
+            int result = function.apply(block.getLocation());
+            if (result < 0) {
+                return count;
             }
+            count += result;
         }
         return count;
     }
