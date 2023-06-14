@@ -42,7 +42,7 @@ public class CopyCard extends UnusableSlimefunItem implements RecipeItem, ValidI
     public void registerDefaultRecipes() {
         RecipeUtil.registerDescriptiveRecipe(FinalTech.getLanguageManager(), this,
                 String.valueOf(ConstantTableUtil.ITEM_COPY_CARD_AMOUNT),
-                String.format("%.2f", Slimefun.getTickerTask().getTickRate() / 20.0));
+                ConstantTableUtil.SLIMEFUN_TICK_INTERVAL);
     }
 
     @Override
