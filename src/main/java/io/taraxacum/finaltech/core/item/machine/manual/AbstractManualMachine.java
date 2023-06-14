@@ -6,18 +6,21 @@ import io.github.thebusybiscuit.slimefun4.api.recipes.RecipeType;
 import io.github.thebusybiscuit.slimefun4.core.handlers.BlockBreakHandler;
 import io.github.thebusybiscuit.slimefun4.core.handlers.BlockPlaceHandler;
 import io.taraxacum.finaltech.FinalTech;
+import io.taraxacum.finaltech.core.inventory.AbstractMachineInventory;
+import io.taraxacum.finaltech.core.inventory.manual.AbstractManualMachineInventory;
 import io.taraxacum.finaltech.core.item.machine.AbstractMachine;
-import io.taraxacum.finaltech.core.menu.manual.AbstractManualMachineMenu;
 import io.taraxacum.finaltech.util.MachineUtil;
 import org.bukkit.inventory.ItemStack;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 /**
  * @author Final_ROOT
  */
 public abstract class AbstractManualMachine extends AbstractMachine {
-    private AbstractManualMachineMenu menu;
+
+    private AbstractManualMachineInventory inventory;
 
     public AbstractManualMachine(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
         super(itemGroup, item, recipeType, recipe);
@@ -35,11 +38,11 @@ public abstract class AbstractManualMachine extends AbstractMachine {
         return MachineUtil.simpleBlockBreakerHandler(FinalTech.getLocationDataService(), this);
     }
 
-    @Nonnull
+    @Nullable
     @Override
-    protected final AbstractManualMachineMenu setMachineMenu() {
-        this.menu = this.newMachineMenu();
-        return this.menu;
+    protected AbstractMachineInventory setMachineInventory() {
+        this.inventory = this.newMachineInventory();
+        return this.inventory;
     }
 
     @Override
@@ -48,13 +51,13 @@ public abstract class AbstractManualMachine extends AbstractMachine {
     }
 
     @Nonnull
-    protected final AbstractManualMachineMenu getMachineMenu() {
-        if (this.menu == null) {
-            this.menu = this.newMachineMenu();
+    protected final AbstractManualMachineInventory getMachineInventory() {
+        if (this.inventory == null) {
+            this.inventory = this.newMachineInventory();
         }
-        return this.menu;
+        return this.inventory;
     }
 
     @Nonnull
-    protected abstract AbstractManualMachineMenu newMachineMenu();
+    protected abstract AbstractManualMachineInventory newMachineInventory();
 }
