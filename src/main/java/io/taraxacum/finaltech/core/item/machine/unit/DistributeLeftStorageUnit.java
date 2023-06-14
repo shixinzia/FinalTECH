@@ -5,10 +5,10 @@ import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItem;
 import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItemStack;
 import io.github.thebusybiscuit.slimefun4.api.recipes.RecipeType;
 import io.taraxacum.finaltech.FinalTech;
+import io.taraxacum.finaltech.core.inventory.AbstractMachineInventory;
+import io.taraxacum.finaltech.core.inventory.unit.OneLineStorageUnitInventory;
 import io.taraxacum.libs.plugin.dto.ItemAmountWrapper;
 import io.taraxacum.finaltech.core.interfaces.RecipeItem;
-import io.taraxacum.finaltech.core.menu.AbstractMachineMenu;
-import io.taraxacum.finaltech.core.menu.unit.OneLineStorageUnitMenu;
 import io.taraxacum.libs.plugin.dto.LocationData;
 import io.taraxacum.libs.plugin.util.ItemStackUtil;
 import io.taraxacum.finaltech.util.MachineUtil;
@@ -18,6 +18,7 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 /**
  * @author Final_ROOT
@@ -27,10 +28,10 @@ public class DistributeLeftStorageUnit extends AbstractStorageUnit implements Re
         super(itemGroup, item, recipeType, recipe);
     }
 
-    @Nonnull
+    @Nullable
     @Override
-    protected AbstractMachineMenu setMachineMenu() {
-        return new OneLineStorageUnitMenu(this);
+    protected AbstractMachineInventory setMachineInventory() {
+        return new OneLineStorageUnitInventory(this);
     }
 
     @Override
@@ -39,9 +40,11 @@ public class DistributeLeftStorageUnit extends AbstractStorageUnit implements Re
         if(inventory == null) {
             return;
         }
+
         int beginSlot = 0;
         int endSlot = 0;
         int i;
+
         ItemAmountWrapper itemAmountWrapper = null;
         for (i = this.getInputSlot().length - 1; i >= 0; i--) {
             if (!ItemStackUtil.isItemNull(inventory.getItem(i))) {
@@ -51,6 +54,7 @@ public class DistributeLeftStorageUnit extends AbstractStorageUnit implements Re
                 break;
             }
         }
+
         for (; i >= 0; i--) {
             if (ItemStackUtil.isItemNull(inventory.getItem(i))) {
                 endSlot = i;
@@ -73,6 +77,7 @@ public class DistributeLeftStorageUnit extends AbstractStorageUnit implements Re
                 endSlot = i;
             }
         }
+
         if (beginSlot != endSlot) {
             int amount = itemAmountWrapper.getAmount() / (beginSlot + 1 - endSlot);
             if (amount > 0) {
