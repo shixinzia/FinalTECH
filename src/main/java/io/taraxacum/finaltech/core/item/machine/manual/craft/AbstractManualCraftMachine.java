@@ -5,16 +5,14 @@ import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItem;
 import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItemStack;
 import io.github.thebusybiscuit.slimefun4.api.recipes.RecipeType;
 import io.github.thebusybiscuit.slimefun4.core.attributes.EnergyNetComponent;
-import io.github.thebusybiscuit.slimefun4.core.handlers.BlockPlaceHandler;
 import io.github.thebusybiscuit.slimefun4.core.networks.energy.EnergyNetComponentType;
 import io.github.thebusybiscuit.slimefun4.implementation.Slimefun;
 import io.taraxacum.finaltech.FinalTech;
+import io.taraxacum.finaltech.core.inventory.manual.AbstractManualMachineInventory;
+import io.taraxacum.finaltech.core.inventory.manual.ManualCraftMachineInventory;
 import io.taraxacum.finaltech.core.item.machine.manual.AbstractManualMachine;
 import io.taraxacum.finaltech.core.interfaces.RecipeItem;
-import io.taraxacum.finaltech.core.menu.manual.AbstractManualMachineMenu;
-import io.taraxacum.finaltech.core.menu.manual.ManualCraftMachineMenu;
 import io.taraxacum.finaltech.util.ConfigUtil;
-import io.taraxacum.finaltech.util.MachineUtil;
 import io.taraxacum.libs.plugin.dto.LocationData;
 import io.taraxacum.libs.slimefun.util.EnergyUtil;
 import org.bukkit.Location;
@@ -47,30 +45,23 @@ public abstract class AbstractManualCraftMachine extends AbstractManualMachine i
 
     @Nonnull
     @Override
-    protected BlockPlaceHandler onBlockPlace() {
-        return MachineUtil.BLOCK_PLACE_HANDLER_PLACER_DENY;
-    }
-
-    @Nonnull
-    @Override
-    protected AbstractManualMachineMenu newMachineMenu() {
-        // TODO more beautiful code
-        return new ManualCraftMachineMenu(this);
+    protected AbstractManualMachineInventory newMachineInventory() {
+        return new ManualCraftMachineInventory(this);
     }
 
     @Override
     protected void tick(@Nonnull Block block, @Nonnull SlimefunItem slimefunItem, @Nonnull LocationData locationData) {
-        String charge = EnergyUtil.getCharge(FinalTech.getLocationDataService(), locationData);
-        int intCharge = Integer.parseInt(charge) + this.charge;
-        if(intCharge > this.capacity / 2) {
-            intCharge /= 2;
+        String chargeStr = EnergyUtil.getCharge(FinalTech.getLocationDataService(), locationData);
+        int charge = Integer.parseInt(chargeStr) + this.charge;
+        while (charge >= this.capacity / 2) {
+            charge /= 2;
         }
 
-        EnergyUtil.setCharge(FinalTech.getLocationDataService(), locationData, String.valueOf(Math.min(intCharge, this.capacity)));
+        EnergyUtil.setCharge(FinalTech.getLocationDataService(), locationData, String.valueOf(Math.min(charge, this.capacity)));
 
         Inventory inventory = FinalTech.getLocationDataService().getInventory(locationData);
         if (inventory != null && !inventory.getViewers().isEmpty()) {
-            this.getMachineMenu().updateInventory(inventory, block.getLocation());
+            this.getMachineInventory().updateInventory(inventory, block.getLocation());
         }
     }
 
