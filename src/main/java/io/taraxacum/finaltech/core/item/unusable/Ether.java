@@ -29,6 +29,7 @@ public class Ether extends UnusableSlimefunItem implements GEOResource, SimpleVa
     private final int baseAmountNormal = ConfigUtil.getOrDefaultItemSetting(16, this, "base-amount-normal");
     private final int baseAmountNether = ConfigUtil.getOrDefaultItemSetting(8, this, "base-amount-nether");
     private final int baseAmountTheEnd = ConfigUtil.getOrDefaultItemSetting(64, this, "base-amount-end");
+    private final int baseAmountCustom = ConfigUtil.getOrDefaultItemSetting(16, this, "base-amount-custom");
     private final int maxDeviation = ConfigUtil.getOrDefaultItemSetting(8, this, "max-deviation");
 
     public Ether(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
@@ -50,7 +51,7 @@ public class Ether extends UnusableSlimefunItem implements GEOResource, SimpleVa
             case NORMAL -> this.baseAmountNormal;
             case NETHER -> this.baseAmountNether;
             case THE_END -> this.baseAmountTheEnd;
-            default -> 0;
+            default -> this.baseAmountCustom;
         };
     }
 
