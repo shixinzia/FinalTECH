@@ -9,10 +9,10 @@ import io.github.thebusybiscuit.slimefun4.core.handlers.BlockPlaceHandler;
 import io.taraxacum.common.util.StringNumberUtil;
 import io.taraxacum.finaltech.FinalTech;
 import io.taraxacum.finaltech.core.interfaces.RecipeItem;
+import io.taraxacum.finaltech.core.inventory.AbstractMachineInventory;
+import io.taraxacum.finaltech.core.inventory.simple.EnergyTableInventory;
 import io.taraxacum.finaltech.core.item.usable.EnergyCard;
 import io.taraxacum.finaltech.core.item.usable.PortableEnergyStorage;
-import io.taraxacum.finaltech.core.menu.AbstractMachineMenu;
-import io.taraxacum.finaltech.core.menu.machine.EnergyTableMenu;
 import io.taraxacum.finaltech.util.MachineUtil;
 import io.taraxacum.finaltech.util.RecipeUtil;
 import io.taraxacum.libs.plugin.dto.LocationData;
@@ -30,8 +30,18 @@ import java.math.BigInteger;
  * @author Final_ROOT
  */
 public class EnergyTable extends AbstractMachine implements RecipeItem {
+    private int cardSlot;
+
     public EnergyTable(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item, @Nonnull RecipeType recipeType, @Nonnull ItemStack[] recipe) {
         super(itemGroup, item, recipeType, recipe);
+    }
+
+    @Nullable
+    @Override
+    protected AbstractMachineInventory setMachineInventory() {
+        EnergyTableInventory energyTableInventory = new EnergyTableInventory(this);
+        this.cardSlot = energyTableInventory.cardSlot;
+        return energyTableInventory;
     }
 
     @Nonnull
@@ -43,13 +53,7 @@ public class EnergyTable extends AbstractMachine implements RecipeItem {
     @Nonnull
     @Override
     protected BlockBreakHandler onBlockBreak() {
-        return MachineUtil.simpleBlockBreakerHandler(FinalTech.getLocationDataService(), this, EnergyTableMenu.CARD_SLOT);
-    }
-
-    @Nullable
-    @Override
-    protected AbstractMachineMenu setMachineMenu() {
-        return new EnergyTableMenu(this);
+        return MachineUtil.simpleBlockBreakerHandler(FinalTech.getLocationDataService(), this, this.cardSlot);
     }
 
     @Override
@@ -66,8 +70,11 @@ public class EnergyTable extends AbstractMachine implements RecipeItem {
             return;
         }
 
-        ItemStack energyStorageItem = inventory.getItem(EnergyTableMenu.CARD_SLOT);
-        if(ItemStackUtil.isItemNull(energyStorageItem) || energyStorageItem.getAmount() > 1 || !(SlimefunItem.getByItem(energyStorageItem) instanceof PortableEnergyStorage portableEnergyStorage)) {
+        ItemStack energyStorageItem = inventory.getItem(this.cardSlot);
+        if(ItemStackUtil.isItemNull(energyStorageItem)
+                || energyStorageItem.getAmount() > 1
+                || energyStorageItem.getMaxStackSize() > 1
+                || !(SlimefunItem.getByItem(energyStorageItem) instanceof PortableEnergyStorage portableEnergyStorage)) {
             return;
         }
 
@@ -79,12 +86,14 @@ public class EnergyTable extends AbstractMachine implements RecipeItem {
 
         boolean update = false;
         if(doInput) {
-            ItemStack itemStack = inventory.getItem(this.getInputSlot()[0]);
-            if(SlimefunItem.getByItem(itemStack) instanceof EnergyCard energyCard) {
-                String cardEnergy = energyCard.getEnergy();
-                energy = StringNumberUtil.add(energy, StringNumberUtil.mul(cardEnergy, String.valueOf(itemStack.getAmount())));
-                itemStack.setAmount(0);
-                update = true;
+            for(int slot : this.getInputSlot()) {
+                ItemStack itemStack = inventory.getItem(slot);
+                if(SlimefunItem.getByItem(itemStack) instanceof EnergyCard energyCard) {
+                    String cardEnergy = energyCard.getEnergy();
+                    energy = StringNumberUtil.add(energy, StringNumberUtil.mul(cardEnergy, String.valueOf(itemStack.getAmount())));
+                    itemStack.setAmount(0);
+                    update = true;
+                }
             }
         }
 
