@@ -10,8 +10,8 @@ import io.github.thebusybiscuit.slimefun4.implementation.Slimefun;
 import io.github.thebusybiscuit.slimefun4.libraries.paperlib.PaperLib;
 import io.taraxacum.finaltech.FinalTech;
 import io.taraxacum.finaltech.core.interfaces.RecipeItem;
-import io.taraxacum.finaltech.core.menu.AbstractMachineMenu;
-import io.taraxacum.finaltech.core.menu.unit.VoidMenu;
+import io.taraxacum.finaltech.core.inventory.AbstractMachineInventory;
+import io.taraxacum.finaltech.core.inventory.unit.VoidInventory;
 import io.taraxacum.finaltech.util.MachineUtil;
 import io.taraxacum.finaltech.util.RecipeUtil;
 import io.taraxacum.libs.plugin.dto.LocationData;
@@ -22,6 +22,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitTask;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -35,6 +36,12 @@ public class FuelAccelerator extends AbstractFaceMachine implements RecipeItem {
         super(itemGroup, item, recipeType, recipe);
     }
 
+    @Nullable
+    @Override
+    protected AbstractMachineInventory setMachineInventory() {
+        return new VoidInventory(this);
+    }
+
     @Nonnull
     @Override
     protected BlockPlaceHandler onBlockPlace() {
@@ -45,12 +52,6 @@ public class FuelAccelerator extends AbstractFaceMachine implements RecipeItem {
     @Override
     protected BlockBreakHandler onBlockBreak() {
         return MachineUtil.simpleBlockBreakerHandler(FinalTech.getLocationDataService(), this);
-    }
-
-    @Nonnull
-    @Override
-    protected AbstractMachineMenu setMachineMenu() {
-        return new VoidMenu(this);
     }
 
     @Override
@@ -73,7 +74,8 @@ public class FuelAccelerator extends AbstractFaceMachine implements RecipeItem {
                         BlockState blockState = PaperLib.getBlockState(location.getBlock(), false).getState();
                         if (blockState instanceof Furnace furnace) {
                             if (furnace.getCookTime() > 0 && furnace.getCookTime() < furnace.getCookTimeTotal() - 1) {
-                                furnace.setCookTime((short) (furnace.getCookTimeTotal()));
+                                // TODO
+                                furnace.setCookTime((short) furnace.getCookTimeTotal());
                             }
                         }
                         return 0;

@@ -10,8 +10,8 @@ import io.github.thebusybiscuit.slimefun4.implementation.Slimefun;
 import io.github.thebusybiscuit.slimefun4.libraries.paperlib.PaperLib;
 import io.taraxacum.finaltech.FinalTech;
 import io.taraxacum.finaltech.core.interfaces.RecipeItem;
-import io.taraxacum.finaltech.core.menu.AbstractMachineMenu;
-import io.taraxacum.finaltech.core.menu.unit.VoidMenu;
+import io.taraxacum.finaltech.core.inventory.AbstractMachineInventory;
+import io.taraxacum.finaltech.core.inventory.unit.VoidInventory;
 import io.taraxacum.finaltech.util.MachineUtil;
 import io.taraxacum.finaltech.util.RecipeUtil;
 import io.taraxacum.libs.plugin.dto.LocationData;
@@ -20,6 +20,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 /**
  * @author Final_ROOT
@@ -27,6 +28,12 @@ import javax.annotation.Nonnull;
 public class FuelCharger extends AbstractFaceMachine implements RecipeItem {
     public FuelCharger(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
         super(itemGroup, item, recipeType, recipe);
+    }
+
+    @Nullable
+    @Override
+    protected AbstractMachineInventory setMachineInventory() {
+        return new VoidInventory(this);
     }
 
     @Nonnull
@@ -41,16 +48,10 @@ public class FuelCharger extends AbstractFaceMachine implements RecipeItem {
         return MachineUtil.simpleBlockBreakerHandler(FinalTech.getLocationDataService(), this);
     }
 
-    @Nonnull
-    @Override
-    protected AbstractMachineMenu setMachineMenu() {
-        return new VoidMenu(this);
-    }
-
     @Override
     protected void tick(@Nonnull Block block, @Nonnull SlimefunItem slimefunItem, @Nonnull LocationData locationData) {
         JavaPlugin javaPlugin = this.getAddon().getJavaPlugin();
-        javaPlugin.getServer().getScheduler().runTask(javaPlugin, () -> FuelCharger.this.pointFunction(block, 1, location -> {
+        javaPlugin.getServer().getScheduler().runTask(javaPlugin, () -> this.pointFunction(block, 1, location -> {
             BlockState blockState = PaperLib.getBlockState(location.getBlock(), false).getState();
             if (blockState instanceof Furnace furnace) {
                 furnace.setBurnTime((short)(200 + Slimefun.getTickerTask().getTickRate()));
@@ -63,7 +64,7 @@ public class FuelCharger extends AbstractFaceMachine implements RecipeItem {
 
     @Override
     protected boolean isSynchronized() {
-        return true;
+        return false;
     }
 
     @Nonnull

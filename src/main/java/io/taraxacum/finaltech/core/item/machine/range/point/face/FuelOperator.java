@@ -14,8 +14,8 @@ import io.github.thebusybiscuit.slimefun4.implementation.items.electric.Abstract
 import io.github.thebusybiscuit.slimefun4.implementation.operations.FuelOperation;
 import io.taraxacum.finaltech.FinalTech;
 import io.taraxacum.finaltech.core.interfaces.RecipeItem;
-import io.taraxacum.finaltech.core.menu.AbstractMachineMenu;
-import io.taraxacum.finaltech.core.menu.unit.VoidMenu;
+import io.taraxacum.finaltech.core.inventory.AbstractMachineInventory;
+import io.taraxacum.finaltech.core.inventory.unit.VoidInventory;
 import io.taraxacum.finaltech.util.ConfigUtil;
 import io.taraxacum.finaltech.util.MachineUtil;
 import io.taraxacum.finaltech.util.BlockTickerUtil;
@@ -29,6 +29,7 @@ import org.bukkit.block.BlockFace;
 import org.bukkit.inventory.ItemStack;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.List;
 
 /**
@@ -41,6 +42,12 @@ public class FuelOperator extends AbstractFaceMachine implements RecipeItem {
         super(itemGroup, item, recipeType, recipe);
     }
 
+    @Nullable
+    @Override
+    protected AbstractMachineInventory setMachineInventory() {
+        return new VoidInventory(this);
+    }
+
     @Nonnull
     @Override
     protected BlockPlaceHandler onBlockPlace() {
@@ -51,12 +58,6 @@ public class FuelOperator extends AbstractFaceMachine implements RecipeItem {
     @Override
     protected BlockBreakHandler onBlockBreak() {
         return MachineUtil.simpleBlockBreakerHandler(FinalTech.getLocationDataService(), this);
-    }
-
-    @Nonnull
-    @Override
-    protected AbstractMachineMenu setMachineMenu() {
-        return new VoidMenu(this);
     }
 
     @Override
