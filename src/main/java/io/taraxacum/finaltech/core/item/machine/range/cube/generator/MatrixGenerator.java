@@ -6,10 +6,9 @@ import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItemStack;
 import io.github.thebusybiscuit.slimefun4.api.recipes.RecipeType;
 import io.github.thebusybiscuit.slimefun4.core.attributes.EnergyNetComponent;
 import io.github.thebusybiscuit.slimefun4.core.networks.energy.EnergyNetComponentType;
-import io.github.thebusybiscuit.slimefun4.implementation.Slimefun;
 import io.taraxacum.common.util.JavaUtil;
 import io.taraxacum.finaltech.FinalTech;
-import io.taraxacum.finaltech.core.menu.unit.StatusL2Menu;
+import io.taraxacum.finaltech.core.option.RouteShow;
 import io.taraxacum.finaltech.setup.FinalTechItems;
 import io.taraxacum.finaltech.util.*;
 import io.taraxacum.libs.plugin.dto.LocationData;
@@ -43,7 +42,9 @@ public class MatrixGenerator extends AbstractCubeElectricGenerator {
         if(inventory == null) {
             return;
         }
-        boolean drawParticle = !inventory.getViewers().isEmpty();
+
+        boolean hasViewer = !inventory.getViewers().isEmpty();
+        boolean drawParticle = hasViewer || RouteShow.VALUE_TRUE.equals(RouteShow.OPTION.getOrDefaultValue(FinalTech.getLocationDataService(), locationData));
         JavaPlugin javaPlugin = this.getAddon().getJavaPlugin();
 
         int range = 0;
@@ -66,10 +67,10 @@ public class MatrixGenerator extends AbstractCubeElectricGenerator {
                     && !this.notAllowedId.contains(LocationDataUtil.getId(FinalTech.getLocationDataService(), tempLocationData))
                     && LocationDataUtil.getSlimefunItem(FinalTech.getLocationDataService(), tempLocationData) instanceof EnergyNetComponent energyNetComponent
                     && !JavaUtil.matchOnce(energyNetComponent.getEnergyComponentType(), EnergyNetComponentType.CAPACITOR, EnergyNetComponentType.GENERATOR)) {
-                BlockTickerUtil.runTask(FinalTech.getLocationRunnableFactory(), FinalTech.isAsyncSlimefunItem(LocationDataUtil.getId(FinalTech.getLocationDataService(), tempLocationData)), () -> this.chargeMachine(energyNetComponent, tempLocationData), location);
+                tempLocationData.cloneLocation();
+                BlockTickerUtil.runTask(FinalTech.getLocationRunnableFactory(), FinalTech.isAsyncSlimefunItem(LocationDataUtil.getId(FinalTech.getLocationDataService(), tempLocationData)), () -> this.chargeMachine(energyNetComponent, tempLocationData), tempLocationData.getLocation());
                 if (drawParticle) {
-                    Location cloneLocation = location.clone();
-                    javaPlugin.getServer().getScheduler().runTaskAsynchronously(javaPlugin, () -> ParticleUtil.drawCubeByBlock(javaPlugin, Particle.WAX_OFF, 0, cloneLocation.getBlock()));
+                    javaPlugin.getServer().getScheduler().runTaskAsynchronously(javaPlugin, () -> ParticleUtil.drawCubeByBlock(javaPlugin, Particle.WAX_OFF, 0, tempLocationData.getLocation().getBlock()));
                 }
                 return 1;
             }
@@ -77,7 +78,7 @@ public class MatrixGenerator extends AbstractCubeElectricGenerator {
         });
 
         if (drawParticle) {
-            this.updateInv(inventory, StatusL2Menu.STATUS_SLOT, this,
+            this.updateInv(inventory, this.statusSlot, this,
                     String.valueOf(count),
                     String.valueOf(range + this.getRange()));
         }
@@ -91,7 +92,7 @@ public class MatrixGenerator extends AbstractCubeElectricGenerator {
     public void registerDefaultRecipes() {
         RecipeUtil.registerDescriptiveRecipe(FinalTech.getLanguageManager(), this,
                 String.valueOf(this.range),
-                String.format("%.2f", Slimefun.getTickerTask().getTickRate() / 20.0));
+                ConstantTableUtil.SLIMEFUN_TICK_INTERVAL);
     }
 
     @Override

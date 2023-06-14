@@ -8,11 +8,13 @@ import io.github.thebusybiscuit.slimefun4.core.attributes.EnergyNetComponent;
 import io.github.thebusybiscuit.slimefun4.core.handlers.BlockBreakHandler;
 import io.github.thebusybiscuit.slimefun4.core.handlers.BlockPlaceHandler;
 import io.github.thebusybiscuit.slimefun4.core.networks.energy.EnergyNetComponentType;
-import io.github.thebusybiscuit.slimefun4.implementation.Slimefun;
 import io.taraxacum.common.util.JavaUtil;
 import io.taraxacum.finaltech.FinalTech;
 import io.taraxacum.finaltech.core.interfaces.LocationMachine;
 import io.taraxacum.finaltech.core.interfaces.MenuUpdater;
+import io.taraxacum.finaltech.core.inventory.AbstractMachineInventory;
+import io.taraxacum.finaltech.core.inventory.unit.StatusL2Inventory;
+import io.taraxacum.finaltech.core.option.RouteShow;
 import io.taraxacum.finaltech.setup.FinalTechItems;
 import io.taraxacum.finaltech.util.*;
 import io.taraxacum.libs.plugin.dto.ItemWrapper;
@@ -22,8 +24,6 @@ import io.taraxacum.libs.plugin.util.ParticleUtil;
 import io.taraxacum.finaltech.util.StringItemUtil;
 import io.taraxacum.finaltech.core.interfaces.RecipeItem;
 import io.taraxacum.finaltech.core.item.machine.range.cube.AbstractCubeMachine;
-import io.taraxacum.finaltech.core.menu.AbstractMachineMenu;
-import io.taraxacum.finaltech.core.menu.unit.StatusL2Menu;
 import io.taraxacum.common.util.StringNumberUtil;
 import io.taraxacum.finaltech.util.BlockTickerUtil;
 import io.taraxacum.libs.slimefun.util.EnergyUtil;
@@ -39,6 +39,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -48,15 +49,18 @@ import java.util.Set;
 public abstract class AbstractCubeElectricGenerator extends AbstractCubeMachine implements RecipeItem, MenuUpdater, LocationMachine {
     protected final Set<String> notAllowedId = new HashSet<>(ConfigUtil.getItemStringList(this, "not-allowed-id"));
     private final ItemWrapper itemWrapper = new ItemWrapper(this.getItem());
+    protected int statusSlot;
 
     public AbstractCubeElectricGenerator(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
         super(itemGroup, item, recipeType, recipe);
     }
 
-    @Nonnull
+    @Nullable
     @Override
-    protected BlockBreakHandler onBlockBreak() {
-        return MachineUtil.simpleBlockBreakerHandler(FinalTech.getLocationDataService(), this);
+    protected AbstractMachineInventory setMachineInventory() {
+        StatusL2Inventory statusInventory = new StatusL2Inventory(this);
+        this.statusSlot = statusInventory.statusSlot;
+        return statusInventory;
     }
 
     @Nonnull
@@ -67,8 +71,8 @@ public abstract class AbstractCubeElectricGenerator extends AbstractCubeMachine 
 
     @Nonnull
     @Override
-    protected AbstractMachineMenu setMachineMenu() {
-        return new StatusL2Menu(this);
+    protected BlockBreakHandler onBlockBreak() {
+        return MachineUtil.simpleBlockBreakerHandler(FinalTech.getLocationDataService(), this);
     }
 
     @Override
@@ -77,7 +81,9 @@ public abstract class AbstractCubeElectricGenerator extends AbstractCubeMachine 
         if(inventory == null) {
             return;
         }
-        boolean drawParticle = !inventory.getViewers().isEmpty();
+
+        boolean hasViewer = !inventory.getViewers().isEmpty();
+        boolean drawParticle = hasViewer || RouteShow.VALUE_TRUE.equals(RouteShow.OPTION.getOrDefaultValue(FinalTech.getLocationDataService(), locationData));
         JavaPlugin javaPlugin = this.getAddon().getJavaPlugin();
 
         int energy = 0;
@@ -105,18 +111,18 @@ public abstract class AbstractCubeElectricGenerator extends AbstractCubeMachine 
                     && !this.notAllowedId.contains(LocationDataUtil.getId(FinalTech.getLocationDataService(), tempLocationData))
                     && LocationDataUtil.getSlimefunItem(FinalTech.getLocationDataService(), tempLocationData) instanceof EnergyNetComponent energyNetComponent
                     && !JavaUtil.matchOnce(energyNetComponent.getEnergyComponentType(), EnergyNetComponentType.CAPACITOR, EnergyNetComponentType.GENERATOR)) {
-                BlockTickerUtil.runTask(FinalTech.getLocationRunnableFactory(), FinalTech.isAsyncSlimefunItem(LocationDataUtil.getId(FinalTech.getLocationDataService(), tempLocationData)), () -> this.chargeMachine(energyNetComponent, finalEnergy, tempLocationData), location.clone());
+                tempLocationData.cloneLocation();
+                BlockTickerUtil.runTask(FinalTech.getLocationRunnableFactory(), FinalTech.isAsyncSlimefunItem(LocationDataUtil.getId(FinalTech.getLocationDataService(), tempLocationData)), () -> this.chargeMachine(energyNetComponent, finalEnergy, tempLocationData), tempLocationData.getLocation());
                 if (drawParticle) {
-                    Location cloneLocation = location.clone();
-                    javaPlugin.getServer().getScheduler().runTaskAsynchronously(javaPlugin, () -> ParticleUtil.drawCubeByBlock(javaPlugin, Particle.WAX_OFF, 0, cloneLocation.getBlock()));
+                    javaPlugin.getServer().getScheduler().runTaskAsynchronously(javaPlugin, () -> ParticleUtil.drawCubeByBlock(javaPlugin, Particle.WAX_OFF, 0, tempLocationData.getLocation().getBlock()));
                 }
                 return 1;
             }
             return 0;
         });
 
-        if (drawParticle) {
-            this.updateInv(inventory, StatusL2Menu.STATUS_SLOT, this,
+        if (hasViewer) {
+            this.updateInv(inventory, this.statusSlot, this,
                     String.valueOf(count),
                     String.valueOf(finalEnergy));
         }
@@ -144,7 +150,7 @@ public abstract class AbstractCubeElectricGenerator extends AbstractCubeMachine 
         RecipeUtil.registerDescriptiveRecipe(FinalTech.getLanguageManager(), this,
                 String.valueOf(this.getEnergy()),
                 String.valueOf(this.getRange()),
-                String.valueOf(String.format("%.2f", Slimefun.getTickerTask().getTickRate() / 20.0)));
+                String.valueOf(ConstantTableUtil.SLIMEFUN_TICK_INTERVAL));
     }
 
     @Override
