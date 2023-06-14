@@ -6,40 +6,45 @@ import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItemStack;
 import io.github.thebusybiscuit.slimefun4.api.recipes.RecipeType;
 import io.taraxacum.finaltech.FinalTech;
 import io.taraxacum.finaltech.core.interfaces.RecipeItem;
-import io.taraxacum.finaltech.core.menu.manual.CardOperationPortMenu;
-import io.taraxacum.finaltech.core.menu.manual.AbstractManualMachineMenu;
+import io.taraxacum.finaltech.core.inventory.manual.AbstractManualMachineInventory;
+import io.taraxacum.finaltech.core.inventory.manual.CardOperationPortInventory;
 import io.taraxacum.libs.plugin.dto.LocationData;
 import org.bukkit.block.Block;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
 import javax.annotation.Nonnull;
+import java.util.List;
 
 /**
  * @author Final_ROOT
  */
 public class CardOperationTable extends AbstractManualMachine implements RecipeItem {
+    public List<CardOperationPortInventory.Craft> craftList;
+
     public CardOperationTable(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
         super(itemGroup, item, recipeType, recipe);
+    }
+
+    @Nonnull
+    @Override
+    protected AbstractManualMachineInventory newMachineInventory() {
+        CardOperationPortInventory cardOperationPortInventory = new CardOperationPortInventory(this);
+        this.craftList = cardOperationPortInventory.craftList;
+        return cardOperationPortInventory;
     }
 
     @Override
     protected void tick(@Nonnull Block block, @Nonnull SlimefunItem slimefunItem, @Nonnull LocationData locationData) {
         Inventory inventory = FinalTech.getLocationDataService().getInventory(locationData);
         if (inventory != null && !inventory.getViewers().isEmpty()) {
-            this.getMachineMenu().updateInventory(inventory, block.getLocation());
+            this.getMachineInventory().updateInventory(inventory, block.getLocation());
         }
-    }
-
-    @Nonnull
-    @Override
-    protected AbstractManualMachineMenu newMachineMenu() {
-        return new CardOperationPortMenu(this);
     }
 
     @Override
     public void registerDefaultRecipes() {
-        for (CardOperationPortMenu.Craft craft : CardOperationPortMenu.CRAFT_LIST) {
+        for (CardOperationPortInventory.Craft craft : this.craftList) {
             if (craft.isEnabled()) {
                 String outputItemId = craft.getInfoOutput();
                 SlimefunItem slimefunItem = SlimefunItem.getById(outputItemId);
