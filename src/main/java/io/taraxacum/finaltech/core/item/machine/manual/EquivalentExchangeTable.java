@@ -11,13 +11,13 @@ import io.taraxacum.common.util.JavaUtil;
 import io.taraxacum.common.util.StringNumberUtil;
 import io.taraxacum.finaltech.FinalTech;
 import io.taraxacum.finaltech.core.enums.LogSourceType;
+import io.taraxacum.finaltech.core.inventory.manual.AbstractManualMachineInventory;
+import io.taraxacum.finaltech.core.inventory.manual.EquivalentExchangeTableInventory;
 import io.taraxacum.finaltech.setup.FinalTechItems;
 import io.taraxacum.finaltech.core.interfaces.RecipeItem;
 import io.taraxacum.libs.plugin.dto.LocationData;
 import io.taraxacum.libs.plugin.util.InventoryUtil;
 import io.taraxacum.libs.slimefun.dto.ItemValueTable;
-import io.taraxacum.finaltech.core.menu.manual.AbstractManualMachineMenu;
-import io.taraxacum.finaltech.core.menu.manual.EquivalentExchangeTableMenu;
 import io.taraxacum.libs.plugin.util.ItemStackUtil;
 import io.taraxacum.finaltech.util.MachineUtil;
 import io.taraxacum.finaltech.util.RecipeUtil;
@@ -36,6 +36,7 @@ import java.util.List;
  */
 public class EquivalentExchangeTable extends AbstractManualMachine implements RecipeItem {
     private final String key = "v";
+    private int parseItemSlot;
 
     public EquivalentExchangeTable(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
         super(itemGroup, item, recipeType, recipe);
@@ -44,23 +45,25 @@ public class EquivalentExchangeTable extends AbstractManualMachine implements Re
     @Nonnull
     @Override
     protected BlockBreakHandler onBlockBreak() {
-        return MachineUtil.simpleBlockBreakerHandler(FinalTech.getLocationDataService(), this, EquivalentExchangeTableMenu.PARSE_ITEM_SLOT);
+        return MachineUtil.simpleBlockBreakerHandler(FinalTech.getLocationDataService(), this, this.parseItemSlot);
     }
 
     @Nonnull
     @Override
-    protected AbstractManualMachineMenu newMachineMenu() {
-        return new EquivalentExchangeTableMenu(this);
+    protected AbstractManualMachineInventory newMachineInventory() {
+        EquivalentExchangeTableInventory equivalentExchangeTableInventory = new EquivalentExchangeTableInventory(this);
+        this.parseItemSlot = equivalentExchangeTableInventory.parseItemSlot;
+        return equivalentExchangeTableInventory;
     }
 
     @Override
     protected void tick(@Nonnull Block block, @Nonnull SlimefunItem slimefunItem, @Nonnull LocationData locationData) {
-        Location location = block.getLocation();
         Inventory inventory = FinalTech.getLocationDataService().getInventory(locationData);
         if(inventory == null) {
             return;
         }
 
+        Location location = block.getLocation();
         String value = JavaUtil.getFirstNotNull(FinalTech.getLocationDataService().getLocationData(locationData, this.key), StringNumberUtil.ZERO);
         for (int slot : this.getInputSlot()) {
             ItemStack itemStack = inventory.getItem(slot);
@@ -92,7 +95,7 @@ public class EquivalentExchangeTable extends AbstractManualMachine implements Re
         FinalTech.getLocationDataService().setLocationData(locationData, this.key, value);
 
         if (!inventory.getViewers().isEmpty()) {
-            this.getMachineMenu().updateInventory(inventory, block.getLocation());
+            this.getMachineInventory().updateInventory(inventory, block.getLocation());
         }
     }
 
@@ -141,9 +144,8 @@ public class EquivalentExchangeTable extends AbstractManualMachine implements Re
                 } else {
                     value = StringNumberUtil.sub(value, searchedValue);
                 }
-                SlimefunItem slimefunItem = SlimefunItem.getByItem(itemStack);
-                if(slimefunItem instanceof ValidItem) {
-                    FinalTech.getLogService().addItem(slimefunItem.getId(), 1, this.getId(), LogSourceType.SLIMEFUN_MACHINE, null, location, this.getAddon().getJavaPlugin());
+                if(searchedSlimefunItem instanceof ValidItem) {
+                    FinalTech.getLogService().addItem(searchedSlimefunItem.getId(), 1, this.getId(), LogSourceType.SLIMEFUN_MACHINE, null, location, this.getAddon().getJavaPlugin());
                 }
             }
         }
