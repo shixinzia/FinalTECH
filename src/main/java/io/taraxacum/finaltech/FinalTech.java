@@ -1,12 +1,12 @@
 package io.taraxacum.finaltech;
 
+import com.sun.jdi.VirtualMachineManager;
 import io.github.thebusybiscuit.slimefun4.api.SlimefunAddon;
 import io.github.thebusybiscuit.slimefun4.core.config.SlimefunDatabaseManager;
 import io.github.thebusybiscuit.slimefun4.implementation.Slimefun;
 import io.taraxacum.common.api.RunnableLockFactory;
 import io.taraxacum.common.util.ReflectionUtil;
 import io.taraxacum.common.util.StringNumberUtil;
-import io.taraxacum.finaltech.core.patch.EnergyRegulatorBlockTicker;
 import io.taraxacum.finaltech.core.service.LogService;
 import io.taraxacum.finaltech.core.service.impl.FakeLogService;
 import io.taraxacum.finaltech.setup.Updater;
@@ -254,10 +254,7 @@ public class FinalTech extends JavaPlugin implements SlimefunAddon {
             }
         }, tickRate - 1, tickRate);
 
-        /* patches... */
-        if(this.config.getOrDefault(true, "patches", "ENERGY_REGULATOR", "enable")) {
-            new EnergyRegulatorBlockTicker().enable();
-        }
+        VirtualInventoryManager.getInstance().init(this);
 
         /* set up my items and menus and... */
         SetupUtil.init();
