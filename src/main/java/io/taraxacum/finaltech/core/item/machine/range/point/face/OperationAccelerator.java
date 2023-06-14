@@ -6,6 +6,7 @@ import io.github.thebusybiscuit.slimefun4.api.recipes.RecipeType;
 import io.taraxacum.finaltech.util.ConfigUtil;
 import org.bukkit.inventory.ItemStack;
 
+import javax.annotation.Nonnull;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -27,6 +28,7 @@ public class OperationAccelerator extends AbstractOperationAccelerator {
     }
 
     @Override
+    @Nonnull
     Set<String> getNotAllowedId() {
         return this.notAllowedId;
     }
