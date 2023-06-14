@@ -11,8 +11,8 @@ import io.taraxacum.common.util.MathUtil;
 import io.taraxacum.finaltech.FinalTech;
 import io.taraxacum.finaltech.core.interfaces.MenuUpdater;
 import io.taraxacum.finaltech.core.interfaces.RecipeItem;
-import io.taraxacum.finaltech.core.menu.AbstractMachineMenu;
-import io.taraxacum.finaltech.core.menu.machine.DustGeneratorMenu;
+import io.taraxacum.finaltech.core.inventory.AbstractMachineInventory;
+import io.taraxacum.finaltech.core.inventory.simple.DustGeneratorInventory;
 import io.taraxacum.finaltech.setup.FinalTechItems;
 import io.taraxacum.finaltech.util.MachineUtil;
 import io.taraxacum.finaltech.util.ConfigUtil;
@@ -26,6 +26,7 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 /**
  * @author Final_ROOT
@@ -35,10 +36,21 @@ public class DustGenerator extends AbstractMachine implements RecipeItem, MenuUp
     private final int capacity = ConfigUtil.getOrDefaultItemSetting(Integer.MAX_VALUE / 4, this, "capacity");
     // default = 144115188344291328
     // long.max= 9223372036854775808
+    // so it's safe (ง •_•)ง
     private final long countLimit = (long) this.capacity * (this.capacity + 1) / 2;
+
+    private int statusSlot;
 
     public DustGenerator(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
         super(itemGroup, item, recipeType, recipe);
+    }
+
+    @Nullable
+    @Override
+    protected AbstractMachineInventory setMachineInventory() {
+        DustGeneratorInventory dustGeneratorInventory = new DustGeneratorInventory(this);
+        this.statusSlot = dustGeneratorInventory.statusSlot;
+        return dustGeneratorInventory;
     }
 
     @Nonnull
@@ -51,12 +63,6 @@ public class DustGenerator extends AbstractMachine implements RecipeItem, MenuUp
     @Override
     protected BlockBreakHandler onBlockBreak() {
         return MachineUtil.simpleBlockBreakerHandler(FinalTech.getLocationDataService(), this);
-    }
-
-    @Nonnull
-    @Override
-    protected AbstractMachineMenu setMachineMenu() {
-        return new DustGeneratorMenu(this);
     }
 
     @Override
@@ -89,16 +95,15 @@ public class DustGenerator extends AbstractMachine implements RecipeItem, MenuUp
         if (!work) {
             count /= 2;
         }
-        int charge = (int) MathUtil.getBig(1, 1, -2 * count);
-
-
         FinalTech.getLocationDataService().setLocationData(locationData, this.keyCount, String.valueOf(count));
-        if (count > 0) {
+
+        int charge = (int) MathUtil.getBig(1, 1, -2 * count);
+        if (charge > 0) {
             this.addCharge(location, charge);
         }
 
         if(!inventory.getViewers().isEmpty()) {
-            this.updateInv(inventory, DustGeneratorMenu.STATUS_SLOT, this,
+            this.updateInv(inventory, this.statusSlot, this,
                     String.valueOf(count),
                     String.valueOf(charge),
                     String.valueOf(this.getCharge(location)));
