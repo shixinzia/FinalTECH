@@ -7,6 +7,8 @@ import io.github.thebusybiscuit.slimefun4.api.recipes.RecipeType;
 import io.github.thebusybiscuit.slimefun4.core.handlers.BlockBreakHandler;
 import io.github.thebusybiscuit.slimefun4.core.handlers.BlockPlaceHandler;
 import io.taraxacum.finaltech.FinalTech;
+import io.taraxacum.finaltech.core.inventory.AbstractMachineInventory;
+import io.taraxacum.finaltech.core.inventory.limit.lock.AdvancedMachineInventory;
 import io.taraxacum.libs.plugin.dto.LocationData;
 import io.taraxacum.libs.plugin.util.InventoryUtil;
 import io.taraxacum.libs.slimefun.dto.AdvancedCraft;
@@ -15,9 +17,6 @@ import io.taraxacum.libs.slimefun.dto.MachineRecipeFactory;
 import io.taraxacum.finaltech.core.interfaces.RecipeItem;
 import io.taraxacum.finaltech.core.option.Icon;
 import io.taraxacum.finaltech.core.item.machine.AbstractMachine;
-import io.taraxacum.finaltech.core.menu.AbstractMachineMenu;
-import io.taraxacum.finaltech.core.menu.limit.lock.AbstractLockMachineMenu;
-import io.taraxacum.finaltech.core.menu.limit.lock.AdvancedMachineMenu;
 import io.taraxacum.finaltech.util.MachineUtil;
 import io.taraxacum.finaltech.core.option.MachineRecipeLock;
 import org.bukkit.block.Block;
@@ -25,6 +24,7 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,9 +33,22 @@ import java.util.List;
  */
 public abstract class AbstractAdvanceMachine extends AbstractMachine implements RecipeItem {
     private final String offsetKey = "offset";
+    private int moduleSlot;
+    private int statusSlot;
+    private int recipeLockSlot;
 
     protected AbstractAdvanceMachine(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
         super(itemGroup, item, recipeType, recipe);
+    }
+
+    @Nullable
+    @Override
+    protected AbstractMachineInventory setMachineInventory() {
+        AdvancedMachineInventory advancedMachineInventory = new AdvancedMachineInventory(this);
+        this.moduleSlot = advancedMachineInventory.moduleSlot;
+        this.statusSlot = advancedMachineInventory.statusSlot;
+        this.recipeLockSlot = advancedMachineInventory.recipeLockSlot;
+        return advancedMachineInventory;
     }
 
     @Nonnull
@@ -47,13 +60,7 @@ public abstract class AbstractAdvanceMachine extends AbstractMachine implements 
     @Nonnull
     @Override
     protected BlockBreakHandler onBlockBreak() {
-        return MachineUtil.simpleBlockBreakerHandler(FinalTech.getLocationDataService(), this, AdvancedMachineMenu.MODULE_SLOT);
-    }
-
-    @Nonnull
-    @Override
-    protected final AbstractMachineMenu setMachineMenu() {
-        return new AdvancedMachineMenu(this);
+        return MachineUtil.simpleBlockBreakerHandler(FinalTech.getLocationDataService(), this, this.moduleSlot);
     }
 
     @Override
@@ -68,7 +75,7 @@ public abstract class AbstractAdvanceMachine extends AbstractMachine implements 
         int offset = offsetStr == null ? 0 : Integer.parseInt(offsetStr);
         String recipeLockStr = FinalTech.getLocationDataService().getLocationData(locationData, MachineRecipeLock.KEY);
         int recipeLock = recipeLockStr == null ? -2 : Integer.parseInt(recipeLockStr);
-        int quantityModule = Icon.updateQuantityModule(inventory, hasViewer, AdvancedMachineMenu.MODULE_SLOT, AdvancedMachineMenu.STATUS_SLOT);
+        int quantityModule = Icon.updateQuantityModule(inventory, hasViewer, this.moduleSlot, this.statusSlot);
         List<AdvancedMachineRecipe> advancedMachineRecipeList = MachineRecipeFactory.getInstance().getAdvancedRecipe(this.getId());
         if (recipeLock >= 0) {
             List<AdvancedMachineRecipe> finalAdvancedMachineRecipeList = advancedMachineRecipeList;
@@ -86,7 +93,7 @@ public abstract class AbstractAdvanceMachine extends AbstractMachine implements 
                 craft.setMatchCount(matchAmount);
                 craft.consumeItem(inventory);
                 if (recipeLock == Integer.parseInt(MachineRecipeLock.VALUE_UNLOCK)) {
-                    ItemStack itemStack = inventory.getItem(AbstractLockMachineMenu.RECIPE_LOCK_SLOT);
+                    ItemStack itemStack = inventory.getItem(this.recipeLockSlot);
                     if(hasViewer) {
                         MachineRecipeLock.OPTION.updateLore(itemStack, String.valueOf(craft.getOffset()), this);
                     }

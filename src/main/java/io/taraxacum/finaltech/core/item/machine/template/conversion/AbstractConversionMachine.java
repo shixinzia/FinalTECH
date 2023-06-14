@@ -8,6 +8,8 @@ import io.github.thebusybiscuit.slimefun4.core.handlers.BlockBreakHandler;
 import io.github.thebusybiscuit.slimefun4.core.handlers.BlockPlaceHandler;
 import io.github.thebusybiscuit.slimefun4.libraries.dough.items.CustomItemStack;
 import io.taraxacum.finaltech.FinalTech;
+import io.taraxacum.finaltech.core.inventory.AbstractMachineInventory;
+import io.taraxacum.finaltech.core.inventory.simple.ConversionMachineInventory;
 import io.taraxacum.libs.plugin.dto.AdvancedMachineRecipe;
 import io.taraxacum.libs.plugin.dto.ItemWrapper;
 import io.taraxacum.libs.plugin.dto.LocationData;
@@ -16,8 +18,6 @@ import io.taraxacum.finaltech.core.interfaces.RecipeItem;
 import io.taraxacum.libs.slimefun.dto.MachineRecipeFactory;
 import io.taraxacum.finaltech.core.option.Icon;
 import io.taraxacum.finaltech.core.item.machine.AbstractMachine;
-import io.taraxacum.finaltech.core.menu.AbstractMachineMenu;
-import io.taraxacum.finaltech.core.menu.machine.ConversionMachineMenu;
 import io.taraxacum.libs.plugin.util.ItemStackUtil;
 import io.taraxacum.finaltech.util.MachineUtil;
 import me.mrCookieSlime.Slimefun.Objects.SlimefunItem.abstractItems.MachineRecipe;
@@ -26,14 +26,27 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.List;
 
 /**
  * @author Final_ROOT
  */
 public abstract class AbstractConversionMachine extends AbstractMachine implements RecipeItem {
+    private int moduleSlot;
+    private int statusSlot;
+
     public AbstractConversionMachine(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
         super(itemGroup, item, recipeType, recipe);
+    }
+
+    @Nullable
+    @Override
+    protected AbstractMachineInventory setMachineInventory() {
+        ConversionMachineInventory conversionMachineInventory = new ConversionMachineInventory(this);
+        this.moduleSlot = conversionMachineInventory.moduleSlot;
+        this.statusSlot = conversionMachineInventory.statusSlot;
+        return null;
     }
 
     @Nonnull
@@ -45,13 +58,7 @@ public abstract class AbstractConversionMachine extends AbstractMachine implemen
     @Nonnull
     @Override
     protected BlockBreakHandler onBlockBreak() {
-        return MachineUtil.simpleBlockBreakerHandler(FinalTech.getLocationDataService(), this);
-    }
-
-    @Nonnull
-    @Override
-    protected AbstractMachineMenu setMachineMenu() {
-        return new ConversionMachineMenu(this);
+        return MachineUtil.simpleBlockBreakerHandler(FinalTech.getLocationDataService(), this, this.moduleSlot);
     }
 
     @Override
@@ -63,7 +70,7 @@ public abstract class AbstractConversionMachine extends AbstractMachine implemen
         boolean hasViewer = !inventory.getViewers().isEmpty();
 
         List<AdvancedMachineRecipe> advancedMachineRecipeList = MachineRecipeFactory.getInstance().getAdvancedRecipe(this.getId());
-        int quantityModule = Icon.updateQuantityModule(inventory, hasViewer, ConversionMachineMenu.MODULE_SLOT, ConversionMachineMenu.STATUS_SLOT);
+        int quantityModule = Icon.updateQuantityModule(inventory, hasViewer, this.moduleSlot, this.statusSlot);
         ItemWrapper itemWrapper = new ItemWrapper();
         for (int slot : this.getInputSlot()) {
             ItemStack itemStack = inventory.getItem(slot);
@@ -110,14 +117,12 @@ public abstract class AbstractConversionMachine extends AbstractMachine implemen
                 }
             }
         } else {
-            for (int i = 0; i < 100; i++) {
-                if (recipe.getOutput().length != 1) {
-                    throw new IllegalArgumentException("Register recipe for " + this.getItemName() + " has occurred a error: " + " out item type should only just one");
-                }
-                if (recipe.getOutput()[0].getAmount() != 1) {
-                    this.getAddon().getJavaPlugin().getServer().getLogger().info("Register recipe for " + this.getItemName() + " has occurred a error: " + " output item amount should be one");
-                    recipe.getOutput()[0] = new CustomItemStack(recipe.getOutput()[0], 1);
-                }
+            if (recipe.getOutput().length != 1) {
+                throw new IllegalArgumentException("Register recipe for " + this.getItemName() + " has occurred a error: " + " out item type should only just one");
+            }
+            if (recipe.getOutput()[0].getAmount() != 1) {
+                this.getAddon().getJavaPlugin().getServer().getLogger().info("Register recipe for " + this.getItemName() + " has occurred a error: " + " output item amount should be one");
+                recipe.getOutput()[0] = new CustomItemStack(recipe.getOutput()[0], 1);
             }
         }
 

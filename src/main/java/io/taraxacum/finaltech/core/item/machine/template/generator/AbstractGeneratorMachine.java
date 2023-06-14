@@ -7,6 +7,8 @@ import io.github.thebusybiscuit.slimefun4.api.recipes.RecipeType;
 import io.github.thebusybiscuit.slimefun4.core.handlers.BlockBreakHandler;
 import io.github.thebusybiscuit.slimefun4.core.handlers.BlockPlaceHandler;
 import io.taraxacum.finaltech.FinalTech;
+import io.taraxacum.finaltech.core.inventory.AbstractMachineInventory;
+import io.taraxacum.finaltech.core.inventory.simple.GeneratorMachineInventory;
 import io.taraxacum.libs.plugin.dto.AdvancedMachineRecipe;
 import io.taraxacum.libs.plugin.dto.ItemAmountWrapper;
 import io.taraxacum.libs.plugin.dto.LocationData;
@@ -16,8 +18,6 @@ import io.taraxacum.finaltech.core.interfaces.RecipeItem;
 import io.taraxacum.libs.slimefun.dto.MachineRecipeFactory;
 import io.taraxacum.finaltech.core.option.Icon;
 import io.taraxacum.finaltech.core.item.machine.AbstractMachine;
-import io.taraxacum.finaltech.core.menu.AbstractMachineMenu;
-import io.taraxacum.finaltech.core.menu.machine.GeneratorMachineMenu;
 import io.taraxacum.finaltech.util.MachineUtil;
 import me.mrCookieSlime.Slimefun.Objects.SlimefunItem.abstractItems.MachineRecipe;
 import org.bukkit.Material;
@@ -27,6 +27,7 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -35,9 +36,20 @@ import java.util.List;
  */
 public abstract class AbstractGeneratorMachine extends AbstractMachine implements RecipeItem {
     private RandomMachineRecipe emptyInputRecipe;
+    private int moduleSlot;
+    private int statusSlot;
 
     public AbstractGeneratorMachine(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
         super(itemGroup, item, recipeType, recipe);
+    }
+
+    @Nullable
+    @Override
+    protected AbstractMachineInventory setMachineInventory() {
+        GeneratorMachineInventory generatorMachineInventory = new GeneratorMachineInventory(this);
+        this.moduleSlot = generatorMachineInventory.moduleSlot;
+        this.statusSlot = generatorMachineInventory.statusSlot;
+        return null;
     }
 
     @Nonnull
@@ -49,18 +61,12 @@ public abstract class AbstractGeneratorMachine extends AbstractMachine implement
     @Nonnull
     @Override
     protected BlockBreakHandler onBlockBreak() {
-        return MachineUtil.simpleBlockBreakerHandler(FinalTech.getLocationDataService(), this);
+        return MachineUtil.simpleBlockBreakerHandler(FinalTech.getLocationDataService(), this, this.moduleSlot);
     }
 
     @Override
     protected boolean isSynchronized() {
         return false;
-    }
-
-    @Nonnull
-    @Override
-    protected AbstractMachineMenu setMachineMenu() {
-        return new GeneratorMachineMenu(this);
     }
 
     @Override
@@ -74,7 +80,7 @@ public abstract class AbstractGeneratorMachine extends AbstractMachine implement
         List<AdvancedMachineRecipe> advancedMachineRecipeList = MachineRecipeFactory.getInstance().getAdvancedRecipe(this.getId());
         AdvancedMachineRecipe advancedMachineRecipe = advancedMachineRecipeList.get((int) (FinalTech.getRandom().nextDouble() * advancedMachineRecipeList.size()));
         ItemAmountWrapper[] outputs = advancedMachineRecipe.getOutput();
-        int quantityModule = Icon.updateQuantityModule(inventory, hasViewer, GeneratorMachineMenu.MODULE_SLOT, GeneratorMachineMenu.STATUS_SLOT);
+        int quantityModule = Icon.updateQuantityModule(inventory, hasViewer, this.moduleSlot, this.statusSlot);
 
         InventoryUtil.tryPushItem(inventory, this.getOutputSlot(), quantityModule, outputs);
     }

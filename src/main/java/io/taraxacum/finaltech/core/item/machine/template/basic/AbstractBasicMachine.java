@@ -5,6 +5,8 @@ import io.github.thebusybiscuit.slimefun4.api.recipes.RecipeType;
 import io.github.thebusybiscuit.slimefun4.core.handlers.BlockBreakHandler;
 import io.github.thebusybiscuit.slimefun4.core.handlers.BlockPlaceHandler;
 import io.taraxacum.finaltech.FinalTech;
+import io.taraxacum.finaltech.core.inventory.AbstractMachineInventory;
+import io.taraxacum.finaltech.core.inventory.limit.lock.BasicMachineInventory;
 import io.taraxacum.libs.plugin.dto.LocationData;
 import io.taraxacum.libs.plugin.util.InventoryUtil;
 import io.taraxacum.libs.slimefun.dto.AdvancedCraft;
@@ -12,9 +14,6 @@ import io.taraxacum.libs.plugin.dto.AdvancedMachineRecipe;
 import io.taraxacum.libs.slimefun.dto.MachineRecipeFactory;
 import io.taraxacum.finaltech.core.interfaces.RecipeItem;
 import io.taraxacum.finaltech.core.item.machine.AbstractMachine;
-import io.taraxacum.finaltech.core.menu.AbstractMachineMenu;
-import io.taraxacum.finaltech.core.menu.limit.lock.AbstractLockMachineMenu;
-import io.taraxacum.finaltech.core.menu.limit.lock.BasicMachineMenu;
 import io.taraxacum.finaltech.util.MachineUtil;
 import io.taraxacum.finaltech.core.option.MachineRecipeLock;
 import org.bukkit.block.Block;
@@ -22,6 +21,7 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.*;
 
@@ -30,10 +30,19 @@ import java.util.*;
  */
 public abstract class AbstractBasicMachine extends AbstractMachine implements RecipeItem {
     private final String offsetKey = "offset";
+    private int recipeLockSlot;
 
     @ParametersAreNonnullByDefault
     protected AbstractBasicMachine(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
         super(itemGroup, item, recipeType, recipe);
+    }
+
+    @Nullable
+    @Override
+    protected AbstractMachineInventory setMachineInventory() {
+        BasicMachineInventory basicMachineInventory = new BasicMachineInventory(this);
+        this.recipeLockSlot = basicMachineInventory.recipeLockSlot;
+        return basicMachineInventory;
     }
 
     @Nonnull
@@ -51,12 +60,6 @@ public abstract class AbstractBasicMachine extends AbstractMachine implements Re
     @Override
     protected boolean isSynchronized() {
         return false;
-    }
-
-    @Nonnull
-    @Override
-    protected AbstractMachineMenu setMachineMenu() {
-        return new BasicMachineMenu(this);
     }
 
     @Override
@@ -89,7 +92,7 @@ public abstract class AbstractBasicMachine extends AbstractMachine implements Re
                 craft.setMatchCount(matchAmount);
                 craft.consumeItem(inventory);
                 if (recipeLock == Integer.parseInt(MachineRecipeLock.VALUE_UNLOCK)) {
-                    ItemStack itemStack = inventory.getItem(AbstractLockMachineMenu.RECIPE_LOCK_SLOT);
+                    ItemStack itemStack = inventory.getItem(this.recipeLockSlot);
                     if(hasViewer) {
                         MachineRecipeLock.OPTION.updateLore(itemStack, String.valueOf(craft.getOffset()), this);
                     }
