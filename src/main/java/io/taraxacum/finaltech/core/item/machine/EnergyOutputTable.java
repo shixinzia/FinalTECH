@@ -9,10 +9,10 @@ import io.github.thebusybiscuit.slimefun4.core.handlers.BlockPlaceHandler;
 import io.taraxacum.common.util.StringNumberUtil;
 import io.taraxacum.finaltech.FinalTech;
 import io.taraxacum.finaltech.core.interfaces.RecipeItem;
+import io.taraxacum.finaltech.core.inventory.AbstractMachineInventory;
+import io.taraxacum.finaltech.core.inventory.simple.EnergyOutputTableInventory;
 import io.taraxacum.finaltech.core.item.usable.EnergyCard;
 import io.taraxacum.finaltech.core.item.usable.PortableEnergyStorage;
-import io.taraxacum.finaltech.core.menu.AbstractMachineMenu;
-import io.taraxacum.finaltech.core.menu.machine.EnergyOutputTableMenu;
 import io.taraxacum.finaltech.util.MachineUtil;
 import io.taraxacum.finaltech.util.RecipeUtil;
 import io.taraxacum.libs.plugin.dto.LocationData;
@@ -34,6 +34,12 @@ public class EnergyOutputTable extends AbstractMachine implements RecipeItem {
         super(itemGroup, item, recipeType, recipe);
     }
 
+    @Nullable
+    @Override
+    protected AbstractMachineInventory setMachineInventory() {
+        return new EnergyOutputTableInventory(this);
+    }
+
     @Nonnull
     @Override
     protected BlockPlaceHandler onBlockPlace() {
@@ -46,22 +52,18 @@ public class EnergyOutputTable extends AbstractMachine implements RecipeItem {
         return MachineUtil.simpleBlockBreakerHandler(FinalTech.getLocationDataService(), this);
     }
 
-    @Nullable
-    @Override
-    protected AbstractMachineMenu setMachineMenu() {
-        return new EnergyOutputTableMenu(this);
-    }
-
     @Override
     protected void tick(@Nonnull Block block, @Nonnull SlimefunItem slimefunItem, @Nonnull LocationData locationData) {
         Inventory inventory = FinalTech.getLocationDataService().getInventory(locationData);
-
         if(inventory == null || InventoryUtil.slotCount(inventory, this.getOutputSlot()) == this.getOutputSlot().length) {
             return;
         }
 
         ItemStack energyStorageItem = inventory.getItem(this.getInputSlot()[0]);
-        if(ItemStackUtil.isItemNull(energyStorageItem) || energyStorageItem.getAmount() > 1 || !(SlimefunItem.getByItem(energyStorageItem) instanceof PortableEnergyStorage portableEnergyStorage)) {
+        if(ItemStackUtil.isItemNull(energyStorageItem)
+                || energyStorageItem.getAmount() > 1
+                || energyStorageItem.getMaxStackSize() > 1
+                || !(SlimefunItem.getByItem(energyStorageItem) instanceof PortableEnergyStorage portableEnergyStorage)) {
             return;
         }
 
