@@ -9,9 +9,9 @@ import io.github.thebusybiscuit.slimefun4.core.handlers.BlockPlaceHandler;
 import io.taraxacum.finaltech.FinalTech;
 import io.taraxacum.finaltech.core.interfaces.RecipeItem;
 import io.taraxacum.finaltech.core.interfaces.LogicItem;
+import io.taraxacum.finaltech.core.inventory.AbstractMachineInventory;
+import io.taraxacum.finaltech.core.inventory.simple.LogicCrafterInventory;
 import io.taraxacum.finaltech.core.item.unusable.DigitalNumber;
-import io.taraxacum.finaltech.core.menu.AbstractMachineMenu;
-import io.taraxacum.finaltech.core.menu.machine.LogicCrafterMenu;
 import io.taraxacum.finaltech.setup.FinalTechItemStacks;
 import io.taraxacum.finaltech.util.RecipeUtil;
 import io.taraxacum.libs.plugin.dto.LocationData;
@@ -23,6 +23,7 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 /**
  * @author Final_ROOT
@@ -30,6 +31,12 @@ import javax.annotation.Nonnull;
 public class LogicCrafter extends AbstractMachine implements RecipeItem {
     public LogicCrafter(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item, @Nonnull RecipeType recipeType, @Nonnull ItemStack[] recipe) {
         super(itemGroup, item, recipeType, recipe);
+    }
+
+    @Nullable
+    @Override
+    protected AbstractMachineInventory setMachineInventory() {
+        return new LogicCrafterInventory(this);
     }
 
     @Nonnull
@@ -44,35 +51,31 @@ public class LogicCrafter extends AbstractMachine implements RecipeItem {
         return MachineUtil.simpleBlockBreakerHandler(FinalTech.getLocationDataService(), this);
     }
 
-    @Nonnull
-    @Override
-    protected AbstractMachineMenu setMachineMenu() {
-        return new LogicCrafterMenu(this);
-    }
-
     @Override
     protected void tick(@Nonnull Block block, @Nonnull SlimefunItem slimefunItem, @Nonnull LocationData locationData) {
-        int digit = 0;
         Inventory inventory = FinalTech.getLocationDataService().getInventory(locationData);
         if (inventory == null || InventoryUtil.slotCount(inventory, this.getOutputSlot()) == this.getOutputSlot().length) {
             return;
         }
+
+        int digit = 0;
         for (int slot : this.getInputSlot()) {
             ItemStack itemStack = inventory.getItem(slot);
             if (ItemStackUtil.isItemNull(itemStack)) {
                 return;
             }
-            SlimefunItem logicItem = SlimefunItem.getByItem(itemStack);
-            if (logicItem instanceof LogicItem l) {
-                boolean logic = l.getLogic();
+            SlimefunItem sfItem = SlimefunItem.getByItem(itemStack);
+            if (sfItem instanceof LogicItem logicItem) {
+                boolean logic = logicItem.getLogic();
                 digit = digit << 1;
                 digit += logic ? 1 : 0;
             } else {
                 return;
             }
         }
+
         SlimefunItem result = DigitalNumber.getByDigit(digit);
-        if (result != null) {
+        if (result != null && InventoryUtil.tryPushAllItem(inventory, this.getOutputSlot(), result.getItem())) {
             for (int slot : this.getInputSlot()) {
                 ItemStack itemStack = inventory.getItem(slot);
                 if (ItemStackUtil.isItemNull(itemStack)) {
@@ -80,7 +83,6 @@ public class LogicCrafter extends AbstractMachine implements RecipeItem {
                 }
                 itemStack.setAmount(itemStack.getAmount() - 1);
             }
-            inventory.setItem(this.getOutputSlot()[0], result.getItem());
         }
     }
 
