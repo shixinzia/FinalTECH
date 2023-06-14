@@ -5,8 +5,8 @@ import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItemStack;
 import io.github.thebusybiscuit.slimefun4.api.recipes.RecipeType;
 import io.taraxacum.finaltech.FinalTech;
 import io.taraxacum.finaltech.core.interfaces.RecipeItem;
-import io.taraxacum.finaltech.core.menu.AbstractMachineMenu;
-import io.taraxacum.finaltech.core.menu.clicker.RandomAccessorMenu;
+import io.taraxacum.finaltech.core.inventory.AbstractMachineInventory;
+import io.taraxacum.finaltech.core.inventory.clicker.RandomAccessorInventory;
 import io.taraxacum.finaltech.util.RecipeUtil;
 import org.bukkit.inventory.ItemStack;
 
@@ -23,8 +23,8 @@ public class RandomAccessor extends AbstractClickerMachine implements RecipeItem
 
     @Nullable
     @Override
-    protected AbstractMachineMenu setMachineMenu() {
-        return new RandomAccessorMenu(this);
+    protected AbstractMachineInventory setMachineInventory() {
+        return new RandomAccessorInventory(this);
     }
 
     @Override
