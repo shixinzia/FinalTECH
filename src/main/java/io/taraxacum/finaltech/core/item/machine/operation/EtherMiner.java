@@ -11,8 +11,8 @@ import io.taraxacum.finaltech.FinalTech;
 import io.taraxacum.finaltech.core.enums.LogSourceType;
 import io.taraxacum.finaltech.core.interfaces.MenuUpdater;
 import io.taraxacum.finaltech.core.interfaces.RecipeItem;
-import io.taraxacum.finaltech.core.menu.AbstractMachineMenu;
-import io.taraxacum.finaltech.core.menu.machine.EtherMinerMenu;
+import io.taraxacum.finaltech.core.inventory.AbstractMachineInventory;
+import io.taraxacum.finaltech.core.inventory.simple.EtherMinerInventory;
 import io.taraxacum.finaltech.core.operation.EtherMinerOperation;
 import io.taraxacum.finaltech.setup.FinalTechItemStacks;
 import io.taraxacum.finaltech.setup.FinalTechItems;
@@ -43,9 +43,18 @@ public class EtherMiner extends AbstractOperationMachine implements RecipeItem, 
     private final double mul = ConfigUtil.getOrDefaultItemSetting(0.01, this, "mul");
     private final double add = ConfigUtil.getOrDefaultItemSetting(0.08, this, "add");
     private final double random = ConfigUtil.getOrDefaultItemSetting(0.1, this, "random");
+    private int statusSlot;
 
     public EtherMiner(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
         super(itemGroup, item, recipeType, recipe);
+    }
+
+    @Nullable
+    @Override
+    protected AbstractMachineInventory setMachineInventory() {
+        EtherMinerInventory etherMinerInventory = new EtherMinerInventory(this);
+        this.statusSlot = etherMinerInventory.statusSlot;
+        return etherMinerInventory;
     }
 
     @Nonnull
@@ -67,12 +76,6 @@ public class EtherMiner extends AbstractOperationMachine implements RecipeItem, 
                 EtherMiner.this.getMachineProcessor().endOperation(location);
             }
         };
-    }
-
-    @Nullable
-    @Override
-    protected AbstractMachineMenu setMachineMenu() {
-        return new EtherMinerMenu(this);
     }
 
     @Override
@@ -129,7 +132,7 @@ public class EtherMiner extends AbstractOperationMachine implements RecipeItem, 
                 progress = etherMinerOperation.getProgress();
                 totalTicks = etherMinerOperation.getTotalTicks();
             }
-            this.updateInv(inventory, EtherMinerMenu.STATUS_SLOT, this,
+            this.updateInv(inventory, this.statusSlot, this,
                     String.valueOf(progress),
                     String.valueOf(totalTicks),
                     String.valueOf(etherAmount));
