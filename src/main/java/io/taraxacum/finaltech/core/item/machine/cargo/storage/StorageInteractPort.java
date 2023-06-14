@@ -7,6 +7,8 @@ import io.github.thebusybiscuit.slimefun4.api.recipes.RecipeType;
 import io.taraxacum.common.util.JavaUtil;
 import io.taraxacum.finaltech.FinalTech;
 import io.taraxacum.finaltech.core.dto.StringItemCardCache;
+import io.taraxacum.finaltech.core.inventory.AbstractMachineInventory;
+import io.taraxacum.finaltech.core.inventory.simple.StorageInteractPortInventory;
 import io.taraxacum.finaltech.setup.FinalTechItems;
 import io.taraxacum.libs.plugin.dto.ItemWrapper;
 import io.taraxacum.libs.plugin.dto.LocationData;
@@ -15,12 +17,8 @@ import io.taraxacum.libs.plugin.util.ItemStackUtil;
 import io.taraxacum.finaltech.util.StringItemUtil;
 import io.taraxacum.finaltech.core.interfaces.RecipeItem;
 import io.taraxacum.finaltech.core.item.machine.cargo.AbstractCargo;
-import io.taraxacum.finaltech.core.menu.AbstractMachineMenu;
-import io.taraxacum.finaltech.core.menu.machine.StorageInteractPortMenu;
 import io.taraxacum.finaltech.util.ConfigUtil;
 import io.taraxacum.finaltech.util.RecipeUtil;
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.BlockState;
@@ -31,6 +29,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 /**
  * @author Final_ROOT
@@ -42,10 +41,10 @@ public class StorageInteractPort extends AbstractCargo implements RecipeItem {
         super(itemGroup, item, recipeType, recipe);
     }
 
-    @Nonnull
+    @Nullable
     @Override
-    protected AbstractMachineMenu setMachineMenu() {
-        return new StorageInteractPortMenu(this);
+    protected AbstractMachineInventory setMachineInventory() {
+        return new StorageInteractPortInventory(this);
     }
 
     @Override
@@ -55,12 +54,12 @@ public class StorageInteractPort extends AbstractCargo implements RecipeItem {
         if(inventory == null) {
             return;
         }
-        if (FinalTech.getLocationDataService().getInventory(targetBlock.getLocation()) != null) {
-            if (Bukkit.isPrimaryThread()) {
+        if (FinalTech.getLocationDataService().getInventory(targetBlock.getLocation()) == null) {
+            if (this.getAddon().getJavaPlugin().getServer().isPrimaryThread()) {
                 BlockState blockState = targetBlock.getState();
                 if (blockState instanceof InventoryHolder inventoryHolder) {
                     Inventory targetInventory = inventoryHolder.getInventory();
-                    this.doFunction(targetInventory, inventory, block.getLocation());
+                    this.doFunction(targetInventory, inventory);
                 }
             } else {
                 JavaPlugin javaPlugin = this.getAddon().getJavaPlugin();
@@ -68,14 +67,14 @@ public class StorageInteractPort extends AbstractCargo implements RecipeItem {
                     BlockState blockState = targetBlock.getState();
                     if (blockState instanceof InventoryHolder inventoryHolder) {
                         Inventory targetInventory = inventoryHolder.getInventory();
-                        FinalTech.getLocationRunnableFactory().waitThenRun(() -> StorageInteractPort.this.doFunction(targetInventory, inventory, block.getLocation()), targetBlock.getLocation(), block.getLocation());
+                        FinalTech.getLocationRunnableFactory().waitThenRun(() -> StorageInteractPort.this.doFunction(targetInventory, inventory), targetBlock.getLocation(), block.getLocation());
                     }
                 });
             }
         }
     }
 
-    private void doFunction(@Nonnull Inventory targetInventory, @Nonnull Inventory blockInventory, @Nonnull Location location) {
+    private void doFunction(@Nonnull Inventory targetInventory, @Nonnull Inventory blockInventory) {
         boolean canInput = !InventoryUtil.isEmpty(blockInventory, this.getInputSlot()) && InventoryUtil.slotCount(blockInventory, this.getInputSlot()) >= this.getInputSlot().length / 2;
         boolean canOutput = !InventoryUtil.isFull(blockInventory, this.getOutputSlot()) && InventoryUtil.slotCount(blockInventory, this.getOutputSlot()) < this.getOutputSlot().length / 2;
 
@@ -113,6 +112,7 @@ public class StorageInteractPort extends AbstractCargo implements RecipeItem {
             if (!canInput && !canOutput) {
                 break;
             }
+
             ItemMeta itemMeta = stringItemCardCache.getCardItemMeta();
             ItemWrapper stringItem = stringItemCardCache.getTemplateStringItem();
 

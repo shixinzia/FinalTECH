@@ -3,11 +3,11 @@ package io.taraxacum.finaltech.core.item.machine.cargo.storage;
 import io.github.thebusybiscuit.slimefun4.api.items.ItemGroup;
 import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItemStack;
 import io.github.thebusybiscuit.slimefun4.api.recipes.RecipeType;
-import io.taraxacum.finaltech.core.menu.AbstractMachineMenu;
-import io.taraxacum.finaltech.core.menu.unit.AllInputStorageUnitMenu;
+import io.taraxacum.finaltech.core.inventory.AbstractMachineInventory;
+import io.taraxacum.finaltech.core.inventory.unit.AllInputStorageUnitInventory;
 import org.bukkit.inventory.ItemStack;
 
-import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 /**
  * @author Final_ROOT
@@ -17,9 +17,9 @@ public class StorageInsertPort extends StorageInteractPort {
         super(itemGroup, item, recipeType, recipe);
     }
 
-    @Nonnull
+    @Nullable
     @Override
-    protected AbstractMachineMenu setMachineMenu() {
-        return new AllInputStorageUnitMenu(this);
+    protected AbstractMachineInventory setMachineInventory() {
+        return new AllInputStorageUnitInventory(this);
     }
 }
