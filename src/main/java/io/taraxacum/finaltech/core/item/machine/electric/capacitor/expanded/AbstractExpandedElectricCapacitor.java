@@ -5,14 +5,12 @@ import io.github.thebusybiscuit.slimefun4.api.items.ItemGroup;
 import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItem;
 import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItemStack;
 import io.github.thebusybiscuit.slimefun4.api.recipes.RecipeType;
-import io.github.thebusybiscuit.slimefun4.implementation.Slimefun;
 import io.taraxacum.common.util.JavaUtil;
 import io.taraxacum.finaltech.FinalTech;
 import io.taraxacum.finaltech.core.interfaces.RecipeItem;
 import io.taraxacum.finaltech.core.interfaces.MenuUpdater;
 import io.taraxacum.finaltech.core.item.machine.electric.capacitor.AbstractElectricCapacitor;
 import io.taraxacum.finaltech.core.listener.ExpandedElectricCapacitorEnergyListener;
-import io.taraxacum.finaltech.core.menu.unit.StatusMenu;
 import io.taraxacum.common.util.StringNumberUtil;
 import io.taraxacum.finaltech.util.ConstantTableUtil;
 import io.taraxacum.libs.plugin.dto.LocationData;
@@ -29,7 +27,7 @@ import javax.annotation.Nonnull;
  * @author Final_ROOT
  */
 public abstract class AbstractExpandedElectricCapacitor extends AbstractElectricCapacitor implements RecipeItem, MenuUpdater {
-    private static boolean registerListener = false;
+    protected static boolean registeredListener = false;
     protected final String key = "s";
 
     public AbstractExpandedElectricCapacitor(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
@@ -39,10 +37,10 @@ public abstract class AbstractExpandedElectricCapacitor extends AbstractElectric
     @Override
     public void register(@Nonnull SlimefunAddon addon) {
         super.register(addon);
-        if (!this.isDisabled() && !registerListener) {
+        if (!this.isDisabled() && !registeredListener) {
             PluginManager pluginManager = addon.getJavaPlugin().getServer().getPluginManager();
             pluginManager.registerEvents(new ExpandedElectricCapacitorEnergyListener(), addon.getJavaPlugin());
-            registerListener = true;
+            registeredListener = true;
         }
     }
 
@@ -53,13 +51,14 @@ public abstract class AbstractExpandedElectricCapacitor extends AbstractElectric
         long energy = Integer.parseInt(energyStr);
         long energyStack = Integer.parseInt(energyStackStr);
 
-        long allEnergy = energyStack * (this.getCapacity() / 2 + 1) + energy;
+        long allEnergy = energyStack * (this.getCapacity() / 2) + energy;
+        allEnergy += energyStack;
 
         this.setEnergy(locationData, allEnergy);
 
         Inventory inventory = FinalTech.getLocationDataService().getInventory(locationData);
         if (inventory != null && !inventory.getViewers().isEmpty()) {
-            this.updateInv(inventory, StatusMenu.STATUS_SLOT, this, String.valueOf(energy), energyStackStr);
+            this.updateInv(inventory, this.statusSlot, this, String.valueOf(energy), energyStackStr);
         }
     }
 
@@ -73,7 +72,7 @@ public abstract class AbstractExpandedElectricCapacitor extends AbstractElectric
         RecipeUtil.registerDescriptiveRecipe(FinalTech.getLanguageManager(), this,
                 String.valueOf((this.getCapacity() / 2)),
                 String.valueOf(this.getMaxStack()),
-                String.format("%.2f", Slimefun.getTickerTask().getTickRate() / 20.0));
+                ConstantTableUtil.SLIMEFUN_TICK_INTERVAL);
     }
 
     public int getStack(@Nonnull LocationData locationData) {
