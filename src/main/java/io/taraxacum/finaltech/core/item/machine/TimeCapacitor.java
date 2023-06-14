@@ -11,8 +11,8 @@ import io.github.thebusybiscuit.slimefun4.core.networks.energy.EnergyNetComponen
 import io.taraxacum.finaltech.FinalTech;
 import io.taraxacum.finaltech.core.interfaces.RecipeItem;
 import io.taraxacum.finaltech.core.interfaces.MenuUpdater;
-import io.taraxacum.finaltech.core.menu.AbstractMachineMenu;
-import io.taraxacum.finaltech.core.menu.unit.StatusMenu;
+import io.taraxacum.finaltech.core.inventory.AbstractMachineInventory;
+import io.taraxacum.finaltech.core.inventory.unit.StatusInventory;
 import io.taraxacum.finaltech.util.ConfigUtil;
 import io.taraxacum.finaltech.util.MachineUtil;
 import io.taraxacum.finaltech.util.RecipeUtil;
@@ -25,6 +25,7 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 /**
  * @author Final_ROOT
@@ -33,9 +34,18 @@ public class TimeCapacitor extends AbstractMachine implements EnergyNetComponent
     private final String key = "t";
     private final int interval = ConfigUtil.getOrDefaultItemSetting(1600, this, "interval");
     private final int capacity = ConfigUtil.getOrDefaultItemSetting(16777216, this, "capacity");
+    private int statusSlot;
 
     public TimeCapacitor(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item, @Nonnull RecipeType recipeType, @Nonnull ItemStack[] recipe) {
         super(itemGroup, item, recipeType, recipe);
+    }
+
+    @Nullable
+    @Override
+    protected AbstractMachineInventory setMachineInventory() {
+        StatusInventory statusInventory = new StatusInventory(this);
+        this.statusSlot = statusInventory.statusSlot;
+        return statusInventory;
     }
 
     @Nonnull
@@ -47,21 +57,15 @@ public class TimeCapacitor extends AbstractMachine implements EnergyNetComponent
     @Nonnull
     @Override
     protected BlockBreakHandler onBlockBreak() {
-        return MachineUtil.simpleBlockBreakerHandler(FinalTech.getLocationDataService(), this);
-    }
-
-    @Nonnull
-    @Override
-    protected AbstractMachineMenu setMachineMenu() {
-        return new StatusMenu(this);
+        return MachineUtil.simpleBlockBreakerHandler();
     }
 
     @Override
     protected void tick(@Nonnull Block block, @Nonnull SlimefunItem slimefunItem, @Nonnull LocationData locationData) {
         Location location = locationData.getLocation();
         World world = location.getWorld();
-        String chargeStr = EnergyUtil.getCharge(FinalTech.getLocationDataService(), locationData);
-        int charge = Integer.parseInt(chargeStr);
+
+        int charge = Integer.parseInt(EnergyUtil.getCharge(FinalTech.getLocationDataService(), locationData));
 
         if(world != null) {
             long time = world.getTime() / this.interval;
@@ -75,13 +79,12 @@ public class TimeCapacitor extends AbstractMachine implements EnergyNetComponent
         }
 
         charge = charge > this.capacity ? 0 : charge;
-        chargeStr = String.valueOf(charge);
-        EnergyUtil.setCharge(FinalTech.getLocationDataService(), locationData, chargeStr);
+        EnergyUtil.setCharge(FinalTech.getLocationDataService(), locationData, String.valueOf(charge));
 
         Inventory inventory = FinalTech.getLocationDataService().getInventory(locationData);
         if(inventory != null && !inventory.getViewers().isEmpty()) {
-            this.updateInv(inventory, StatusMenu.STATUS_SLOT, this,
-                    chargeStr);
+            this.updateInv(inventory, this.statusSlot, this,
+                    String.valueOf(charge));
         }
     }
 
