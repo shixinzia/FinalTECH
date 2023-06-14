@@ -5,8 +5,8 @@ import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItemStack;
 import io.github.thebusybiscuit.slimefun4.api.recipes.RecipeType;
 import io.taraxacum.finaltech.FinalTech;
 import io.taraxacum.finaltech.core.interfaces.RecipeItem;
-import io.taraxacum.finaltech.core.menu.AbstractMachineMenu;
-import io.taraxacum.finaltech.core.menu.clicker.ClickWorkMachineMenu;
+import io.taraxacum.finaltech.core.inventory.AbstractMachineInventory;
+import io.taraxacum.finaltech.core.inventory.clicker.ClickWorkMachineInventory;
 import io.taraxacum.finaltech.util.RecipeUtil;
 import org.bukkit.inventory.ItemStack;
 
@@ -23,8 +23,8 @@ public class ClickWorkMachine extends AbstractClickerMachine implements RecipeIt
 
     @Nullable
     @Override
-    protected AbstractMachineMenu setMachineMenu() {
-        return new ClickWorkMachineMenu(this);
+    protected AbstractMachineInventory setMachineInventory() {
+        return new ClickWorkMachineInventory(this);
     }
 
     @Override
