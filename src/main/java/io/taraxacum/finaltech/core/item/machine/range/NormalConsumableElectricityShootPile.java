@@ -11,20 +11,23 @@ import io.github.thebusybiscuit.slimefun4.core.networks.energy.EnergyNetComponen
 import io.taraxacum.common.util.JavaUtil;
 import io.taraxacum.finaltech.FinalTech;
 import io.taraxacum.finaltech.core.interfaces.*;
-import io.taraxacum.finaltech.core.menu.AbstractMachineMenu;
-import io.taraxacum.finaltech.core.menu.unit.StatusL2Menu;
-import io.taraxacum.finaltech.core.menu.unit.StatusMenu;
+import io.taraxacum.finaltech.core.inventory.AbstractMachineInventory;
+import io.taraxacum.finaltech.core.inventory.unit.StatusL2Inventory;
+import io.taraxacum.finaltech.core.option.RouteShow;
 import io.taraxacum.finaltech.util.*;
 import io.taraxacum.libs.plugin.dto.LocationData;
+import io.taraxacum.libs.plugin.util.ParticleUtil;
 import io.taraxacum.libs.slimefun.util.EnergyUtil;
 import io.taraxacum.libs.slimefun.util.LocationDataUtil;
 import org.bukkit.Location;
+import org.bukkit.Particle;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.block.data.Directional;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.plugin.java.JavaPlugin;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -38,9 +41,18 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class NormalConsumableElectricityShootPile extends AbstractRangeMachine implements RecipeItem, MenuUpdater, PointMachine, LineMachine, LocationMachine {
     private final int range = ConfigUtil.getOrDefaultItemSetting(16, this, "range");
     private final Set<String> notAllowedId = new HashSet<>(ConfigUtil.getItemStringList(this, "not-allowed-id"));
+    private int statusSlot;
 
     public NormalConsumableElectricityShootPile(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
         super(itemGroup, item, recipeType, recipe);
+    }
+
+    @Nullable
+    @Override
+    protected AbstractMachineInventory setMachineInventory() {
+        StatusL2Inventory statusL2Inventory = new StatusL2Inventory(this);
+        this.statusSlot = statusL2Inventory.statusSlot;
+        return statusL2Inventory;
     }
 
     @Nonnull
@@ -53,12 +65,6 @@ public class NormalConsumableElectricityShootPile extends AbstractRangeMachine i
     @Override
     protected BlockBreakHandler onBlockBreak() {
         return MachineUtil.simpleBlockBreakerHandler(FinalTech.getLocationDataService(), this);
-    }
-
-    @Nullable
-    @Override
-    protected AbstractMachineMenu setMachineMenu() {
-        return new StatusL2Menu(this);
     }
 
     @Override
@@ -80,19 +86,29 @@ public class NormalConsumableElectricityShootPile extends AbstractRangeMachine i
 
         BlockData blockData = block.getBlockData();
         if (blockData instanceof Directional directional && digital != -1) {
+            boolean drawParticle = hasViewer || RouteShow.VALUE_TRUE.equals(RouteShow.OPTION.getOrDefaultValue(FinalTech.getLocationDataService(), locationData));
             Runnable runnable = () -> {
-                AtomicInteger capacitorEnergy = new AtomicInteger(0);
+                int capacitorEnergy = 0;
                 AtomicInteger transferEnergy = new AtomicInteger(0);
 
                 LocationData capacitorLocationData = FinalTech.getLocationDataService().getLocationData(block.getRelative(directional.getFacing().getOppositeFace()).getLocation());
                 if(capacitorLocationData != null
                         && LocationDataUtil.getSlimefunItem(FinalTech.getLocationDataService(), capacitorLocationData) instanceof EnergyNetComponent energyNetComponent
                         && JavaUtil.matchOnce(energyNetComponent.getEnergyComponentType(), EnergyNetComponentType.CAPACITOR, EnergyNetComponentType.GENERATOR)) {
-                    capacitorEnergy.set(Integer.parseInt(EnergyUtil.getCharge(FinalTech.getLocationDataService(), capacitorLocationData)));
+                    capacitorEnergy = Integer.parseInt(EnergyUtil.getCharge(FinalTech.getLocationDataService(), capacitorLocationData));
+                }
+
+                if(capacitorEnergy == 0) {
+                    return;
                 }
 
                 RangeMachine.RangeFunction rangeFunction = location -> {
-                    if(capacitorLocationData == null || capacitorEnergy.get() <= 0 || !location.getChunk().isLoaded()) {
+                    if(!capacitorLocationData.getLocation().getChunk().isLoaded() || !location.getChunk().isLoaded()) {
+                        return -1;
+                    }
+
+                    int capacitorEnergyNow = Integer.parseInt(EnergyUtil.getCharge(FinalTech.getLocationDataService(), capacitorLocationData));
+                    if(capacitorEnergyNow <= 0) {
                         return -1;
                     }
 
@@ -105,13 +121,19 @@ public class NormalConsumableElectricityShootPile extends AbstractRangeMachine i
                         if(componentCapacity > 0) {
                             int componentEnergy = Integer.parseInt(EnergyUtil.getCharge(FinalTech.getLocationDataService(), energyLocationData));
                             if (componentEnergy < componentCapacity) {
-                                transferEnergy.set(Math.min(capacitorEnergy.get(), componentCapacity - componentEnergy));
-                                capacitorEnergy.set(capacitorEnergy.get() - transferEnergy.get());
+                                transferEnergy.set(Math.min(capacitorEnergyNow, componentCapacity - componentEnergy));
+                                capacitorEnergyNow = capacitorEnergyNow - transferEnergy.get();
                                 EnergyUtil.setCharge(FinalTech.getLocationDataService(), energyLocationData, String.valueOf(componentEnergy + transferEnergy.get()));
-                                EnergyUtil.setCharge(FinalTech.getLocationDataService(), capacitorLocationData, String.valueOf(capacitorEnergy.get()));
+                                EnergyUtil.setCharge(FinalTech.getLocationDataService(), capacitorLocationData, String.valueOf(capacitorEnergyNow));
                             }
 
                             itemStack.setAmount(itemStack.getAmount() - 1);
+
+                            if(drawParticle) {
+                                final Location finalLocation = location.clone();
+                                JavaPlugin javaPlugin = this.getAddon().getJavaPlugin();
+                                javaPlugin.getServer().getScheduler().runTaskAsynchronously(javaPlugin, () -> ParticleUtil.drawCubeByBlock(javaPlugin, Particle.WAX_OFF, 0, finalLocation.getBlock()));
+                            }
                             return -1;
                         }
                     }
@@ -119,17 +141,17 @@ public class NormalConsumableElectricityShootPile extends AbstractRangeMachine i
                     return 0;
                 };
 
-                if(capacitorEnergy.get() > 0) {
-                    if(digital != 0) {
-                        this.pointFunction(block, digital, rangeFunction);
+                if(capacitorEnergy > 0) {
+                    if(digital == 0) {
+                        this.lineFunction(block, this.range, directional.getFacing(), rangeFunction);
                     } else {
-                        this.lineFunction(block, this.range, rangeFunction);
+                        this.pointFunction(block, digital, rangeFunction);
                     }
                 }
 
                 if(hasViewer) {
-                    this.updateInv(inventory, StatusMenu.STATUS_SLOT, this,
-                            String.valueOf(capacitorEnergy.get()),
+                    this.updateInv(inventory, this.statusSlot, this,
+                            String.valueOf(capacitorEnergy),
                             String.valueOf(transferEnergy));
                 }
             };
@@ -148,7 +170,7 @@ public class NormalConsumableElectricityShootPile extends AbstractRangeMachine i
                 }
             });
         } else if (hasViewer) {
-            this.updateInv(inventory, StatusMenu.STATUS_SLOT, this,
+            this.updateInv(inventory, this.statusSlot, this,
                     "0",
                     "0");
         }
@@ -160,7 +182,7 @@ public class NormalConsumableElectricityShootPile extends AbstractRangeMachine i
         Block block = location.getBlock();
         BlockData blockData = block.getBlockData();
         if (blockData instanceof Directional directional) {
-            return block.getRelative(directional.getFacing().getOppositeFace(), range).getLocation();
+            return block.getRelative(directional.getFacing(), range).getLocation();
         }
         return location;
     }
