@@ -8,8 +8,8 @@ import io.github.thebusybiscuit.slimefun4.core.handlers.BlockBreakHandler;
 import io.github.thebusybiscuit.slimefun4.libraries.dough.items.CustomItemStack;
 import io.taraxacum.finaltech.FinalTech;
 import io.taraxacum.finaltech.core.enums.LogSourceType;
-import io.taraxacum.finaltech.core.menu.AbstractMachineMenu;
-import io.taraxacum.finaltech.core.menu.machine.ItemSerializationConstructorMenu;
+import io.taraxacum.finaltech.core.inventory.AbstractMachineInventory;
+import io.taraxacum.finaltech.core.inventory.simple.ItemSerializationConstructorInventory;
 import io.taraxacum.finaltech.core.operation.ItemCopyCardOperation;
 import io.taraxacum.finaltech.core.operation.ItemSerializationConstructorOperation;
 import io.taraxacum.finaltech.setup.FinalTechItems;
@@ -27,6 +27,7 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -40,9 +41,18 @@ public class MatrixItemSerializationConstructor extends AbstractOperationMachine
 
     private List<Location> locationList = new ArrayList<>();
     private List<Location> lastLocationList = new ArrayList<>();
+    private int statusSlot;
 
     public MatrixItemSerializationConstructor(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
         super(itemGroup, item, recipeType, recipe);
+    }
+
+    @Nullable
+    @Override
+    protected AbstractMachineInventory setMachineInventory() {
+        ItemSerializationConstructorInventory itemSerializationConstructorInventory = new ItemSerializationConstructorInventory(this);
+        this.statusSlot = itemSerializationConstructorInventory.statusSlot;
+        return itemSerializationConstructorInventory;
     }
 
     @Nonnull
@@ -66,17 +76,10 @@ public class MatrixItemSerializationConstructor extends AbstractOperationMachine
         };
     }
 
-    @Nonnull
-    @Override
-    protected AbstractMachineMenu setMachineMenu() {
-        return new ItemSerializationConstructorMenu(this);
-    }
-
     @Override
     protected void tick(@Nonnull Block block, @Nonnull SlimefunItem slimefunItem, @Nonnull LocationData locationData) {
         Location location = block.getLocation();
         this.locationList.add(location);
-
 
         Inventory inventory = FinalTech.getLocationDataService().getInventory(locationData);
         if(inventory == null) {
@@ -161,7 +164,7 @@ public class MatrixItemSerializationConstructor extends AbstractOperationMachine
             } else {
                 showItem = this.nullInfoIcon;
             }
-            inventory.setItem(ItemSerializationConstructorMenu.STATUS_SLOT, showItem);
+            inventory.setItem(this.statusSlot, showItem);
         }
     }
 

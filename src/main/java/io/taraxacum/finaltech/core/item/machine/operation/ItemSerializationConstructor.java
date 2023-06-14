@@ -9,10 +9,10 @@ import io.github.thebusybiscuit.slimefun4.libraries.dough.items.CustomItemStack;
 import io.taraxacum.finaltech.FinalTech;
 import io.taraxacum.finaltech.core.enums.LogSourceType;
 import io.taraxacum.finaltech.core.interfaces.UnCopiableItem;
-import io.taraxacum.finaltech.core.menu.AbstractMachineMenu;
+import io.taraxacum.finaltech.core.inventory.AbstractMachineInventory;
+import io.taraxacum.finaltech.core.inventory.simple.ItemSerializationConstructorInventory;
 import io.taraxacum.finaltech.core.operation.ItemSerializationConstructorOperation;
 import io.taraxacum.finaltech.core.operation.ItemCopyCardOperation;
-import io.taraxacum.finaltech.core.menu.machine.ItemSerializationConstructorMenu;
 import io.taraxacum.finaltech.setup.FinalTechItemStacks;
 import io.taraxacum.finaltech.setup.FinalTechItems;
 import io.taraxacum.finaltech.util.*;
@@ -29,6 +29,7 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -47,9 +48,18 @@ public class ItemSerializationConstructor extends AbstractOperationMachine {
     private final double rate = ConfigUtil.getOrDefaultItemSetting(0.9, FinalTechItemStacks.ITEM_SERIALIZATION_CONSTRUCTOR.getItemId(), "rate");
     private List<Location> locationList = new ArrayList<>();
     private List<Location> lastLocationList = new ArrayList<>();
+    private int statusSlot;
 
     public ItemSerializationConstructor(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
         super(itemGroup, item, recipeType, recipe);
+    }
+
+    @Nullable
+    @Override
+    protected AbstractMachineInventory setMachineInventory() {
+        ItemSerializationConstructorInventory itemSerializationConstructorInventory = new ItemSerializationConstructorInventory(this);
+        this.statusSlot = itemSerializationConstructorInventory.statusSlot;
+        return itemSerializationConstructorInventory;
     }
 
     @Nonnull
@@ -71,12 +81,6 @@ public class ItemSerializationConstructor extends AbstractOperationMachine {
                 ItemSerializationConstructor.this.getMachineProcessor().endOperation(location);
             }
         };
-    }
-
-    @Nonnull
-    @Override
-    protected AbstractMachineMenu setMachineMenu() {
-        return new ItemSerializationConstructorMenu(this);
     }
 
     @Override
@@ -172,7 +176,7 @@ public class ItemSerializationConstructor extends AbstractOperationMachine {
             } else {
                 showItem = this.nullInfoIcon;
             }
-            inventory.setItem(ItemSerializationConstructorMenu.STATUS_SLOT, showItem);
+            inventory.setItem(this.statusSlot, showItem);
         }
     }
 
