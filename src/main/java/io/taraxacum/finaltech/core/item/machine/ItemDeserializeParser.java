@@ -6,13 +6,13 @@ import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItemStack;
 import io.github.thebusybiscuit.slimefun4.api.recipes.RecipeType;
 import io.github.thebusybiscuit.slimefun4.core.handlers.BlockBreakHandler;
 import io.github.thebusybiscuit.slimefun4.core.handlers.BlockPlaceHandler;
-import io.github.thebusybiscuit.slimefun4.implementation.Slimefun;
 import io.taraxacum.common.util.StringNumberUtil;
 import io.taraxacum.finaltech.FinalTech;
 import io.taraxacum.finaltech.core.interfaces.RecipeItem;
-import io.taraxacum.finaltech.core.menu.AbstractMachineMenu;
-import io.taraxacum.finaltech.core.menu.machine.ItemDeserializeParserMenu;
+import io.taraxacum.finaltech.core.inventory.AbstractMachineInventory;
+import io.taraxacum.finaltech.core.inventory.simple.ItemDeserializeParserInventory;
 import io.taraxacum.finaltech.setup.FinalTechItems;
+import io.taraxacum.finaltech.util.ConstantTableUtil;
 import io.taraxacum.libs.plugin.dto.ItemAmountWrapper;
 import io.taraxacum.libs.plugin.dto.LocationData;
 import io.taraxacum.libs.plugin.util.InventoryUtil;
@@ -26,6 +26,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 /**
  * This is a slimefun machine
@@ -36,6 +37,12 @@ import javax.annotation.Nonnull;
 public class ItemDeserializeParser extends AbstractMachine implements RecipeItem {
     public ItemDeserializeParser(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
         super(itemGroup, item, recipeType, recipe);
+    }
+
+    @Nullable
+    @Override
+    protected AbstractMachineInventory setMachineInventory() {
+        return new ItemDeserializeParserInventory(this);
     }
 
     @Nonnull
@@ -50,18 +57,13 @@ public class ItemDeserializeParser extends AbstractMachine implements RecipeItem
         return MachineUtil.simpleBlockBreakerHandler(FinalTech.getLocationDataService(), this);
     }
 
-    @Nonnull
-    @Override
-    protected AbstractMachineMenu setMachineMenu() {
-        return new ItemDeserializeParserMenu(this);
-    }
-
     @Override
     protected void tick(@Nonnull Block block, @Nonnull SlimefunItem slimefunItem, @Nonnull LocationData locationData) {
         Inventory inventory = FinalTech.getLocationDataService().getInventory(locationData);
         if(inventory == null || InventoryUtil.slotCount(inventory, this.getOutputSlot()) == this.getOutputSlot().length) {
             return;
         }
+
         for (int slot : this.getInputSlot()) {
             ItemStack itemStack = inventory.getItem(slot);
             if (FinalTechItems.COPY_CARD.verifyItem(itemStack)) {
@@ -93,6 +95,6 @@ public class ItemDeserializeParser extends AbstractMachine implements RecipeItem
     @Override
     public void registerDefaultRecipes() {
         RecipeUtil.registerDescriptiveRecipe(FinalTech.getLanguageManager(), this,
-                String.format("%.2f", Slimefun.getTickerTask().getTickRate() / 20.0));
+                ConstantTableUtil.SLIMEFUN_TICK_INTERVAL);
     }
 }
