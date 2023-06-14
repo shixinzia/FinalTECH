@@ -9,7 +9,7 @@ import io.github.thebusybiscuit.slimefun4.core.handlers.*;
 import io.github.thebusybiscuit.slimefun4.implementation.Slimefun;
 import io.taraxacum.finaltech.FinalTech;
 import io.taraxacum.finaltech.core.interfaces.RecipeItem;
-import io.taraxacum.finaltech.core.menu.AbstractMachineMenu;
+import io.taraxacum.finaltech.core.inventory.AbstractMachineInventory;
 import io.taraxacum.finaltech.setup.FinalTechItems;
 import io.taraxacum.finaltech.util.MachineUtil;
 import io.taraxacum.finaltech.util.BlockTickerUtil;
@@ -43,8 +43,8 @@ import java.util.Random;
  * @author Final_ROOT
  */
 public class EquivalentConcept extends AbstractPointMachine implements RecipeItem, SimpleValidItem {
-    public static final String KEY_LIFE = "l";
-    public static final String KEY_RANGE = "r";
+    public final String keyLife = "l";
+    public final String keyRange = "r";
     private final double attenuationRate = ConfigUtil.getOrDefaultItemSetting(0.95, this, "attenuation-rate");
     private final double life = ConfigUtil.getOrDefaultItemSetting(4.0, this, "life");
     private final int range = ConfigUtil.getOrDefaultItemSetting(2, this, "range");
@@ -88,6 +88,12 @@ public class EquivalentConcept extends AbstractPointMachine implements RecipeIte
         });
     }
 
+    @Nullable
+    @Override
+    protected AbstractMachineInventory setMachineInventory() {
+        return null;
+    }
+
     @Nonnull
     @Override
     protected BlockPlaceHandler onBlockPlace() {
@@ -108,62 +114,56 @@ public class EquivalentConcept extends AbstractPointMachine implements RecipeIte
         return drops;
     }
 
-    @Nullable
-    @Override
-    protected AbstractMachineMenu setMachineMenu() {
-        // this is the only
-        return null;
-    }
-
     @Override
     protected void tick(@Nonnull Block block, @Nonnull SlimefunItem slimefunItem, @Nonnull LocationData locationData) {
         if (!BlockTickerUtil.subSleep(FinalTech.getLocationDataService(), locationData)) {
             return;
         }
 
-        String lifeStr = FinalTech.getLocationDataService().getLocationData(locationData, KEY_LIFE);
+        String lifeStr = FinalTech.getLocationDataService().getLocationData(locationData, this.keyLife);
         double life = lifeStr != null ? Double.parseDouble(lifeStr) : 0;
         if (life < 1) {
             Location location = block.getLocation();
-            FinalTech.getLocationDataService().setLocationData(locationData, KEY_LIFE, null);
-            FinalTech.getLocationDataService().setLocationData(locationData, KEY_RANGE, null);
+            FinalTech.getLocationDataService().setLocationData(locationData, this.keyLife, null);
+            FinalTech.getLocationDataService().setLocationData(locationData, this.keyRange, null);
             BlockTickerUtil.subSleep(FinalTech.getLocationDataService(), locationData);
             FinalTech.getLocationDataService().clearLocationData(location);
+
             JavaPlugin javaPlugin = this.getAddon().getJavaPlugin();
-            javaPlugin.getServer().getScheduler().runTaskLaterAsynchronously(javaPlugin, () -> {
+            javaPlugin.getServer().getScheduler().runTaskLaterAsynchronously(javaPlugin, () -> BlockTickerUtil.runTask(FinalTech.getLocationRunnableFactory(), FinalTech.isAsyncSlimefunItem(this.getId()), () -> {
                 if (!location.getBlock().getType().isAir()
                         && FinalTech.getLocationDataService().getLocationData(location) == null
                         && FinalTech.getLocationDataService() instanceof SlimefunLocationDataService slimefunLocationDataService) {
                     slimefunLocationDataService.getOrCreateEmptyLocationData(location, FinalTechItems.JUSTIFIABILITY.getId());
                 }
-            }, Slimefun.getTickerTask().getTickRate() + 1);
+            }, block.getLocation()), Slimefun.getTickerTask().getTickRate() + 1);
             return;
         }
 
-        String rangeStr = FinalTech.getLocationDataService().getLocationData(locationData, KEY_RANGE);
+        String rangeStr = FinalTech.getLocationDataService().getLocationData(locationData, this.keyRange);
         final int range = rangeStr != null ? Integer.parseInt(rangeStr) : this.range;
 
         while (life > 1) {
             final double finalLife = life--;
             this.pointFunction(block, range, location -> {
-                FinalTech.getLocationRunnableFactory().waitThenRun(() -> {
+                BlockTickerUtil.runTask(FinalTech.getLocationRunnableFactory(), FinalTech.isAsyncSlimefunItem(this.getId()), () -> {
                     Block targetBlock = location.getBlock();
                     if (FinalTech.getLocationDataService().getLocationData(location) == null
-                            && (targetBlock.getType().isAir())
+                            && targetBlock.getType().isAir()
                             && FinalTech.getLocationDataService() instanceof SlimefunLocationDataService slimefunLocationDataService) {
                         LocationData tempLocationData = slimefunLocationDataService.getOrCreateEmptyLocationData(location, this.getId());
-                        FinalTech.getLocationDataService().setLocationData(locationData, KEY_LIFE, String.valueOf(finalLife * attenuationRate));
-                        FinalTech.getLocationDataService().setLocationData(locationData, KEY_RANGE, String.valueOf(range + 1));
-                        BlockTickerUtil.setSleep(FinalTech.getLocationDataService(), tempLocationData, EquivalentConcept.this.life - finalLife);
-                        JavaPlugin javaPlugin = EquivalentConcept.this.getAddon().getJavaPlugin();
-                        javaPlugin.getServer().getScheduler().runTask(javaPlugin, () -> targetBlock.setType(EquivalentConcept.this.getItem().getType()));
+                        FinalTech.getLocationDataService().setLocationData(locationData, keyLife, String.valueOf(finalLife * attenuationRate));
+                        FinalTech.getLocationDataService().setLocationData(locationData, keyRange, String.valueOf(range + 1));
+                        BlockTickerUtil.setSleep(FinalTech.getLocationDataService(), tempLocationData, this.life - finalLife);
+                        JavaPlugin javaPlugin = this.getAddon().getJavaPlugin();
+                        javaPlugin.getServer().getScheduler().runTask(javaPlugin, () -> targetBlock.setType(this.getItem().getType()));
                     }
                 }, location);
                 return 0;
             });
         }
 
-        FinalTech.getLocationDataService().setLocationData(locationData, KEY_LIFE, String.valueOf(0));
+        FinalTech.getLocationDataService().setLocationData(locationData, this.keyLife, String.valueOf(0));
     }
 
     @Override
