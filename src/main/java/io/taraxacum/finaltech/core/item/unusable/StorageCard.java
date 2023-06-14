@@ -58,7 +58,7 @@ public class StorageCard extends UnusableSlimefunItem implements RecipeItem, Val
     }
 
     @Nonnull
-    public ItemStack getValidItem(@Nonnull ItemStack itemStack, String amount) {
+    public ItemStack getValidItem(@Nonnull ItemStack itemStack, @Nonnull String amount) {
         ItemStack result = ItemStackUtil.cloneItem(FinalTechItemStacks.STORAGE_CARD);
         result.setAmount(1);
         StringItemUtil.setItemInCard(result, itemStack, amount);
