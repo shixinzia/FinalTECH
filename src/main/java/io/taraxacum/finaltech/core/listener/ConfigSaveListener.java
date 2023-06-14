@@ -47,15 +47,15 @@ public class ConfigSaveListener implements Listener {
         // FinalTECH machines
         if(slimefunItem != null
                 && slimefunItem.getAddon().getJavaPlugin().equals(FinalTech.getInstance())
-                && slimefunItem instanceof AbstractMachine
+                && slimefunItem instanceof AbstractMachine abstractMachine
                 && FinalTech.getLocationDataService() instanceof SlimefunLocationDataService slimefunLocationDataService) {
             BlockMenu blockMenu = slimefunLocationDataService.getBlockMenu(configSaveActionEvent.getLocation());
             if(blockMenu != null) {
                 try {
-                    Field field = ReflectionUtil.getField(slimefunItem.getClass(), "menu");
+                    Field field = ReflectionUtil.getField(abstractMachine.getClass(), "inventoryTemplate");
                     if (field != null) {
                         field.setAccessible(true);
-                        Object menu = field.get(slimefunItem);
+                        Object menu = field.get(abstractMachine);
                         if (menu != null) {
                             Method method = ReflectionUtil.getMethod(menu.getClass(), "updateInventory");
                             if (method != null) {
