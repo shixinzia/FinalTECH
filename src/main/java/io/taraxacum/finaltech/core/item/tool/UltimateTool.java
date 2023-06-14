@@ -15,7 +15,6 @@ import java.util.Map;
 
 /**
  * @author Final_ROOT
- * @since 2.0
  */
 public abstract class UltimateTool extends AbstractMySlimefunItem {
     private final Map<Player, Long> timeMap = new HashMap<>();
