@@ -1,0 +1,49 @@
+package io.taraxacum.finaltech.core.inventory.limit;
+
+import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItem;
+
+import javax.annotation.Nonnull;
+
+public class DustFactoryDirtInventory extends AbstractLimitMachineInventory {
+    private final int[] border = new int[] {3, 4, 5, 12, 14, 21, 22, 23, 30, 31, 32};
+    private final int[] inputBorder = new int[] {0, 1, 2, 11, 20, 27, 28, 29};
+    private final int[] outputBorder = new int[] {6, 7, 8, 15, 24, 33, 34, 35};
+    private final int[] inputSlot = new int[] {9, 10, 18, 19};
+    private final int[] outputSlot = new int[] {16, 17, 25, 26};
+
+    public final int statusSlot = 22;
+
+    public DustFactoryDirtInventory(@Nonnull SlimefunItem slimefunItem) {
+        super(slimefunItem);
+    }
+
+    @Override
+    protected int[] getBorder() {
+        return this.border;
+    }
+
+    @Override
+    protected int[] getInputBorder() {
+        return this.inputBorder;
+    }
+
+    @Override
+    protected int[] getOutputBorder() {
+        return this.outputBorder;
+    }
+
+    @Override
+    public int[] getInputSlot() {
+        return this.inputSlot;
+    }
+
+    @Override
+    public int[] getOutputSlot() {
+        return this.outputSlot;
+    }
+
+    @Override
+    public int getSize() {
+        return 36;
+    }
+}
