@@ -26,7 +26,6 @@ import java.util.List;
 
 /**
  * @author Final_ROOT
- * @since 2.0
  */
 public class StorageCard extends UnusableSlimefunItem implements RecipeItem, ValidItem {
     private final String itemLoreWithoutColor = "⌫⌧⌧⌧⌧⌧⌧⌧⌧⌧⌧⌧⌧⌧⌧⌧⌧⌧⌧⌧⌧⌦";

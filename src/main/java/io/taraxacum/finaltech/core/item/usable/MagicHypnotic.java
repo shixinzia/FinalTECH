@@ -20,7 +20,6 @@ import javax.annotation.Nonnull;
 
 /**
  * @author Final_ROOT
- * @since 2.0
  */
 public class MagicHypnotic extends UsableSlimefunItem implements RecipeItem {
     private final int interval = ConfigUtil.getOrDefaultItemSetting(500, this, "interval");

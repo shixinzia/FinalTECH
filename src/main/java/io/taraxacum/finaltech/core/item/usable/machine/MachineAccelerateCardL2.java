@@ -14,7 +14,6 @@ import javax.annotation.Nonnull;
 
 /**
  * @author Final_ROOT
- * @since 2.0
  */
 public class MachineAccelerateCardL2 extends AbstractMachineAccelerateCard implements RecipeItem {
     private final int times = ConfigUtil.getOrDefaultItemSetting(32, this, "times");

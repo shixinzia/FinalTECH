@@ -18,7 +18,6 @@ import javax.annotation.Nonnull;
 
 /**
  * @author Final_ROOT
- * @since 2.0
  */
 public class MatrixMachineActivateCard extends AbstractMachineActivateCard implements RecipeItem {
     private final int times = ConfigUtil.getOrDefaultItemSetting(10800, this, "times");

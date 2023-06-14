@@ -21,7 +21,6 @@ import java.util.List;
 
 /**
  * @author Final_ROOT
- * @since 2.0
  */
 // TODO: Optimization
 public class UnusableSlimefunItem extends AbstractMySlimefunItem {

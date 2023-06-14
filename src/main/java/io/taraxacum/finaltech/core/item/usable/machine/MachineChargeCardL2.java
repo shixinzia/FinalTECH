@@ -14,7 +14,6 @@ import javax.annotation.Nonnull;
 
 /**
  * @author Final_ROOT
- * @since 2.0
  */
 public class MachineChargeCardL2 extends AbstractMachineChargeCard implements RecipeItem {
     private final double energy = ConfigUtil.getOrDefaultItemSetting(16384.16, this, "energy");

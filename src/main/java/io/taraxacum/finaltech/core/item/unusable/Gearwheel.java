@@ -13,7 +13,6 @@ import org.bukkit.inventory.ShapedRecipe;
 
 /**
  * @author Final_ROOT
- * @since 2.0
  */
 public class Gearwheel extends UnusableSlimefunItem implements RecipeItem {
     public Gearwheel(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe, ItemStack output) {

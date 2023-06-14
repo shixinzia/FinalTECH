@@ -32,7 +32,6 @@ import java.util.Set;
 
 /**
  * @author Final_ROOT
- * @since 2.0
  */
 public class LocationRecorder extends UsableSlimefunItem implements RecipeItem {
     private final Set<String> notAllowedId = new HashSet<>(ConfigUtil.getItemStringList(this, "not-allowed-id"));

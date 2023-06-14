@@ -21,7 +21,6 @@ import java.util.Map;
  *      WATER_BUCKET = WATER_CARD + BUCKET
  *      DIAMOND_PICKAXE = DIAMOND_PICKAXE_CARD + NULL
  * @author Final_ROOT
- * @since 2.4
  */
 public class ReplaceableCard extends UnusableSlimefunItem implements RecipeItem, UnCopiableItem {
     private static final Map<Material, ReplaceableCard> MATERIAL_SLIMEFUN_ITEM_MAP = new EnumMap<>(Material.class);

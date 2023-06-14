@@ -25,7 +25,6 @@ import java.util.Random;
 
 /**
  * @author Final_ROOT
- * @since 2.0
  */
 public class ResearchUnlockTicket extends UsableSlimefunItem implements RecipeItem {
     public ResearchUnlockTicket(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {

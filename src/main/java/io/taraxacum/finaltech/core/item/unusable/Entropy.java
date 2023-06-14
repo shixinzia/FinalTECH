@@ -10,7 +10,6 @@ import org.bukkit.inventory.ItemStack;
 
 /**
  * @author Final_ROOT
- * @since 2.0
  */
 public class Entropy extends UnusableSlimefunItem implements RecipeItem {
     public Entropy(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {

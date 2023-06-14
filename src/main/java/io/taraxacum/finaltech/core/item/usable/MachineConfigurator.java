@@ -32,7 +32,6 @@ import java.util.*;
 
 /**
  * @author Final_ROOT
- * @since 2.0
  */
 public class MachineConfigurator extends UsableSlimefunItem implements RecipeItem {
     private final Set<String> notAllowedId = new HashSet<>(ConfigUtil.getItemStringList(this, "not-allowed-id"));
@@ -65,7 +64,6 @@ public class MachineConfigurator extends UsableSlimefunItem implements RecipeIte
                 ItemStack itemStack = playerRightClickEvent.getItem();
                 if (playerRightClickEvent.getPlayer().isSneaking()) {
                     // save data
-
                     if(ItemConfigurationUtil.saveConfigToItem(itemStack, FinalTech.getLocationDataService(), locationData)) {
                         SlimefunItem slimefunItem = LocationDataUtil.getSlimefunItem(FinalTech.getLocationDataService(), locationData);
                         if(slimefunItem != null) {
@@ -76,7 +74,6 @@ public class MachineConfigurator extends UsableSlimefunItem implements RecipeIte
                     }
                 } else {
                     // load data
-
                     if(ItemConfigurationUtil.loadConfigFromItem(FinalTech.getLocationDataService(), itemStack, locationData)) {
                         String id = LocationDataUtil.getId(FinalTech.getLocationDataService(), locationData);
                         if(id != null) {

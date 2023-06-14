@@ -17,7 +17,6 @@ import javax.annotation.Nonnull;
 
 /**
  * @author Final_ROOT
- * @since 2.4
  */
 public abstract class AbstractMultiBlockItem extends MultiBlockMachine {
     public AbstractMultiBlockItem(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item, @Nonnull ItemStack[] recipe, @Nonnull BlockFace blockFace) {

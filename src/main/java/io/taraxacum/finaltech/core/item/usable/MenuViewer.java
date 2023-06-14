@@ -26,7 +26,6 @@ import javax.annotation.Nonnull;
 /**
  * A tool to show the input-slot and output-slot of a machine.{@link BlockMenuPreset}
  * @author Final_ROOT
- * @since 2.0
  */
 public class MenuViewer extends UsableSlimefunItem implements RecipeItem {
     private final int INSERT_SLOT_VALUE = 1;

@@ -16,7 +16,6 @@ import javax.annotation.Nonnull;
 
 /**
  * @author Final_ROOT
- * @since 2.2
  */
 public class GravityReversalRune extends UsableSlimefunItem implements RecipeItem {
     private final int interval = ConfigUtil.getOrDefaultItemSetting(500, this, "interval");

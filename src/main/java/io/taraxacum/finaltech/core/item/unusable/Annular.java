@@ -16,7 +16,6 @@ import javax.annotation.Nonnull;
 
 /**
  * @author Final_ROOT
- * @since 2.0
  */
 public class Annular extends UnusableSlimefunItem implements RecipeItem, SimpleValidItem {
     private final ItemWrapper templateValidItem;

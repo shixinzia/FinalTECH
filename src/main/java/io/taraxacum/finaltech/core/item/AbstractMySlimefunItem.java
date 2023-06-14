@@ -18,7 +18,6 @@ import javax.annotation.Nullable;
 /**
  * We may add something soon
  * @author Final_ROOT
- * @since 2.0
  */
 public abstract class AbstractMySlimefunItem extends SlimefunItem {
     public AbstractMySlimefunItem(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item, @Nonnull RecipeType recipeType, @Nonnull ItemStack[] recipe) {

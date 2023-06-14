@@ -22,7 +22,6 @@ import javax.annotation.Nonnull;
 
 /**
  * @author Final_ROOT
- * @since 2.4
  */
 public class Ether extends UnusableSlimefunItem implements GEOResource, SimpleValidItem, RecipeItem {
     private final ItemWrapper templateValidItem;

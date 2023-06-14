@@ -11,7 +11,6 @@ import javax.annotation.Nonnull;
 
 /**
  * @author Final_ROOT
- * @since 2.2
  */
 public class Meawerful extends UnusableSlimefunItem implements UnCopiableItem {
     public Meawerful(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item, @Nonnull RecipeType recipeType, @Nonnull ItemStack[] recipe) {

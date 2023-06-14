@@ -64,7 +64,6 @@ import org.bukkit.inventory.ItemStack;
 
 /**
  * @author Final_ROOT
- * @since 2.4
  */
 public final class FinalTechItems {
     /* items */

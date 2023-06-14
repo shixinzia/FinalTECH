@@ -18,7 +18,6 @@ import java.util.stream.Collectors;
 
 /**
  * @author Final_ROOT
- * @since 2.0
  */
 public class DigitalNumber extends UnusableSlimefunItem implements RecipeItem, DigitalItem, UnCopiableItem {
     private static final Map<Integer, DigitalNumber> DIGIT_MAP = new HashMap<>(16);

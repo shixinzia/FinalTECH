@@ -23,7 +23,6 @@ import java.util.Set;
 
 /**
  * @author Final_ROOT
- * @since 2.4
  */
 public class RouteViewer extends UsableSlimefunItem implements RecipeItem {
     private final Set<String> allowedId = new HashSet<>(ConfigUtil.getItemStringList(this, "allowed-id"));

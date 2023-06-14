@@ -20,7 +20,6 @@ import javax.annotation.Nonnull;
 
 /**
  * @author Final_ROOT
- * @since 2.0
  */
 public class Box extends UnusableSlimefunItem implements RecipeItem, SimpleValidItem {
     private final double height = ConfigUtil.getOrDefaultItemSetting(64, this, "height");

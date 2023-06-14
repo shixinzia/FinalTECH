@@ -19,7 +19,6 @@ import javax.annotation.Nonnull;
 
 /**
  * @author Final_ROOT
- * @since 2.0
  */
 public class Shine extends UnusableSlimefunItem implements RecipeItem, SimpleValidItem {
     private final ItemWrapper templateValidItem;

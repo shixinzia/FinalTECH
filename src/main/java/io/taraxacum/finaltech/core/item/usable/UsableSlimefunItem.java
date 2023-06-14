@@ -17,7 +17,6 @@ import java.util.*;
 /**
  * An {@link SlimefunItem} that can be used by player to do some #function.
  * @author Final_ROOT
- * @since 2.0
  */
 // TODO: Optimization
 public abstract class UsableSlimefunItem extends AbstractMySlimefunItem {

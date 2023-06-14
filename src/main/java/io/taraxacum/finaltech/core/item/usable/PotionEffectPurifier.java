@@ -20,7 +20,6 @@ import javax.annotation.Nonnull;
 
 /**
  * @author Final_ROOT
- * @since 2.0
  */
 public class PotionEffectPurifier extends UsableSlimefunItem implements RecipeItem {
     private final double horizontalRange = ConfigUtil.getOrDefaultItemSetting(16, this, "horizontal-range");

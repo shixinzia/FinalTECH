@@ -18,7 +18,6 @@ import java.util.Collection;
 
 /**
  * @author Final_ROOT
- * @since 2.0
  */
 public class Justifiability extends UnusableSlimefunItem implements RecipeItem, SimpleValidItem {
     private final ItemWrapper templateValidItem;

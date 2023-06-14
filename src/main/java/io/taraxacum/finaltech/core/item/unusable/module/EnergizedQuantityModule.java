@@ -11,7 +11,6 @@ import org.bukkit.inventory.ItemStack;
 
 /**
  * @author Final_ROOT
- * @since 2.4
  */
 public class EnergizedQuantityModule extends AbstractQuantityModule implements RecipeItem {
     private final int baseEfficiency = ConfigUtil.getOrDefaultItemSetting(2, this, "base-efficiency");

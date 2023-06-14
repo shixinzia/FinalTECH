@@ -27,7 +27,6 @@ import javax.annotation.Nonnull;
 
 /**
  * @author Final_ROOT
- * @since 2.0
  */
 public class StaffElementalLine extends UsableSlimefunItem implements RecipeItem {
     private final double shortRange = ConfigUtil.getOrDefaultItemSetting(4, this, "short-range");
