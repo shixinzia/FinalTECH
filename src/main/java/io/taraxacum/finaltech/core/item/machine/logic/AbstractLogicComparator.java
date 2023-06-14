@@ -7,9 +7,9 @@ import io.github.thebusybiscuit.slimefun4.api.recipes.RecipeType;
 import io.github.thebusybiscuit.slimefun4.core.handlers.BlockBreakHandler;
 import io.github.thebusybiscuit.slimefun4.core.handlers.BlockPlaceHandler;
 import io.taraxacum.finaltech.FinalTech;
+import io.taraxacum.finaltech.core.inventory.AbstractMachineInventory;
+import io.taraxacum.finaltech.core.inventory.simple.LogicComparatorInventory;
 import io.taraxacum.finaltech.core.item.machine.AbstractMachine;
-import io.taraxacum.finaltech.core.menu.AbstractMachineMenu;
-import io.taraxacum.finaltech.core.menu.machine.LogicComparatorMenu;
 import io.taraxacum.finaltech.util.MachineUtil;
 import io.taraxacum.libs.plugin.dto.LocationData;
 import io.taraxacum.libs.plugin.util.InventoryUtil;
@@ -28,6 +28,12 @@ public abstract class AbstractLogicComparator extends AbstractMachine {
         super(itemGroup, item, recipeType, recipe);
     }
 
+    @Nullable
+    @Override
+    protected AbstractMachineInventory setMachineInventory() {
+        return new LogicComparatorInventory(this);
+    }
+
     @Nonnull
     @Override
     protected BlockPlaceHandler onBlockPlace() {
@@ -38,12 +44,6 @@ public abstract class AbstractLogicComparator extends AbstractMachine {
     @Override
     protected BlockBreakHandler onBlockBreak() {
         return MachineUtil.simpleBlockBreakerHandler(FinalTech.getLocationDataService(), this);
-    }
-
-    @Nonnull
-    @Override
-    protected AbstractMachineMenu setMachineMenu() {
-        return new LogicComparatorMenu(this);
     }
 
     @Override
