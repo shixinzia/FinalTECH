@@ -44,7 +44,7 @@ public class MachineChargeCardL3 extends AbstractMachineChargeCard implements Re
     @Override
     public void registerDefaultRecipes() {
         RecipeUtil.registerDescriptiveRecipe(FinalTech.getLanguageManager(), this,
-                String.valueOf((int)(Math.floor(energy))),
-                String.format("%.2f", (energy - Math.floor(energy)) * 100));
+                String.valueOf((int)(Math.floor(this.energy()))),
+                String.format("%.2f", (this.energy() - Math.floor(this.energy())) * 100));
     }
 }
