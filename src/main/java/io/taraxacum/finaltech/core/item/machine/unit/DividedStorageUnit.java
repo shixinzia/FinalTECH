@@ -5,13 +5,13 @@ import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItemStack;
 import io.github.thebusybiscuit.slimefun4.api.recipes.RecipeType;
 import io.taraxacum.finaltech.FinalTech;
 import io.taraxacum.finaltech.core.interfaces.RecipeItem;
-import io.taraxacum.finaltech.core.menu.AbstractMachineMenu;
-import io.taraxacum.finaltech.core.menu.unit.DividedStorageUnitMenu;
+import io.taraxacum.finaltech.core.inventory.AbstractMachineInventory;
+import io.taraxacum.finaltech.core.inventory.unit.DividedStorageUnitInventory;
 import io.taraxacum.finaltech.util.MachineUtil;
 import io.taraxacum.finaltech.util.RecipeUtil;
 import org.bukkit.inventory.ItemStack;
 
-import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 /**
  * @author Final_ROOT
@@ -21,10 +21,10 @@ public class DividedStorageUnit extends AbstractStorageUnit implements RecipeIte
         super(itemGroup, item, recipeType, recipe);
     }
 
-    @Nonnull
+    @Nullable
     @Override
-    protected AbstractMachineMenu setMachineMenu() {
-        return new DividedStorageUnitMenu(this);
+    protected AbstractMachineInventory setMachineInventory() {
+        return new DividedStorageUnitInventory(this);
     }
 
     @Override

@@ -4,11 +4,11 @@ import io.github.thebusybiscuit.slimefun4.api.items.ItemGroup;
 import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItem;
 import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItemStack;
 import io.github.thebusybiscuit.slimefun4.api.recipes.RecipeType;
-import io.github.thebusybiscuit.slimefun4.implementation.Slimefun;
 import io.taraxacum.finaltech.FinalTech;
 import io.taraxacum.finaltech.core.interfaces.RecipeItem;
-import io.taraxacum.finaltech.core.menu.AbstractMachineMenu;
-import io.taraxacum.finaltech.core.menu.unit.DividedStorageUnitMenu;
+import io.taraxacum.finaltech.core.inventory.AbstractMachineInventory;
+import io.taraxacum.finaltech.core.inventory.unit.DividedStorageUnitInventory;
+import io.taraxacum.finaltech.util.ConstantTableUtil;
 import io.taraxacum.finaltech.util.MachineUtil;
 import io.taraxacum.finaltech.util.RecipeUtil;
 import io.taraxacum.libs.plugin.dto.LocationData;
@@ -18,6 +18,7 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 /**
  * @author Final_ROOT
@@ -27,10 +28,10 @@ public class DividedStackStorageUnit extends AbstractStorageUnit implements Reci
         super(itemGroup, item, recipeType, recipe);
     }
 
-    @Nonnull
+    @Nullable
     @Override
-    protected AbstractMachineMenu setMachineMenu() {
-        return new DividedStorageUnitMenu(this);
+    protected AbstractMachineInventory setMachineInventory() {
+        return new DividedStorageUnitInventory(this);
     }
 
     @Override
@@ -39,6 +40,7 @@ public class DividedStackStorageUnit extends AbstractStorageUnit implements Reci
         if(inventory == null) {
             return;
         }
+
         InventoryUtil.stockSlots(inventory, this.getInputSlot());
         InventoryUtil.stockSlots(inventory, this.getOutputSlot());
     }
@@ -49,6 +51,6 @@ public class DividedStackStorageUnit extends AbstractStorageUnit implements Reci
                 String.valueOf(MachineUtil.calMachineSlotSize(this)),
                 String.valueOf(this.getInputSlot().length),
                 String.valueOf(this.getOutputSlot().length),
-                String.format("%.2f", Slimefun.getTickerTask().getTickRate() / 20.0));
+                ConstantTableUtil.SLIMEFUN_TICK_INTERVAL);
     }
 }

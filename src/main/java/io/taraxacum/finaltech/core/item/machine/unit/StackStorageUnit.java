@@ -4,11 +4,11 @@ import io.github.thebusybiscuit.slimefun4.api.items.ItemGroup;
 import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItem;
 import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItemStack;
 import io.github.thebusybiscuit.slimefun4.api.recipes.RecipeType;
-import io.github.thebusybiscuit.slimefun4.implementation.Slimefun;
 import io.taraxacum.finaltech.FinalTech;
 import io.taraxacum.finaltech.core.interfaces.RecipeItem;
-import io.taraxacum.finaltech.core.menu.AbstractMachineMenu;
-import io.taraxacum.finaltech.core.menu.unit.NormalStorageUnitMenu;
+import io.taraxacum.finaltech.core.inventory.AbstractMachineInventory;
+import io.taraxacum.finaltech.core.inventory.unit.NormalStorageUnitInventory;
+import io.taraxacum.finaltech.util.ConstantTableUtil;
 import io.taraxacum.finaltech.util.MachineUtil;
 import io.taraxacum.finaltech.util.RecipeUtil;
 import io.taraxacum.libs.plugin.dto.LocationData;
@@ -18,20 +18,20 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 /**
  * @author Final_ROOT
- * @since 2.0
  */
 public class StackStorageUnit extends AbstractStorageUnit implements RecipeItem {
     public StackStorageUnit(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
         super(itemGroup, item, recipeType, recipe);
     }
 
-    @Nonnull
+    @Nullable
     @Override
-    protected AbstractMachineMenu setMachineMenu() {
-        return new NormalStorageUnitMenu(this);
+    protected AbstractMachineInventory setMachineInventory() {
+        return new NormalStorageUnitInventory(this);
     }
 
     @Override
@@ -40,6 +40,7 @@ public class StackStorageUnit extends AbstractStorageUnit implements RecipeItem 
         if(inventory == null) {
             return;
         }
+
         InventoryUtil.stockSlots(inventory, this.getInputSlot());
     }
 
@@ -47,6 +48,6 @@ public class StackStorageUnit extends AbstractStorageUnit implements RecipeItem 
     public void registerDefaultRecipes() {
         RecipeUtil.registerDescriptiveRecipe(FinalTech.getLanguageManager(), this,
                 String.valueOf(MachineUtil.calMachineSlotSize(this)),
-                String.format("%.2f", Slimefun.getTickerTask().getTickRate() / 20.0));
+                ConstantTableUtil.SLIMEFUN_TICK_INTERVAL);
     }
 }
