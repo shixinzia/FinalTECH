@@ -12,10 +12,10 @@ import io.taraxacum.common.util.JavaUtil;
 import io.taraxacum.finaltech.FinalTech;
 import io.taraxacum.finaltech.core.interfaces.LocationMachine;
 import io.taraxacum.finaltech.core.interfaces.MenuUpdater;
+import io.taraxacum.finaltech.core.inventory.AbstractMachineInventory;
+import io.taraxacum.finaltech.core.inventory.unit.StatusInventory;
 import io.taraxacum.finaltech.util.*;
 import io.taraxacum.finaltech.core.interfaces.RecipeItem;
-import io.taraxacum.finaltech.core.menu.AbstractMachineMenu;
-import io.taraxacum.finaltech.core.menu.unit.StatusMenu;
 import io.taraxacum.finaltech.util.BlockTickerUtil;
 import io.taraxacum.libs.plugin.dto.LocationData;
 import io.taraxacum.libs.slimefun.util.EnergyUtil;
@@ -28,6 +28,7 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -38,9 +39,18 @@ public class OverloadedChargeBase extends AbstractFaceMachine implements RecipeI
     private final Set<String> notAllowedId = new HashSet<>(ConfigUtil.getItemStringList(this, "not-allowed-id"));
     private final double efficiency = ConfigUtil.getOrDefaultItemSetting(0.1, this, "efficiency");
     private final double maxLimit = ConfigUtil.getOrDefaultItemSetting(2, this, "max-limit");
+    private int statusSLot;
 
     public OverloadedChargeBase(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
         super(itemGroup, item, recipeType, recipe);
+    }
+
+    @Nullable
+    @Override
+    protected AbstractMachineInventory setMachineInventory() {
+        StatusInventory statusInventory = new StatusInventory(this);
+        this.statusSLot = statusInventory.statusSlot;
+        return statusInventory;
     }
 
     @Nonnull
@@ -55,23 +65,21 @@ public class OverloadedChargeBase extends AbstractFaceMachine implements RecipeI
         return MachineUtil.simpleBlockBreakerHandler(FinalTech.getLocationDataService(), this);
     }
 
-    @Nonnull
-    @Override
-    protected AbstractMachineMenu setMachineMenu() {
-        return new StatusMenu(this);
-    }
-
     @Override
     protected void tick(@Nonnull Block block, @Nonnull SlimefunItem slimefunItem, @Nonnull LocationData locationData) {
         this.pointFunction(block, 1, location -> {
             LocationData tempLocationData = FinalTech.getLocationDataService().getLocationData(location);
-            if (tempLocationData != null && !notAllowedId.contains(LocationDataUtil.getId(FinalTech.getLocationDataService(), tempLocationData))) {
-                BlockTickerUtil.runTask(FinalTech.getLocationRunnableFactory(), FinalTech.isAsyncSlimefunItem(LocationDataUtil.getId(FinalTech.getLocationDataService(), tempLocationData)), () -> OverloadedChargeBase.this.doCharge(block, tempLocationData), location);
-                return 0;
+            if(tempLocationData != null) {
+                String id = LocationDataUtil.getId(FinalTech.getLocationDataService(), tempLocationData);
+                if (id != null && !this.notAllowedId.contains(id)) {
+                    BlockTickerUtil.runTask(FinalTech.getLocationRunnableFactory(), FinalTech.isAsyncSlimefunItem(id), () -> OverloadedChargeBase.this.doCharge(block, tempLocationData), locationData.getLocation(), location);
+                    return 0;
+                }
             }
+
             Inventory inventory = FinalTech.getLocationDataService().getInventory(locationData);
             if (inventory != null && !inventory.getViewers().isEmpty()) {
-                this.updateInv(inventory, StatusMenu.STATUS_SLOT, this,
+                this.updateInv(inventory, this.statusSLot, this,
                         "0",
                         "0");
             }
@@ -104,7 +112,7 @@ public class OverloadedChargeBase extends AbstractFaceMachine implements RecipeI
         if(tempLocationData != null) {
             Inventory inventory = FinalTech.getLocationDataService().getInventory(tempLocationData);
             if (inventory != null && !inventory.getViewers().isEmpty()) {
-                this.updateInv(inventory, StatusMenu.STATUS_SLOT, this,
+                this.updateInv(inventory, this.statusSLot, this,
                         String.valueOf(storedEnergy),
                         String.valueOf(chargeEnergy));
             }

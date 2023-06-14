@@ -11,10 +11,10 @@ import io.github.thebusybiscuit.slimefun4.core.networks.energy.EnergyNetComponen
 import io.taraxacum.common.util.JavaUtil;
 import io.taraxacum.finaltech.FinalTech;
 import io.taraxacum.finaltech.core.interfaces.MenuUpdater;
+import io.taraxacum.finaltech.core.inventory.AbstractMachineInventory;
+import io.taraxacum.finaltech.core.inventory.unit.StatusInventory;
 import io.taraxacum.finaltech.util.*;
 import io.taraxacum.finaltech.core.interfaces.RecipeItem;
-import io.taraxacum.finaltech.core.menu.AbstractMachineMenu;
-import io.taraxacum.finaltech.core.menu.unit.StatusMenu;
 import io.taraxacum.finaltech.util.BlockTickerUtil;
 import io.taraxacum.libs.plugin.dto.LocationData;
 import io.taraxacum.libs.slimefun.util.EnergyUtil;
@@ -26,6 +26,7 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -35,9 +36,18 @@ import java.util.Set;
 public class EnergizedChargeBase extends AbstractFaceMachine implements RecipeItem, MenuUpdater {
     private final Set<String> notAllowedId = new HashSet<>(ConfigUtil.getItemStringList(this, "not-allowed-id"));
     private final double efficiency = ConfigUtil.getOrDefaultItemSetting(0.25, this, "efficiency");
+    private int statusSlot;
 
     public EnergizedChargeBase(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
         super(itemGroup, item, recipeType, recipe);
+    }
+
+    @Nullable
+    @Override
+    protected AbstractMachineInventory setMachineInventory() {
+        StatusInventory statusInventory = new StatusInventory(this);
+        this.statusSlot = statusInventory.statusSlot;
+        return statusInventory;
     }
 
     @Nonnull
@@ -52,26 +62,21 @@ public class EnergizedChargeBase extends AbstractFaceMachine implements RecipeIt
         return MachineUtil.simpleBlockBreakerHandler(FinalTech.getLocationDataService(), this);
     }
 
-    @Nonnull
-    @Override
-    protected AbstractMachineMenu setMachineMenu() {
-        return new StatusMenu(this);
-    }
-
     @Override
     protected void tick(@Nonnull Block block, @Nonnull SlimefunItem slimefunItem, @Nonnull LocationData locationData) {
         this.pointFunction(block, 1, location -> {
             LocationData tempLocationData = FinalTech.getLocationDataService().getLocationData(location);
             if (tempLocationData != null ) {
                 String id = LocationDataUtil.getId(FinalTech.getLocationDataService(), tempLocationData);
-                if (id != null && !notAllowedId.contains(id)) {
-                    BlockTickerUtil.runTask(FinalTech.getLocationRunnableFactory(), FinalTech.isAsyncSlimefunItem(id), () -> this.doCharge(block, tempLocationData), location);
+                if (id != null && !this.notAllowedId.contains(id)) {
+                    BlockTickerUtil.runTask(FinalTech.getLocationRunnableFactory(), FinalTech.isAsyncSlimefunItem(id), () -> this.doCharge(block, tempLocationData), locationData.getLocation(), location);
                     return 0;
                 }
             }
+
             Inventory inventory = FinalTech.getLocationDataService().getInventory(locationData);
             if (inventory != null && !inventory.getViewers().isEmpty()) {
-                this.updateInv(inventory, StatusMenu.STATUS_SLOT, this,
+                this.updateInv(inventory, this.statusSlot, this,
                         "0",
                         "0");
             }
@@ -103,7 +108,7 @@ public class EnergizedChargeBase extends AbstractFaceMachine implements RecipeIt
         if(tempLocationData != null) {
             Inventory inventory = FinalTech.getLocationDataService().getInventory(tempLocationData);
             if (inventory != null && !inventory.getViewers().isEmpty()) {
-                this.updateInv(inventory, StatusMenu.STATUS_SLOT, this,
+                this.updateInv(inventory, this.statusSlot, this,
                         String.valueOf(storedEnergy),
                         String.valueOf(chargeEnergy));
             }
