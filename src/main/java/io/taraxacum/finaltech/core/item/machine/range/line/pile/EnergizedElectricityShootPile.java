@@ -9,10 +9,14 @@ import io.taraxacum.finaltech.FinalTech;
 import io.taraxacum.common.util.StringNumberUtil;
 import io.taraxacum.finaltech.util.ConfigUtil;
 import io.taraxacum.libs.plugin.dto.LocationData;
+import io.taraxacum.libs.plugin.util.ParticleUtil;
 import io.taraxacum.libs.slimefun.util.EnergyUtil;
 import io.taraxacum.finaltech.util.RecipeUtil;
 import io.taraxacum.libs.slimefun.util.LocationDataUtil;
+import org.bukkit.Location;
+import org.bukkit.Particle;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.plugin.java.JavaPlugin;
 
 import javax.annotation.Nonnull;
 
@@ -35,9 +39,10 @@ public class EnergizedElectricityShootPile extends AbstractElectricityShootPile 
     @Override
     protected RangeFunction doFunction(@Nonnull Summary summary) {
         return location -> {
-            if (summary.getCapacitorEnergy() <= 0) {
+            if (summary.getCapacitorEnergy() <= 0 || !location.getChunk().isLoaded()) {
                 return -1;
             }
+
             LocationData locationData = FinalTech.getLocationDataService().getLocationData(location);
             if (locationData != null
                     && !this.notAllowedId.contains(LocationDataUtil.getId(FinalTech.getLocationDataService(), locationData))
@@ -52,6 +57,11 @@ public class EnergizedElectricityShootPile extends AbstractElectricityShootPile 
                             EnergyUtil.setCharge(FinalTech.getLocationDataService(), locationData, String.valueOf(componentEnergy + transferEnergy));
                             summary.setCapacitorEnergy(summary.getCapacitorEnergy() - transferEnergy);
                             summary.setEnergyCharge(StringNumberUtil.add(summary.getEnergyCharge(), String.valueOf(transferEnergy)));
+                            if(summary.isDrawParticle()) {
+                                final Location finalLocation = location.clone();
+                                JavaPlugin javaPlugin = this.getAddon().getJavaPlugin();
+                                javaPlugin.getServer().getScheduler().runTaskAsynchronously(javaPlugin, () -> ParticleUtil.drawCubeByBlock(javaPlugin, Particle.WAX_OFF, 0, finalLocation.getBlock()));
+                            }
                             return 1;
                         }
                     }

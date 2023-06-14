@@ -13,10 +13,11 @@ import io.taraxacum.finaltech.FinalTech;
 import io.taraxacum.finaltech.core.interfaces.LocationMachine;
 import io.taraxacum.finaltech.core.interfaces.MenuUpdater;
 import io.taraxacum.finaltech.core.interfaces.RecipeItem;
+import io.taraxacum.finaltech.core.inventory.AbstractMachineInventory;
+import io.taraxacum.finaltech.core.inventory.unit.StatusInventory;
 import io.taraxacum.finaltech.core.item.machine.range.AbstractRangeMachine;
 import io.taraxacum.finaltech.core.item.machine.range.line.AbstractLineMachine;
-import io.taraxacum.finaltech.core.menu.AbstractMachineMenu;
-import io.taraxacum.finaltech.core.menu.unit.StatusMenu;
+import io.taraxacum.finaltech.core.option.RouteShow;
 import io.taraxacum.finaltech.util.BlockTickerUtil;
 import io.taraxacum.libs.plugin.dto.LocationData;
 import io.taraxacum.libs.plugin.util.ItemStackUtil;
@@ -34,6 +35,7 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -42,9 +44,18 @@ import java.util.Set;
  */
 public abstract class AbstractElectricityShootPile extends AbstractLineMachine implements RecipeItem, MenuUpdater, LocationMachine {
     protected final Set<String> notAllowedId = new HashSet<>(ConfigUtil.getItemStringList(this, "not-allowed-id"));
+    private int statusSlot;
 
     public AbstractElectricityShootPile(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
         super(itemGroup, item, recipeType, recipe);
+    }
+
+    @Nullable
+    @Override
+    protected AbstractMachineInventory setMachineInventory() {
+        StatusInventory statusInventory = new StatusInventory(this);
+        this.statusSlot = statusInventory.statusSlot;
+        return statusInventory;
     }
 
     @Nonnull
@@ -59,19 +70,16 @@ public abstract class AbstractElectricityShootPile extends AbstractLineMachine i
         return MachineUtil.simpleBlockBreakerHandler(FinalTech.getLocationDataService(), this);
     }
 
-    @Nonnull
-    @Override
-    protected AbstractMachineMenu setMachineMenu() {
-        return new StatusMenu(this);
-    }
-
     @Override
     protected void tick(@Nonnull Block block, @Nonnull SlimefunItem slimefunItem, @Nonnull LocationData locationData) {
         BlockData blockData = block.getBlockData();
         if (blockData instanceof Directional directional) {
             Runnable runnable = () -> {
+                Inventory inventory = FinalTech.getLocationDataService().getInventory(locationData);
+                boolean hasViewer = inventory != null && !inventory.getViewers().isEmpty();
+
                 int count = 0;
-                Summary summary = new Summary();
+                Summary summary = new Summary(hasViewer || RouteShow.VALUE_TRUE.equals(RouteShow.OPTION.getOrDefaultValue(FinalTech.getLocationDataService(), locationData)));
                 LocationData tempLocationData = FinalTech.getLocationDataService().getLocationData(block.getRelative(directional.getFacing().getOppositeFace()).getLocation());
                 if(tempLocationData != null
                         && !this.notAllowedId.contains(LocationDataUtil.getId(FinalTech.getLocationDataService(), tempLocationData))
@@ -87,9 +95,8 @@ public abstract class AbstractElectricityShootPile extends AbstractLineMachine i
                     }
                 }
 
-                Inventory inventory = FinalTech.getLocationDataService().getInventory(locationData);
-                if (inventory != null && !inventory.getViewers().isEmpty()) {
-                    this.updateInv(inventory, StatusMenu.STATUS_SLOT, this,
+                if (hasViewer) {
+                    this.updateInv(inventory, this.statusSlot, this,
                             String.valueOf(count),
                             summary.getEnergyCharge(),
                             String.valueOf(summary.capacitorEnergy));
@@ -106,8 +113,8 @@ public abstract class AbstractElectricityShootPile extends AbstractLineMachine i
     }
 
     protected void updateInv(@Nonnull Inventory inventory, int count, @Nonnull Summary summary) {
-        ItemStack item = inventory.getItem(StatusMenu.STATUS_SLOT);
-        ItemStackUtil.setLore(item, ConfigUtil.getStatusMenuLore(FinalTech.getLanguageManager(), this,
+        ItemStack itemStack = inventory.getItem(this.statusSlot);
+        ItemStackUtil.setLore(itemStack, ConfigUtil.getStatusMenuLore(FinalTech.getLanguageManager(), this,
                 String.valueOf(count),
                 summary.getEnergyCharge()));
     }
@@ -138,7 +145,10 @@ public abstract class AbstractElectricityShootPile extends AbstractLineMachine i
         private String energyCharge;
         private int capacitorEnergy;
 
-        Summary() {
+        private final boolean drawParticle;
+
+        Summary(boolean drawParticle) {
+            this.drawParticle = drawParticle;
             this.energyCharge = StringNumberUtil.ZERO;
         }
 
@@ -156,6 +166,10 @@ public abstract class AbstractElectricityShootPile extends AbstractLineMachine i
 
         public void setCapacitorEnergy(int capacitorEnergy) {
             this.capacitorEnergy = capacitorEnergy;
+        }
+
+        public boolean isDrawParticle() {
+            return drawParticle;
         }
     }
 }
