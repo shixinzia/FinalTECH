@@ -8,15 +8,14 @@ import io.github.thebusybiscuit.slimefun4.core.handlers.BlockBreakHandler;
 import io.github.thebusybiscuit.slimefun4.core.handlers.BlockPlaceHandler;
 import io.github.thebusybiscuit.slimefun4.implementation.Slimefun;
 import io.taraxacum.finaltech.FinalTech;
+import io.taraxacum.finaltech.core.inventory.AbstractMachineInventory;
+import io.taraxacum.finaltech.core.inventory.cargo.MeshTransferInventory;
 import io.taraxacum.libs.plugin.dto.InvWithSlots;
 import io.taraxacum.libs.plugin.dto.LocationData;
-import io.taraxacum.libs.plugin.dto.ServerRunnableLockFactory;
 import io.taraxacum.libs.plugin.util.ParticleUtil;
 import io.taraxacum.finaltech.core.interfaces.RecipeItem;
 import io.taraxacum.finaltech.core.dto.SimpleCargoDTO;
 import io.taraxacum.finaltech.core.option.*;
-import io.taraxacum.finaltech.core.menu.AbstractMachineMenu;
-import io.taraxacum.finaltech.core.menu.cargo.MeshTransferMenu;
 import io.taraxacum.finaltech.util.ConstantTableUtil;
 import io.taraxacum.finaltech.util.PermissionUtil;
 import io.taraxacum.finaltech.util.RecipeUtil;
@@ -44,9 +43,18 @@ import java.util.List;
 public class MeshTransfer extends AbstractCargo implements RecipeItem {
     private final double particleDistance = 0.25;
     private final int particleInterval = 2;
+    private int[] itemMatch;
 
     public MeshTransfer(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
         super(itemGroup, item, recipeType, recipe);
+    }
+
+    @Nullable
+    @Override
+    protected AbstractMachineInventory setMachineInventory() {
+        MeshTransferInventory meshTransferInventory = new MeshTransferInventory(this);
+        this.itemMatch = meshTransferInventory.itemMatchSlot;
+        return meshTransferInventory;
     }
 
     @Nonnull
@@ -60,6 +68,12 @@ public class MeshTransfer extends AbstractCargo implements RecipeItem {
                 LocationData locationData = FinalTech.getLocationDataService().getLocationData(location);
                 if(locationData != null) {
                     FinalTech.getLocationDataService().setLocationData(locationData, ConstantTableUtil.CONFIG_UUID, blockPlaceEvent.getPlayer().getUniqueId().toString());
+
+                    CargoFilter.OPTION.checkOrSetDefault(FinalTech.getLocationDataService(), locationData);
+                    BlockSearchMode.MESH_INPUT_OPTION.checkOrSetDefault(FinalTech.getLocationDataService(), locationData);
+                    BlockSearchMode.MESH_OUTPUT_OPTION.checkOrSetDefault(FinalTech.getLocationDataService(), locationData);
+
+                    FinalTech.getLocationDataService().setLocationData(locationData, PositionInfo.KEY, "");
                 }
             }
         };
@@ -68,13 +82,7 @@ public class MeshTransfer extends AbstractCargo implements RecipeItem {
     @Nonnull
     @Override
     protected BlockBreakHandler onBlockBreak() {
-        return MachineUtil.simpleBlockBreakerHandler(FinalTech.getLocationDataService(), this, MeshTransferMenu.ITEM_MATCH);
-    }
-
-    @Nonnull
-    @Override
-    protected AbstractMachineMenu setMachineMenu() {
-        return new MeshTransferMenu(this);
+        return MachineUtil.simpleBlockBreakerHandler(FinalTech.getLocationDataService(), this, this.itemMatch);
     }
 
     @Override
@@ -83,9 +91,7 @@ public class MeshTransfer extends AbstractCargo implements RecipeItem {
         if(inventory == null) {
             return;
         }
-        Location location = block.getLocation();
         JavaPlugin javaPlugin = this.getAddon().getJavaPlugin();
-        boolean primaryThread = javaPlugin.getServer().isPrimaryThread();
         boolean drawParticle = !inventory.getViewers().isEmpty() || RouteShow.VALUE_TRUE.equals(RouteShow.OPTION.getOrDefaultValue(FinalTech.getLocationDataService(), locationData));
 
         BlockFace[] outputBlockFaces = PositionInfo.getBlockFaces(FinalTech.getLocationDataService(), locationData, PositionInfo.VALUE_OUTPUT, PositionInfo.VALUE_INPUT_AND_OUTPUT);
@@ -95,7 +101,7 @@ public class MeshTransfer extends AbstractCargo implements RecipeItem {
         String outputBlockSearchMode = BlockSearchMode.MESH_OUTPUT_OPTION.getOrDefaultValue(FinalTech.getLocationDataService(), locationData);
         String inputBlockSearchMode = BlockSearchMode.MESH_INPUT_OPTION.getOrDefaultValue(FinalTech.getLocationDataService(), locationData);
 
-        if (primaryThread) {
+        if (javaPlugin.getServer().isPrimaryThread()) {
             for (int i = 0; i < outputBlocks.length; i++) {
                 outputBlocks[i] = this.searchBlock(block, outputBlockFaces[i], outputBlockSearchMode, drawParticle);
                 if(outputBlocks[i] == null) {
@@ -144,7 +150,7 @@ public class MeshTransfer extends AbstractCargo implements RecipeItem {
             SimpleCargoDTO simpleCargoDTO = new SimpleCargoDTO();
             simpleCargoDTO.setCargoFilter(cargoFilter);
             simpleCargoDTO.setFilterInv(inventory);
-            simpleCargoDTO.setFilterSlots(MeshTransferMenu.ITEM_MATCH);
+            simpleCargoDTO.setFilterSlots(this.itemMatch);
 
             simpleCargoDTO.setInputMap(sourceOutputMap);
             simpleCargoDTO.setInputBlock(block);
@@ -205,7 +211,7 @@ public class MeshTransfer extends AbstractCargo implements RecipeItem {
             simpleCargoDTO.setCargoLimit(inputCargoLimit);
 //            simpleCargoDTO.setCargoFilter(cargoFilter);
 //            simpleCargoDTO.setFilterInv(inventory);
-//            simpleCargoDTO.setFilterSlots(MeshTransferMenu.ITEM_MATCH);
+//            simpleCargoDTO.setFilterSlots(this.itemMatch);
 
             for (Block inputBlock : inputBlocks) {
                 InvWithSlots inputMap;
@@ -236,13 +242,13 @@ public class MeshTransfer extends AbstractCargo implements RecipeItem {
 
             javaPlugin.getServer().getScheduler().runTask(javaPlugin, () -> {
                 for (int i = 0; i < outputBlocks.length; i++) {
-                    outputBlocks[i] = MeshTransfer.this.searchBlock(block, outputBlockFaces[i], outputBlockSearchMode, drawParticle);
+                    outputBlocks[i] = this.searchBlock(block, outputBlockFaces[i], outputBlockSearchMode, drawParticle);
                     if(outputBlocks[i] == null) {
                         return;
                     }
                 }
                 for (int i = 0; i < inputBlocks.length; i++) {
-                    inputBlocks[i] = MeshTransfer.this.searchBlock(block, inputBlockFaces[i], inputBlockSearchMode, drawParticle);
+                    inputBlocks[i] = this.searchBlock(block, inputBlockFaces[i], inputBlockSearchMode, drawParticle);
                     if (inputBlocks[i] == null) {
                         return;
                     }
@@ -261,8 +267,8 @@ public class MeshTransfer extends AbstractCargo implements RecipeItem {
                     inputVanillaInventories[i] = CargoUtil.getVanillaInventory(inputBlocks[i]);
                 }
                 locations[locations.length - 1] = block.getLocation();
-                ServerRunnableLockFactory.getInstance(javaPlugin, Location.class).waitThenRun(() -> {
-                    if (FinalTech.getLocationDataService().getLocationData(location) == null) {
+                FinalTech.getLocationRunnableFactory().waitThenRun(() -> {
+                    if (FinalTech.getLocationDataService().getLocationData(block.getLocation()) == null) {
                         return;
                     }
 
@@ -297,7 +303,7 @@ public class MeshTransfer extends AbstractCargo implements RecipeItem {
                     SimpleCargoDTO simpleCargoDTO = new SimpleCargoDTO();
                     simpleCargoDTO.setCargoFilter(cargoFilter);
                     simpleCargoDTO.setFilterInv(inventory);
-                    simpleCargoDTO.setFilterSlots(MeshTransferMenu.ITEM_MATCH);
+                    simpleCargoDTO.setFilterSlots(this.itemMatch);
 
                     simpleCargoDTO.setInputMap(sourceOutputMap);
                     simpleCargoDTO.setInputBlock(block);
@@ -356,7 +362,7 @@ public class MeshTransfer extends AbstractCargo implements RecipeItem {
                     simpleCargoDTO.setCargoLimit(inputCargoLimit);
 //                    simpleCargoDTO.setCargoFilter(cargoFilter);
 //                    simpleCargoDTO.setFilterInv(inventory);
-//                    simpleCargoDTO.setFilterSlots(MeshTransferMenu.ITEM_MATCH);
+//                    simpleCargoDTO.setFilterSlots(this.itemMatch);
 
                     for (int i = 0; i < inputBlocks.length; i++) {
                         Block inputBlock = inputBlocks[i];

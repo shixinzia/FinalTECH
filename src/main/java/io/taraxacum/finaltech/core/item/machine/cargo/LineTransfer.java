@@ -8,14 +8,13 @@ import io.github.thebusybiscuit.slimefun4.core.handlers.BlockBreakHandler;
 import io.github.thebusybiscuit.slimefun4.core.handlers.BlockPlaceHandler;
 import io.github.thebusybiscuit.slimefun4.implementation.Slimefun;
 import io.taraxacum.finaltech.FinalTech;
+import io.taraxacum.finaltech.core.inventory.AbstractMachineInventory;
+import io.taraxacum.finaltech.core.inventory.cargo.LineTransferInventory;
 import io.taraxacum.libs.plugin.dto.InvWithSlots;
 import io.taraxacum.libs.plugin.dto.LocationData;
-import io.taraxacum.libs.plugin.dto.ServerRunnableLockFactory;
 import io.taraxacum.libs.plugin.util.ParticleUtil;
 import io.taraxacum.finaltech.core.interfaces.RecipeItem;
 import io.taraxacum.finaltech.core.dto.SimpleCargoDTO;
-import io.taraxacum.finaltech.core.menu.AbstractMachineMenu;
-import io.taraxacum.finaltech.core.menu.cargo.LineTransferMenu;
 import io.taraxacum.finaltech.core.option.*;
 import io.taraxacum.common.util.JavaUtil;
 import io.taraxacum.finaltech.util.ConstantTableUtil;
@@ -36,6 +35,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -44,9 +44,18 @@ import java.util.List;
  */
 public class LineTransfer extends AbstractCargo implements RecipeItem {
     private final int particleInterval = 2;
+    private int[] itemMatch;
 
     public LineTransfer(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
         super(itemGroup, item, recipeType, recipe);
+    }
+
+    @Nullable
+    @Override
+    protected AbstractMachineInventory setMachineInventory() {
+        LineTransferInventory lineTransferInventory = new LineTransferInventory(this);
+        this.itemMatch = lineTransferInventory.itemMatchSlot;
+        return lineTransferInventory;
     }
 
     @Nonnull
@@ -60,6 +69,15 @@ public class LineTransfer extends AbstractCargo implements RecipeItem {
                 LocationData locationData = FinalTech.getLocationDataService().getLocationData(location);
                 if(locationData != null) {
                     FinalTech.getLocationDataService().setLocationData(locationData, ConstantTableUtil.CONFIG_UUID, blockPlaceEvent.getPlayer().getUniqueId().toString());
+
+                    BlockSearchMode.LINE_OPTION.checkOrSetDefault(FinalTech.getLocationDataService(), locationData);
+                    BlockSearchOrder.OPTION.checkOrSetDefault(FinalTech.getLocationDataService(), locationData);
+                    CargoOrder.OPTION.checkOrSetDefault(FinalTech.getLocationDataService(), locationData);
+                    BlockSearchCycle.OPTION.checkOrSetDefault(FinalTech.getLocationDataService(), locationData);
+                    BlockSearchSelf.OPTION.checkOrSetDefault(FinalTech.getLocationDataService(), locationData);
+
+                    CargoMode.OPTION.checkOrSetDefault(FinalTech.getLocationDataService(), locationData);
+                    CargoFilter.OPTION.checkOrSetDefault(FinalTech.getLocationDataService(), locationData);
                 }
             }
         };
@@ -68,13 +86,7 @@ public class LineTransfer extends AbstractCargo implements RecipeItem {
     @Nonnull
     @Override
     protected BlockBreakHandler onBlockBreak() {
-        return MachineUtil.simpleBlockBreakerHandler(FinalTech.getLocationDataService(), this, LineTransferMenu.ITEM_MATCH);
-    }
-
-    @Nonnull
-    @Override
-    protected AbstractMachineMenu setMachineMenu() {
-        return new LineTransferMenu(this);
+        return MachineUtil.simpleBlockBreakerHandler(FinalTech.getLocationDataService(), this, this.itemMatch);
     }
 
     @Override
@@ -85,15 +97,15 @@ public class LineTransfer extends AbstractCargo implements RecipeItem {
         }
         Location location = block.getLocation();
         JavaPlugin javaPlugin = this.getAddon().getJavaPlugin();
-        boolean primaryThread = javaPlugin.getServer().isPrimaryThread();
         boolean drawParticle = !inventory.getViewers().isEmpty() || RouteShow.VALUE_TRUE.equals(RouteShow.OPTION.getOrDefaultValue(FinalTech.getLocationDataService(), locationData));
 
-        if (primaryThread) {
+        if (javaPlugin.getServer().isPrimaryThread()) {
             BlockData blockData = block.getState().getBlockData();
-            if (!(blockData instanceof Directional)) {
+            if (!(blockData instanceof Directional directional)) {
                 return;
             }
-            BlockFace blockFace = ((Directional) blockData).getFacing();
+
+            BlockFace blockFace = directional.getFacing();
             List<Block> blockList = this.searchBlock(block, blockFace, BlockSearchMode.LINE_OPTION.getOrDefaultValue(FinalTech.getLocationDataService(), locationData));
 
             if (!PermissionUtil.checkOfflinePermission(FinalTech.getLocationDataService(), locationData, LocationUtil.transferToLocation(blockList))) {
@@ -151,23 +163,24 @@ public class LineTransfer extends AbstractCargo implements RecipeItem {
             simpleCargoDTO.setCargoLimit(CargoLimit.OPTION.defaultValue());
             simpleCargoDTO.setCargoFilter(CargoFilter.OPTION.getOrDefaultValue(FinalTech.getLocationDataService(), locationData));
             simpleCargoDTO.setFilterInv(inventory);
-            simpleCargoDTO.setFilterSlots(LineTransferMenu.ITEM_MATCH);
+            simpleCargoDTO.setFilterSlots(this.itemMatch);
 
             for (int i = 0, size = finalBlockList.size(); i < size - 1; i++) {
                 switch (cargoOrder) {
-                    case CargoOrder.VALUE_POSITIVE:
+                    case CargoOrder.VALUE_POSITIVE -> {
                         inputBlock = finalBlockList.get(i);
                         outputBlock = finalBlockList.get((i + 1) % size);
-                        break;
-                    case CargoOrder.VALUE_REVERSE:
+                    }
+                    case CargoOrder.VALUE_REVERSE -> {
                         inputBlock = finalBlockList.get((i + 1) % size);
                         outputBlock = finalBlockList.get(i);
-                        break;
-                    default:
+                    }
+                    default -> {
                         continue;
+                    }
                 }
 
-                if (inputBlock.getLocation().equals(outputBlock.getLocation())) {
+                if (LocationUtil.isSameLocation(inputBlock.getLocation(), outputBlock.getLocation())) {
                     continue;
                 }
 
@@ -182,7 +195,7 @@ public class LineTransfer extends AbstractCargo implements RecipeItem {
                     inputMap = CargoUtil.getInvWithSlots(FinalTech.getLocationDataService(), inputBlock, inputSize, inputOrder);
                 }
 
-                if(inputMap != null && outputMap != null && LocationUtil.isSameLocation(inputMap.getInventory().getLocation(), outputMap.getInventory().getLocation())) {
+                if(inputMap != null && outputMap != null) {
                     continue;
                 }
 
@@ -204,10 +217,11 @@ public class LineTransfer extends AbstractCargo implements RecipeItem {
         } else {
             javaPlugin.getServer().getScheduler().runTask(javaPlugin, () -> {
                 BlockData blockData = block.getState().getBlockData();
-                if (!(blockData instanceof Directional)) {
+                if (!(blockData instanceof Directional directional)) {
                     return;
                 }
-                BlockFace blockFace = ((Directional) blockData).getFacing();
+
+                BlockFace blockFace = directional.getFacing();
                 final List<Block> blockList = LineTransfer.this.searchBlock(block, blockFace, BlockSearchMode.LINE_OPTION.getOrDefaultValue(FinalTech.getLocationDataService(), locationData));
                 if(blockList.isEmpty()) {
                     return;
@@ -218,7 +232,7 @@ public class LineTransfer extends AbstractCargo implements RecipeItem {
                     vanillaInventories.add(CargoUtil.getVanillaInventory(b));
                 }
 
-                ServerRunnableLockFactory.getInstance(javaPlugin, Location.class).waitThenRun(() -> {
+                FinalTech.getLocationRunnableFactory().waitThenRun(() -> {
                     if (FinalTech.getLocationDataService().getLocationData(location) == null) {
                         return;
                     }
@@ -298,27 +312,28 @@ public class LineTransfer extends AbstractCargo implements RecipeItem {
                     simpleCargoDTO.setCargoLimit(CargoLimit.OPTION.defaultValue());
                     simpleCargoDTO.setCargoFilter(CargoFilter.OPTION.getOrDefaultValue(FinalTech.getLocationDataService(), locationData));
                     simpleCargoDTO.setFilterInv(inventory);
-                    simpleCargoDTO.setFilterSlots(LineTransferMenu.ITEM_MATCH);
+                    simpleCargoDTO.setFilterSlots(this.itemMatch);
 
                     int input;
                     int output;
                     for (int i = 0, size = finalBlockList.size(); i < size - 1; i++) {
                         switch (cargoOrder) {
-                            case CargoOrder.VALUE_POSITIVE:
+                            case CargoOrder.VALUE_POSITIVE -> {
                                 input = i;
                                 output = (i + 1) % size;
-                                break;
-                            case CargoOrder.VALUE_REVERSE:
+                            }
+                            case CargoOrder.VALUE_REVERSE -> {
                                 input = (i + 1) % size;
                                 output = i;
-                                break;
-                            default:
+                            }
+                            default -> {
                                 continue;
+                            }
                         }
 
                         inputBlock = finalBlockList.get(input);
                         outputBlock = finalBlockList.get(output);
-                        if (inputBlock.getLocation().equals(outputBlock.getLocation())) {
+                        if (LocationUtil.isSameLocation(inputBlock.getLocation(), outputBlock.getLocation())) {
                             continue;
                         }
 
@@ -341,7 +356,7 @@ public class LineTransfer extends AbstractCargo implements RecipeItem {
                             continue;
                         }
 
-                        if(inputMap != null && outputMap != null && LocationUtil.isSameLocation(inputMap.getInventory().getLocation(), outputMap.getInventory().getLocation())) {
+                        if(inputMap != null && outputMap != null) {
                             continue;
                         }
 
@@ -400,6 +415,9 @@ public class LineTransfer extends AbstractCargo implements RecipeItem {
             }
             list.add(block);
             block = block.getRelative(blockFace);
+            if(!block.getChunk().isLoaded()) {
+                return new ArrayList<>();
+            }
         }
         return list;
     }

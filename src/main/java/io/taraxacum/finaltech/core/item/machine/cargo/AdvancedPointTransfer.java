@@ -12,15 +12,14 @@ import io.taraxacum.common.util.JavaUtil;
 import io.taraxacum.finaltech.FinalTech;
 import io.taraxacum.finaltech.core.dto.CargoDTO;
 import io.taraxacum.finaltech.core.dto.SimpleCargoDTO;
+import io.taraxacum.finaltech.core.inventory.AbstractMachineInventory;
+import io.taraxacum.finaltech.core.inventory.cargo.AdvancedPointTransferInventory;
 import io.taraxacum.finaltech.core.option.*;
 import io.taraxacum.finaltech.core.interfaces.RecipeItem;
-import io.taraxacum.finaltech.core.menu.AbstractMachineMenu;
-import io.taraxacum.finaltech.core.menu.cargo.AdvancedPointTransferMenu;
 import io.taraxacum.finaltech.setup.FinalTechItemStacks;
 import io.taraxacum.finaltech.util.*;
 import io.taraxacum.libs.plugin.dto.InvWithSlots;
 import io.taraxacum.libs.plugin.dto.LocationData;
-import io.taraxacum.libs.plugin.dto.ServerRunnableLockFactory;
 import io.taraxacum.libs.plugin.util.ParticleUtil;
 import org.bukkit.Location;
 import org.bukkit.Particle;
@@ -48,9 +47,18 @@ public class AdvancedPointTransfer extends AbstractCargo implements RecipeItem {
     private final double particleDistance = 0.25;
     private final int particleInterval = 2;
     private final int range = ConfigUtil.getOrDefaultItemSetting(8, this, "range");
+    private int[] itemMatch;
 
     public AdvancedPointTransfer(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
         super(itemGroup, item, recipeType, recipe);
+    }
+
+    @Nullable
+    @Override
+    protected AbstractMachineInventory setMachineInventory() {
+        AdvancedPointTransferInventory advancedPointTransferInventory = new AdvancedPointTransferInventory(this);
+        this.itemMatch = advancedPointTransferInventory.itemMatchSlot;
+        return advancedPointTransferInventory;
     }
 
     @Nonnull
@@ -64,6 +72,19 @@ public class AdvancedPointTransfer extends AbstractCargo implements RecipeItem {
                 LocationData locationData = FinalTech.getLocationDataService().getLocationData(location);
                 if(locationData != null) {
                     FinalTech.getLocationDataService().setLocationData(locationData, ConstantTableUtil.CONFIG_UUID, blockPlaceEvent.getPlayer().getUniqueId().toString());
+
+                    CargoNumber.OPTION.checkOrSetDefault(FinalTech.getLocationDataService(), locationData);
+                    CargoFilter.OPTION.checkOrSetDefault(FinalTech.getLocationDataService(), locationData);
+                    CargoMode.OPTION.checkOrSetDefault(FinalTech.getLocationDataService(), locationData);
+                    CargoLimit.OPTION.checkOrSetDefault(FinalTech.getLocationDataService(), locationData);
+
+                    SlotSearchSize.INPUT_OPTION.checkOrSetDefault(FinalTech.getLocationDataService(), locationData);
+                    SlotSearchOrder.INPUT_OPTION.checkOrSetDefault(FinalTech.getLocationDataService(), locationData);
+                    BlockSearchMode.POINT_INPUT_OPTION.checkOrSetDefault(FinalTech.getLocationDataService(), locationData);
+
+                    SlotSearchSize.OUTPUT_OPTION.checkOrSetDefault(FinalTech.getLocationDataService(), locationData);
+                    SlotSearchOrder.OUTPUT_OPTION.checkOrSetDefault(FinalTech.getLocationDataService(), locationData);
+                    BlockSearchMode.POINT_OUTPUT_OPTION.checkOrSetDefault(FinalTech.getLocationDataService(), locationData);
                 }
             }
         };
@@ -72,13 +93,7 @@ public class AdvancedPointTransfer extends AbstractCargo implements RecipeItem {
     @Nonnull
     @Override
     protected BlockBreakHandler onBlockBreak() {
-        return MachineUtil.simpleBlockBreakerHandler(FinalTech.getLocationDataService(), this, AdvancedPointTransferMenu.ITEM_MATCH);
-    }
-
-    @Nonnull
-    @Override
-    protected AbstractMachineMenu setMachineMenu() {
-        return new AdvancedPointTransferMenu(this);
+        return MachineUtil.simpleBlockBreakerHandler(FinalTech.getLocationDataService(), this, this.itemMatch);
     }
 
     @Override
@@ -87,21 +102,19 @@ public class AdvancedPointTransfer extends AbstractCargo implements RecipeItem {
         if(inventory == null) {
             return;
         }
-        Location location = block.getLocation();
         JavaPlugin javaPlugin = this.getAddon().getJavaPlugin();
-        boolean primaryThread = javaPlugin.getServer().isPrimaryThread();
         boolean drawParticle = !inventory.getViewers().isEmpty() || RouteShow.VALUE_TRUE.equals(RouteShow.OPTION.getOrDefaultValue(FinalTech.getLocationDataService(), locationData));
 
-        if (primaryThread) {
+        if (javaPlugin.getServer().isPrimaryThread()) {
             BlockData blockData = block.getState().getBlockData();
-            if (!(blockData instanceof Directional)) {
+            if (!(blockData instanceof Directional directional)) {
                 return;
             }
-            BlockFace blockFace = ((Directional) blockData).getFacing();
+            BlockFace blockFace = directional.getFacing();
             Block inputBlock = this.searchBlock(block, BlockSearchMode.POINT_INPUT_OPTION.getOrDefaultValue(FinalTech.getLocationDataService(), locationData), blockFace.getOppositeFace(), true, drawParticle);
             Block outputBlock = this.searchBlock(block, BlockSearchMode.POINT_OUTPUT_OPTION.getOrDefaultValue(FinalTech.getLocationDataService(), locationData), blockFace, false, drawParticle);
 
-            if (inputBlock == null || outputBlock == null || inputBlock.getLocation().equals(outputBlock.getLocation())) {
+            if (inputBlock == null || outputBlock == null || LocationUtil.isSameLocation(inputBlock.getLocation(), (outputBlock.getLocation()))) {
                 return;
             }
 
@@ -124,26 +137,26 @@ public class AdvancedPointTransfer extends AbstractCargo implements RecipeItem {
             String cargoMode = CargoMode.OPTION.getOrDefaultValue(FinalTech.getLocationDataService(), locationData);
             String cargoLimit = CargoLimit.OPTION.getOrDefaultValue(FinalTech.getLocationDataService(), locationData);
 
-            CargoUtil.doCargo(new CargoDTO(javaPlugin, FinalTech.getLocationDataService(), inputBlock, inputSlotSearchSize, inputSlotSearchOrder, outputBlock, outputSlotSearchSize, outputSlotSearchOrder, cargoNumber, cargoLimit, cargoFilter, inventory, AdvancedPointTransferMenu.ITEM_MATCH), cargoMode);
+            CargoUtil.doCargo(new CargoDTO(javaPlugin, FinalTech.getLocationDataService(), inputBlock, inputSlotSearchSize, inputSlotSearchOrder, outputBlock, outputSlotSearchSize, outputSlotSearchOrder, cargoNumber, cargoLimit, cargoFilter, inventory, this.itemMatch), cargoMode);
         } else {
             javaPlugin.getServer().getScheduler().runTask(javaPlugin, () -> {
                 BlockData blockData = block.getState().getBlockData();
-                if (!(blockData instanceof Directional)) {
+                if (!(blockData instanceof Directional directional)) {
                     return;
                 }
-                BlockFace blockFace = ((Directional) blockData).getFacing();
+                BlockFace blockFace = directional.getFacing();
                 Block inputBlock = AdvancedPointTransfer.this.searchBlock(block, BlockSearchMode.POINT_INPUT_OPTION.getOrDefaultValue(FinalTech.getLocationDataService(), locationData), blockFace.getOppositeFace(), true, drawParticle);
                 Block outputBlock = AdvancedPointTransfer.this.searchBlock(block, BlockSearchMode.POINT_OUTPUT_OPTION.getOrDefaultValue(FinalTech.getLocationDataService(), locationData), blockFace, false, drawParticle);
 
-                if (inputBlock == null || outputBlock == null || inputBlock.getLocation().equals(outputBlock.getLocation())) {
+                if (inputBlock == null || outputBlock == null || LocationUtil.isSameLocation(inputBlock.getLocation(), (outputBlock.getLocation()))) {
                     return;
                 }
 
                 Inventory inputInventory = CargoUtil.getVanillaInventory(inputBlock);
                 Inventory outputInventory = CargoUtil.getVanillaInventory(outputBlock);
 
-                ServerRunnableLockFactory.getInstance(javaPlugin, Location.class).waitThenRun(() -> {
-                    if (FinalTech.getLocationDataService().getLocationData(location) == null) {
+                FinalTech.getLocationRunnableFactory().waitThenRun(() -> {
+                    if (FinalTech.getLocationDataService().getLocationData(block.getLocation()) == null) {
                         return;
                     }
 
@@ -193,7 +206,7 @@ public class AdvancedPointTransfer extends AbstractCargo implements RecipeItem {
                     String cargoFilter = CargoFilter.OPTION.getOrDefaultValue(FinalTech.getLocationDataService(), locationData);
                     String cargoLimit = CargoLimit.OPTION.getOrDefaultValue(FinalTech.getLocationDataService(), locationData);
 
-                    CargoUtil.doSimpleCargo(new SimpleCargoDTO(FinalTech.getLocationDataService(), inputMap, inputBlock, inputSize, inputOrder, outputMap, outputBlock, outputSize, outputOrder, cargoNumber, cargoLimit, cargoFilter, inventory, AdvancedPointTransferMenu.ITEM_MATCH), cargoMode);
+                    CargoUtil.doSimpleCargo(new SimpleCargoDTO(FinalTech.getLocationDataService(), inputMap, inputBlock, inputSize, inputOrder, outputMap, outputBlock, outputSize, outputOrder, cargoNumber, cargoLimit, cargoFilter, inventory, this.itemMatch), cargoMode);
                 }, inputBlock.getLocation(), outputBlock.getLocation());
             });
         }
@@ -245,6 +258,9 @@ public class AdvancedPointTransfer extends AbstractCargo implements RecipeItem {
                 }
             }
             result = result.getRelative(blockFace);
+            if(!result.getChunk().isLoaded()) {
+                return null;
+            }
             if (count++ > this.range) {
                 particleLocationList.add(LocationUtil.getCenterLocation(result));
                 break;
