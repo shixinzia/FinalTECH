@@ -11,10 +11,11 @@ import io.github.thebusybiscuit.slimefun4.core.networks.energy.EnergyNetComponen
 import io.taraxacum.finaltech.FinalTech;
 import io.taraxacum.finaltech.core.interfaces.LocationMachine;
 import io.taraxacum.finaltech.core.interfaces.MenuUpdater;
+import io.taraxacum.finaltech.core.inventory.AbstractMachineInventory;
+import io.taraxacum.finaltech.core.inventory.unit.StatusInventory;
+import io.taraxacum.finaltech.core.option.RouteShow;
 import io.taraxacum.finaltech.util.*;
 import io.taraxacum.finaltech.core.interfaces.RecipeItem;
-import io.taraxacum.finaltech.core.menu.AbstractMachineMenu;
-import io.taraxacum.finaltech.core.menu.unit.StatusMenu;
 import io.taraxacum.finaltech.util.BlockTickerUtil;
 import io.taraxacum.libs.plugin.dto.LocationData;
 import io.taraxacum.libs.slimefun.util.EnergyUtil;
@@ -31,6 +32,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.*;
 
 /**
@@ -40,10 +42,19 @@ public class OverloadedAccelerator extends AbstractCubeMachine implements Recipe
     private final Set<String> notAllowedId = new HashSet<>(ConfigUtil.getItemStringList(this, "not-allowed-id"));
     private final Set<String> allowedId = new HashSet<>();
     private final int range = ConfigUtil.getOrDefaultItemSetting(2, this, "range");
+    private int statusSlot;
 
     public OverloadedAccelerator(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
         super(itemGroup, item, recipeType, recipe);
         this.notAllowedId.add(this.getId());
+    }
+
+    @Nullable
+    @Override
+    protected AbstractMachineInventory setMachineInventory() {
+        StatusInventory statusInventory = new StatusInventory(this);
+        this.statusSlot = statusInventory.statusSlot;
+        return statusInventory;
     }
 
     @Nonnull
@@ -58,19 +69,16 @@ public class OverloadedAccelerator extends AbstractCubeMachine implements Recipe
         return MachineUtil.simpleBlockBreakerHandler();
     }
 
-    @Nonnull
-    @Override
-    protected AbstractMachineMenu setMachineMenu() {
-        return new StatusMenu(this);
-    }
-
     @Override
     protected void tick(@Nonnull Block block, @Nonnull SlimefunItem slimefunItem, @Nonnull LocationData locationData) {
         Inventory inventory = FinalTech.getLocationDataService().getInventory(locationData);
         if(inventory == null) {
             return;
         }
+
         boolean hasViewer = !inventory.getViewers().isEmpty();
+        boolean drawParticle = hasViewer || RouteShow.VALUE_TRUE.equals(RouteShow.OPTION.getOrDefaultValue(FinalTech.getLocationDataService(), locationData));
+
         Location blockLocation = locationData.getLocation();
 
         Map<Integer, List<LocationData>> locationDataMap = new HashMap<>(this.range * 3);
@@ -90,7 +98,7 @@ public class OverloadedAccelerator extends AbstractCubeMachine implements Recipe
 
         if (count == 0) {
             if(hasViewer) {
-                this.updateInv(inventory, StatusMenu.STATUS_SLOT, this,
+                this.updateInv(inventory, this.statusSlot, this,
                         "0", "0");
             }
             return;
@@ -114,8 +122,15 @@ public class OverloadedAccelerator extends AbstractCubeMachine implements Recipe
                             if (energy > capacity) {
                                 accelerateCount++;
 
+                                boolean async = FinalTech.isAsyncSlimefunItem(sfItem.getId());
                                 Runnable runnable = () -> {
-                                    Block machineBlock = tempLocationData.getLocation().getBlock();
+                                    if(async) {
+                                        LocationData nowLocationData = FinalTech.getLocationDataService().getLocationData(tempLocationData.getLocation());
+                                        if(nowLocationData == null || !sfItem.getId().equals(LocationDataUtil.getId(FinalTech.getLocationDataService(), nowLocationData))) {
+                                            return;
+                                        }
+                                    }
+
                                     int machineEnergy = energy;
                                     int currentMachineEnergy;
                                     int times = 1;
@@ -123,7 +138,7 @@ public class OverloadedAccelerator extends AbstractCubeMachine implements Recipe
                                         while (machineEnergy >= capacity) {
                                             FinalTech.getBlockTickerService().run(blockTicker, tempLocationData);
                                             currentMachineEnergy = Integer.parseInt(EnergyUtil.getCharge(FinalTech.getLocationDataService(), tempLocationData));
-                                            if(machineEnergy == currentMachineEnergy) {
+                                            if(currentMachineEnergy >= machineEnergy) {
                                                 break;
                                             }
                                             machineEnergy = currentMachineEnergy - capacity * times++;
@@ -142,21 +157,21 @@ public class OverloadedAccelerator extends AbstractCubeMachine implements Recipe
                                 if (blockTicker.isSynchronized()) {
                                     javaPlugin.getServer().getScheduler().runTask(javaPlugin, runnable);
                                 } else {
-                                    BlockTickerUtil.runTask(FinalTech.getLocationRunnableFactory(), FinalTech.isAsyncSlimefunItem(sfItem.getId()), runnable, tempLocationData.getLocation());
+                                    BlockTickerUtil.runTask(FinalTech.getLocationRunnableFactory(), async, runnable, tempLocationData.getLocation());
                                 }
 
-                                if (hasViewer) {
+                                if (drawParticle) {
                                     javaPlugin.getServer().getScheduler().runTaskAsynchronously(javaPlugin, () -> ParticleUtil.drawCubeByBlock(javaPlugin, Particle.WAX_OFF, 0, tempLocationData.getLocation().getBlock()));
                                 }
                             }
-                    }
+                        }
                     }
                 }
             }
         }
 
         if(hasViewer) {
-            this.updateInv(inventory, StatusMenu.STATUS_SLOT, this,
+            this.updateInv(inventory, this.statusSlot, this,
                     String.valueOf(count),
                     String.valueOf(accelerateCount));
         }
@@ -205,7 +220,9 @@ public class OverloadedAccelerator extends AbstractCubeMachine implements Recipe
         } else if(this.notAllowedId.contains(slimefunItem.getId())) {
             return false;
         } else {
-            if(slimefunItem.getBlockTicker() == null || slimefunItem.getBlockTicker() == null || !(slimefunItem instanceof EnergyNetComponent energyNetComponent) || !EnergyNetComponentType.CONSUMER.equals(energyNetComponent.getEnergyComponentType())) {
+            if(slimefunItem.getBlockTicker() == null
+                    || !(slimefunItem instanceof EnergyNetComponent energyNetComponent)
+                    || !EnergyNetComponentType.CONSUMER.equals(energyNetComponent.getEnergyComponentType())) {
                 this.notAllowedId.add(slimefunItem.getId());
                 return false;
             }

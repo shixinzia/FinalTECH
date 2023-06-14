@@ -9,6 +9,9 @@ import io.github.thebusybiscuit.slimefun4.core.handlers.BlockPlaceHandler;
 import io.taraxacum.common.util.JavaUtil;
 import io.taraxacum.finaltech.FinalTech;
 import io.taraxacum.finaltech.core.interfaces.MenuUpdater;
+import io.taraxacum.finaltech.core.inventory.AbstractMachineInventory;
+import io.taraxacum.finaltech.core.inventory.unit.StatusL2Inventory;
+import io.taraxacum.finaltech.core.option.RouteShow;
 import io.taraxacum.finaltech.setup.FinalTechItems;
 import io.taraxacum.finaltech.util.BlockTickerUtil;
 import io.taraxacum.finaltech.util.ConfigUtil;
@@ -16,8 +19,6 @@ import io.taraxacum.finaltech.util.RecipeUtil;
 import io.taraxacum.libs.plugin.dto.LocationData;
 import io.taraxacum.libs.plugin.util.ParticleUtil;
 import io.taraxacum.finaltech.core.interfaces.RecipeItem;
-import io.taraxacum.finaltech.core.menu.AbstractMachineMenu;
-import io.taraxacum.finaltech.core.menu.unit.StatusL2Menu;
 import io.taraxacum.finaltech.util.MachineUtil;
 import io.taraxacum.libs.slimefun.util.LocationDataUtil;
 import me.mrCookieSlime.Slimefun.Objects.handlers.BlockTicker;
@@ -29,6 +30,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.*;
 import java.util.function.Function;
 
@@ -41,12 +43,21 @@ public class MatrixAccelerator extends AbstractCubeMachine implements RecipeItem
     private final boolean safeMode = ConfigUtil.getOrDefaultItemSetting(true, this, "safe-mode");
     // System.nanoTime
     // 1,000,000ns = 1ms
-    private final int syncThreshold = ConfigUtil.getOrDefaultItemSetting(300000, this, "threshold-sync");
-    private final int asyncThreshold = ConfigUtil.getOrDefaultItemSetting(1600000, this, "threshold-async");
+    private final int syncThreshold = ConfigUtil.getOrDefaultItemSetting(300_000, this, "threshold-sync");
+    private final int asyncThreshold = ConfigUtil.getOrDefaultItemSetting(1_600_000, this, "threshold-async");
+    private int statusSlot;
 
     public MatrixAccelerator(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
         super(itemGroup, item, recipeType, recipe);
         this.notAllowedId.add(this.getId());
+    }
+
+    @Nullable
+    @Override
+    protected AbstractMachineInventory setMachineInventory() {
+        StatusL2Inventory statusInventory = new StatusL2Inventory(this);
+        this.statusSlot = statusInventory.statusSlot;
+        return statusInventory;
     }
 
     @Nonnull
@@ -61,19 +72,15 @@ public class MatrixAccelerator extends AbstractCubeMachine implements RecipeItem
         return MachineUtil.simpleBlockBreakerHandler(FinalTech.getLocationDataService(), this);
     }
 
-    @Nonnull
-    @Override
-    protected AbstractMachineMenu setMachineMenu() {
-        return new StatusL2Menu(this);
-    }
-
     @Override
     protected void tick(@Nonnull Block block, @Nonnull SlimefunItem slimefunItem, @Nonnull LocationData locationData) {
         Inventory inventory = FinalTech.getLocationDataService().getInventory(locationData);
         if(inventory == null) {
             return;
         }
+
         boolean hasViewer = !inventory.getViewers().isEmpty();
+        boolean drawParticle = hasViewer || RouteShow.VALUE_TRUE.equals(RouteShow.OPTION.getOrDefaultValue(FinalTech.getLocationDataService(), locationData));
         Location blockLocation = locationData.getLocation();
 
         int accelerate = 0;
@@ -93,9 +100,11 @@ public class MatrixAccelerator extends AbstractCubeMachine implements RecipeItem
             }
         } else {
             SlimefunItem machineItem = SlimefunItem.getByItem(matchItem);
-            if (machineItem == null || this.notAllowedId.contains(machineItem.getId()) || machineItem.getBlockTicker() == null) {
+            if (machineItem == null
+                    || this.notAllowedId.contains(machineItem.getId())
+                    || machineItem.getBlockTicker() == null) {
                 if(hasViewer) {
-                    this.updateInv(inventory, StatusL2Menu.STATUS_SLOT, this,
+                    this.updateInv(inventory, this.statusSlot, this,
                             "0", "0", "0");
                 }
                 return;
@@ -106,7 +115,6 @@ public class MatrixAccelerator extends AbstractCubeMachine implements RecipeItem
 
         // search around block
         Map<Integer, List<LocationData>> locationDataMap = new HashMap<>(range * 3);
-
         final String finalMachineId = machineId;
         Function<String, Boolean> availableIdFunction = machineId == null ? id -> !MatrixAccelerator.this.notAllowedId.contains(id) : finalMachineId::equals;
         int count = this.cubeFunction(block, range, location -> {
@@ -127,12 +135,11 @@ public class MatrixAccelerator extends AbstractCubeMachine implements RecipeItem
 
         if (count == 0) {
             if(hasViewer) {
-                this.updateInv(inventory, StatusL2Menu.STATUS_SLOT, this,
+                this.updateInv(inventory, this.statusSlot, this,
                         "0", "0", "0");
             }
             return;
         }
-
 
         int accelerateTimeCount = 0;
         int accelerateMachineCount = 0;
@@ -186,7 +193,7 @@ public class MatrixAccelerator extends AbstractCubeMachine implements RecipeItem
                             }, tempLocationdata.getLocation());
                         }
 
-                        if (hasViewer) {
+                        if (drawParticle) {
                             javaPlugin.getServer().getScheduler().runTaskAsynchronously(javaPlugin, () -> ParticleUtil.drawCubeByBlock(javaPlugin, Particle.WAX_OFF, 0, tempLocationdata.getLocation().getBlock()));
                         }
                         accelerateTimeCount += accelerate;
@@ -197,7 +204,7 @@ public class MatrixAccelerator extends AbstractCubeMachine implements RecipeItem
         }
 
         if(hasViewer) {
-            this.updateInv(inventory, StatusL2Menu.STATUS_SLOT, this,
+            this.updateInv(inventory, this.statusSlot, this,
                     String.valueOf(range),
                     String.valueOf(accelerateTimeCount),
                     String.valueOf(accelerateMachineCount));
