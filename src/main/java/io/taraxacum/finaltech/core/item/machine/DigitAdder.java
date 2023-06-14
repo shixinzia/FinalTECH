@@ -9,9 +9,9 @@ import io.github.thebusybiscuit.slimefun4.core.handlers.BlockPlaceHandler;
 import io.taraxacum.finaltech.FinalTech;
 import io.taraxacum.finaltech.core.interfaces.RecipeItem;
 import io.taraxacum.finaltech.core.interfaces.DigitalItem;
+import io.taraxacum.finaltech.core.inventory.AbstractMachineInventory;
+import io.taraxacum.finaltech.core.inventory.simple.DigitAdderInventory;
 import io.taraxacum.finaltech.core.item.unusable.DigitalNumber;
-import io.taraxacum.finaltech.core.menu.AbstractMachineMenu;
-import io.taraxacum.finaltech.core.menu.machine.DigitAdderMenu;
 import io.taraxacum.finaltech.util.RecipeUtil;
 import io.taraxacum.libs.plugin.dto.LocationData;
 import io.taraxacum.libs.plugin.util.InventoryUtil;
@@ -22,6 +22,7 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 /**
  * @author Final_ROOT
@@ -29,6 +30,12 @@ import javax.annotation.Nonnull;
 public class DigitAdder extends AbstractMachine implements RecipeItem {
     public DigitAdder(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item, @Nonnull RecipeType recipeType, @Nonnull ItemStack[] recipe) {
         super(itemGroup, item, recipeType, recipe);
+    }
+
+    @Nullable
+    @Override
+    protected AbstractMachineInventory setMachineInventory() {
+        return new DigitAdderInventory(this);
     }
 
     @Nonnull
@@ -43,16 +50,9 @@ public class DigitAdder extends AbstractMachine implements RecipeItem {
         return MachineUtil.simpleBlockBreakerHandler(FinalTech.getLocationDataService(), this);
     }
 
-    @Nonnull
-    @Override
-    protected AbstractMachineMenu setMachineMenu() {
-        return new DigitAdderMenu(this);
-    }
-
     @Override
     protected void tick(@Nonnull Block block, @Nonnull SlimefunItem slimefunItem, @Nonnull LocationData locationData) {
         Inventory inventory = FinalTech.getLocationDataService().getInventory(locationData);
-
         if (inventory == null || InventoryUtil.slotCount(inventory, this.getOutputSlot()) == this.getOutputSlot().length) {
             return;
         }
@@ -80,15 +80,14 @@ public class DigitAdder extends AbstractMachine implements RecipeItem {
 
         SlimefunItem digitItem = DigitalNumber.getByDigit(digit % 16);
         if (digitItem != null) {
-            inventory.setItem(this.getOutputSlot()[1], digitItem.getItem());
-        }
-
-        for (int slot : this.getInputSlot()) {
-            itemStack = inventory.getItem(slot);
-            if (ItemStackUtil.isItemNull(itemStack)) {
-                continue;
+            for (int slot : this.getInputSlot()) {
+                itemStack = inventory.getItem(slot);
+                if (ItemStackUtil.isItemNull(itemStack)) {
+                    continue;
+                }
+                itemStack.setAmount(itemStack.getAmount() - 1);
             }
-            itemStack.setAmount(itemStack.getAmount() - 1);
+            inventory.setItem(this.getOutputSlot()[1], digitItem.getItem());
         }
     }
 
