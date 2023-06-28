@@ -29,6 +29,16 @@ public class ReflectionUtil {
         return true;
     }
 
+    public static <T, V> T getStaticValue(Class<V> clazz, String field) {
+        try {
+            Field declaredField = clazz.getDeclaredField(field);
+            declaredField.setAccessible(true);
+            return (T) declaredField.get(null);
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     public static Method getMethod(Class<?> clazz, String methodName) {
         while (clazz != Object.class) {
             for (Method method : clazz.getDeclaredMethods()) {

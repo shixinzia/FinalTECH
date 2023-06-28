@@ -21,13 +21,13 @@ import java.util.*;
 /**
  * @author Final_ROOT
  */
-// TODO: remove FinalTech
+@Deprecated
 public class ItemValueTable {
     private boolean init = false;
     // key: slimefun item id, value: input value
-    private final Map<String, String> itemOutputValueMap = new HashMap<>(Slimefun.getRegistry().getAllSlimefunItems().size());
+    private final Map<String, String> itemOutputValueMap = new HashMap<>(Slimefun.getRegistry().getEnabledSlimefunItems().size());
     // key: slimefun item id, value: output value
-    private final Map<String, String> itemInputValueMap = new HashMap<>(Slimefun.getRegistry().getAllSlimefunItems().size());
+    private final Map<String, String> itemInputValueMap = new HashMap<>(Slimefun.getRegistry().getEnabledSlimefunItems().size());
     // key: output value, value: all slimefun item id with same output value
     private final Map<String, List<String>> valueItemListOutputMap = new HashMap<>();
     public final String baseOutputValue = FinalTech.getValueManager().getOrDefault("64","itemValueTable","baseOutputValue");
