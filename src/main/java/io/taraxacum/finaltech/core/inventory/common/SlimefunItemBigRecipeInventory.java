@@ -1,13 +1,9 @@
 package io.taraxacum.finaltech.core.inventory.common;
 
-import io.github.thebusybiscuit.slimefun4.api.items.ItemGroup;
 import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItem;
 import io.github.thebusybiscuit.slimefun4.api.player.PlayerProfile;
 import io.github.thebusybiscuit.slimefun4.core.attributes.RecipeDisplayItem;
-import io.github.thebusybiscuit.slimefun4.core.guide.GuideHistory;
-import io.github.thebusybiscuit.slimefun4.core.guide.SlimefunGuide;
 import io.github.thebusybiscuit.slimefun4.core.guide.SlimefunGuideMode;
-import io.github.thebusybiscuit.slimefun4.implementation.Slimefun;
 import io.github.thebusybiscuit.slimefun4.utils.ChestMenuUtils;
 import io.taraxacum.common.util.JavaUtil;
 import io.taraxacum.finaltech.core.group.CraftItemGroup;
@@ -16,8 +12,8 @@ import io.taraxacum.finaltech.core.group.TypeItemGroup;
 import io.taraxacum.finaltech.core.option.Icon;
 import io.taraxacum.finaltech.util.MachineUtil;
 import io.taraxacum.libs.plugin.dto.SimpleVirtualInventory;
+import io.taraxacum.libs.plugin.service.InventoryHistoryService;
 import io.taraxacum.libs.plugin.util.ItemStackUtil;
-import io.taraxacum.libs.slimefun.util.GuideUtil;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -29,7 +25,7 @@ import java.util.List;
 /**
  * @author Final_ROOT
  */
-public class SlimefunItemBigRecipeMenu extends SimpleVirtualInventory {
+public class SlimefunItemBigRecipeInventory extends SimpleVirtualInventory {
     private final int backSlot = 1;
     private final int recipeType = 10;
     private final int recipeResult = 37;
@@ -48,60 +44,94 @@ public class SlimefunItemBigRecipeMenu extends SimpleVirtualInventory {
     private final Player player;
     private final PlayerProfile playerProfile;
     private final SlimefunGuideMode slimefunGuideMode;
+    private final InventoryHistoryService inventoryHistoryService;
     private final SlimefunItem slimefunItem;
-    private final ItemGroup itemGroup;
 
-    public SlimefunItemBigRecipeMenu(@Nonnull Player player, @Nonnull PlayerProfile playerProfile, @Nonnull SlimefunGuideMode slimefunGuideMode, @Nonnull SlimefunItem slimefunItem, @Nonnull ItemGroup itemGroup) {
-        this(player, playerProfile, slimefunGuideMode, slimefunItem, itemGroup, 1);
-    }
+    private int page;
 
-    public SlimefunItemBigRecipeMenu(@Nonnull Player player, @Nonnull PlayerProfile playerProfile, @Nonnull SlimefunGuideMode slimefunGuideMode, @Nonnull SlimefunItem slimefunItem, @Nonnull ItemGroup itemGroup, int page) {
+    @Nullable
+    private RecipeItemGroup recipeItemGroup;
+
+    public SlimefunItemBigRecipeInventory(@Nonnull Player player, @Nonnull PlayerProfile playerProfile, @Nonnull SlimefunGuideMode slimefunGuideMode, @Nonnull InventoryHistoryService inventoryHistoryService, @Nonnull SlimefunItem slimefunItem, @Nonnull RecipeItemGroup recipeItemGroup, int page) {
         super(54, slimefunItem.getItemName());
+
         this.player = player;
         this.playerProfile = playerProfile;
         this.slimefunGuideMode = slimefunGuideMode;
+        this.inventoryHistoryService = inventoryHistoryService;
         this.slimefunItem = slimefunItem;
-        this.itemGroup = itemGroup;
 
+        this.page = page;
+
+        this.recipeItemGroup = recipeItemGroup;
+
+        this.init();
+    }
+
+    public SlimefunItemBigRecipeInventory(@Nonnull Player player, @Nonnull PlayerProfile playerProfile, @Nonnull SlimefunGuideMode slimefunGuideMode, @Nonnull InventoryHistoryService inventoryHistoryService, @Nonnull SlimefunItem slimefunItem, int page) {
+        super(54, slimefunItem.getItemName());
+
+        this.player = player;
+        this.playerProfile = playerProfile;
+        this.slimefunGuideMode = slimefunGuideMode;
+        this.inventoryHistoryService = inventoryHistoryService;
+        this.slimefunItem = slimefunItem;
+
+        this.page = page;
+
+        this.init();
+    }
+
+    @Nonnull
+    protected SlimefunItemBigRecipeInventory generateByPage(int page) {
+        if (this.recipeItemGroup != null) {
+            return new SlimefunItemBigRecipeInventory(this.player, this.playerProfile, this.slimefunGuideMode, this.inventoryHistoryService, this.slimefunItem, this.recipeItemGroup, page);
+        } else {
+            return new SlimefunItemBigRecipeInventory(this.player, this.playerProfile, this.slimefunGuideMode, this.inventoryHistoryService, this.slimefunItem, page);
+        }
+    }
+
+    protected void init() {
         this.setAllowClickPlayerInventory(false);
 
         for (int slot : JavaUtil.generateInts(this.getSize())) {
             this.setOnClick(slot, CANCEL_CLICK_CONSUMER);
         }
 
-        this.setOnOpen(inventoryOpenEvent -> player.playSound(player.getLocation(), Sound.ITEM_BOOK_PAGE_TURN, 1, 1));
+        this.setOnOpen(inventoryOpenEvent -> {
+            this.inventoryHistoryService.tryAddToLast(this.player, this);
+            this.player.playSound(this.player.getLocation(), Sound.ITEM_BOOK_PAGE_TURN, 1, 1);
+        });
 
-        GuideHistory guideHistory = playerProfile.getGuideHistory();
-
-        this.getInventory().setItem(this.backSlot, ChestMenuUtils.getBackButton(player));
+        this.getInventory().setItem(this.backSlot, ChestMenuUtils.getBackButton(this.player));
         this.setOnClick(this.backSlot, inventoryClickEvent -> {
             inventoryClickEvent.setCancelled(true);
 
             if (inventoryClickEvent.getClick().isShiftClick()) {
-                SlimefunGuide.openMainMenu(playerProfile, slimefunGuideMode, guideHistory.getMainMenuPage());
+                this.inventoryHistoryService.openHome(this.player);
             } else {
-                guideHistory.goBack(Slimefun.getRegistry().getSlimefunGuide(SlimefunGuideMode.SURVIVAL_MODE));
+                this.inventoryHistoryService.removeThenOpenLast(this.player);
             }
         });
 
-        this.getInventory().setItem(this.recipeType, MachineUtil.cloneAsDescriptiveItem(slimefunItem.getRecipeType().toItem()));
+        this.getInventory().setItem(this.recipeType, MachineUtil.cloneAsDescriptiveItem(this.slimefunItem.getRecipeType().toItem()));
         this.setOnClick(this.recipeType, inventoryClickEvent -> {
             inventoryClickEvent.setCancelled(true);
 
-            TypeItemGroup typeItemGroup = TypeItemGroup.getByRecipeType(slimefunItem.getRecipeType());
-            typeItemGroup.open(player, playerProfile, slimefunGuideMode);
+            TypeItemGroup typeItemGroup = TypeItemGroup.getByRecipeType(this.slimefunItem.getRecipeType(), this.inventoryHistoryService);
+            typeItemGroup.open(this.player, this.playerProfile, this.slimefunGuideMode);
         });
 
-        this.getInventory().setItem(this.recipeResult, MachineUtil.cloneAsDescriptiveItem(slimefunItem.getRecipeOutput()));
+        this.getInventory().setItem(this.recipeResult, MachineUtil.cloneAsDescriptiveItem(this.slimefunItem.getRecipeOutput()));
         this.setOnClick(this.recipeResult, inventoryClickEvent -> {
             inventoryClickEvent.setCancelled(true);
 
-            CraftItemGroup craftItemGroup = CraftItemGroup.getBySlimefunItem(slimefunItem);
-            craftItemGroup.open(player, playerProfile, slimefunGuideMode);
+            CraftItemGroup craftItemGroup = CraftItemGroup.getBySlimefunItem(this.slimefunItem, this.inventoryHistoryService);
+            craftItemGroup.open(this.player, this.playerProfile, this.slimefunGuideMode);
         });
 
-        for (int i = 0; i < slimefunItem.getRecipe().length; i++) {
-            ItemStack itemStack = slimefunItem.getRecipe()[i];
+        for (int i = 0; i < this.slimefunItem.getRecipe().length; i++) {
+            ItemStack itemStack = this.slimefunItem.getRecipe()[i];
             ItemStack icon = itemStack;
             SlimefunItem sfItem = SlimefunItem.getByItem(itemStack);
             if(sfItem != null && !this.playerProfile.hasUnlocked(sfItem.getResearch())) {
@@ -114,21 +144,21 @@ public class SlimefunItemBigRecipeMenu extends SimpleVirtualInventory {
                 inventoryClickEvent.setCancelled(true);
 
                 if (sfItem != null && playerProfile.hasUnlocked(sfItem.getResearch())) {
-                    RecipeItemGroup recipeItemGroup = RecipeItemGroup.getByItemStack(player, playerProfile, slimefunGuideMode, itemStack);
+                    RecipeItemGroup recipeItemGroup = RecipeItemGroup.getByItemStack(this.player, this.playerProfile, this.slimefunGuideMode, this.inventoryHistoryService, itemStack);
                     if (recipeItemGroup != null) {
-                        recipeItemGroup.open(player, playerProfile, slimefunGuideMode);
+                        recipeItemGroup.open(this.player, this.playerProfile, this.slimefunGuideMode);
                     }
                 }
             });
         }
 
-        this.getInventory().setItem(this.infoSlot, RecipeItemGroup.generateInfoIcon(slimefunItem, player));
+        this.getInventory().setItem(this.infoSlot, Icon.generateInfoIcon(this.slimefunItem, this.player));
 
         for (int slot : this.border) {
             this.getInventory().setItem(slot, ChestMenuUtils.getBackground());
         }
 
-        if (slimefunItem instanceof RecipeDisplayItem recipeDisplayItem && recipeDisplayItem.getDisplayRecipes().size() > 0) {
+        if (this.slimefunItem instanceof RecipeDisplayItem recipeDisplayItem && recipeDisplayItem.getDisplayRecipes().size() > 0) {
             this.getInventory().setItem(this.workButton, Icon.RECIPE_ICON);
             this.setOnClick(this.workButton, inventoryClickEvent -> {
                 inventoryClickEvent.setCancelled(true);
@@ -140,6 +170,7 @@ public class SlimefunItemBigRecipeMenu extends SimpleVirtualInventory {
             });
         } else {
             this.getInventory().setItem(this.workButton, ChestMenuUtils.getBackground());
+            this.setOnClick(this.workButton, CANCEL_CLICK_CONSUMER);
         }
     }
 
@@ -158,12 +189,8 @@ public class SlimefunItemBigRecipeMenu extends SimpleVirtualInventory {
             simpleVirtualInventory.getInventory().setItem(this.workBackSlot, ChestMenuUtils.getBackButton(this.player));
             simpleVirtualInventory.setOnClick(this.workBackSlot, inventoryClickEvent -> {
                 inventoryClickEvent.setCancelled(true);
-                
-                GuideHistory guideHistory = this.playerProfile.getGuideHistory();
-                GuideUtil.removeLastEntry(guideHistory);
-                if (this.itemGroup instanceof RecipeItemGroup recipeItemGroup) {
-                    recipeItemGroup.open(this.player, this.playerProfile, this.slimefunGuideMode);
-                }
+
+                this.open(this.player);
             });
 
             simpleVirtualInventory.getInventory().setItem(this.workPreviousSlot, ChestMenuUtils.getPreviousButton(this.player, page, (displayRecipes.size() - 1) / this.workContent.length + 1));
@@ -196,12 +223,12 @@ public class SlimefunItemBigRecipeMenu extends SimpleVirtualInventory {
                     if(slimefunItem != null && !this.playerProfile.hasUnlocked(slimefunItem.getResearch())) {
                         icon = ChestMenuUtils.getNotResearchedItem();
                     }
-                    simpleVirtualInventory.getInventory().setItem(workContent[i], MachineUtil.cloneAsDescriptiveItem(icon));
-                    simpleVirtualInventory.setOnClick(workContent[i], inventoryClickEvent -> {
+                    simpleVirtualInventory.getInventory().setItem(this.workContent[i], MachineUtil.cloneAsDescriptiveItem(icon));
+                    simpleVirtualInventory.setOnClick(this.workContent[i], inventoryClickEvent -> {
                         inventoryClickEvent.setCancelled(true);
 
                         if (slimefunItem != null && this.playerProfile.hasUnlocked(slimefunItem.getResearch())) {
-                            RecipeItemGroup recipeItemGroup = RecipeItemGroup.getByItemStack(this.player, this.playerProfile, this.slimefunGuideMode, itemStack);
+                            RecipeItemGroup recipeItemGroup = RecipeItemGroup.getByItemStack(this.player, this.playerProfile, this.slimefunGuideMode, this.inventoryHistoryService, itemStack);
                             if (recipeItemGroup != null) {
                                 recipeItemGroup.open(this.player, this.playerProfile, this.slimefunGuideMode);
                             }
