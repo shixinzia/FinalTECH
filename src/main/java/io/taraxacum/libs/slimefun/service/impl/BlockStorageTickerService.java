@@ -50,15 +50,17 @@ public class BlockStorageTickerService extends BlockTickerService {
 
             public void tick(Block block, SlimefunItem slimefunItem, Config data) {
                 LocationData locationData = new LocationBlockStorageData(block.getLocation(), data, slimefunItem.getId(), slimefunItem);
-                for(Function<LocationData, Boolean> function : beforeTicks) {
-                    if(!function.apply(locationData)) {
-                        return;
+                ticker.accept(() -> {
+                    for (Function<LocationData, Boolean> function : beforeTicks) {
+                        if(!function.apply(locationData)) {
+                            return;
+                        }
                     }
-                }
-                ticker.accept(() -> blockTicker.tick(block, slimefunItem, data), locationData);
-                for(Consumer<LocationData> consumer : afterTicks) {
-                    consumer.accept(locationData);
-                }
+                    blockTicker.tick(block, slimefunItem, data);
+                    for (Consumer<LocationData> consumer : afterTicks) {
+                        consumer.accept(locationData);
+                    }
+                }, locationData);
             }
 
             @Override
