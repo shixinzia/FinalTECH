@@ -6,11 +6,10 @@ import io.github.thebusybiscuit.slimefun4.api.recipes.RecipeType;
 import io.taraxacum.common.util.JavaUtil;
 import io.taraxacum.common.util.ReflectionUtil;
 import io.taraxacum.finaltech.FinalTech;
-import io.taraxacum.finaltech.core.dto.ComplexOptional;
+import io.taraxacum.libs.plugin.dto.ComplexOptional;
 import io.taraxacum.finaltech.core.exception.ParseErrorException;
 import io.taraxacum.finaltech.core.group.MainItemGroup;
 import io.taraxacum.finaltech.core.group.SubFlexItemGroup;
-import io.taraxacum.finaltech.core.interfaces.ExtraParameterItem;
 import io.taraxacum.finaltech.setup.FinalTechRecipeTypes;
 import io.taraxacum.finaltech.setup.FinalTechRecipes;
 import io.taraxacum.libs.plugin.dto.ConfigFileManager;
@@ -23,7 +22,6 @@ import org.bukkit.inventory.ItemStack;
 import javax.annotation.Nonnull;
 import java.util.Comparator;
 import java.util.List;
-import java.util.function.Supplier;
 
 /**
  * @author Final_ROOT
