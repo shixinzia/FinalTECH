@@ -29,8 +29,6 @@ public class SlimefunCraftRegistry {
         }
 
         this.reload();
-        System.out.println("slimefun craft registry init.");
-        System.out.println(this.craftMap.size());
 
         this.init = true;
     }
