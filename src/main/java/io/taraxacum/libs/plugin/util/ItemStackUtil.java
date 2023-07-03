@@ -411,15 +411,15 @@ public final class ItemStackUtil {
     public static List<ItemAmountWrapper> calItemListWithAmount(@Nonnull ItemStack[] items) {
         List<ItemAmountWrapper> itemWithWrapperList = new ArrayList<>(items.length);
         ItemAmountWrapper itemAmountWrapper = new ItemAmountWrapper();
-        for (ItemStack item : items) {
-            if (ItemStackUtil.isItemNull(item)) {
+        for (ItemStack itemStack : items) {
+            if (ItemStackUtil.isItemNull(itemStack)) {
                 continue;
             }
-            itemAmountWrapper.newWrap(ItemStackUtil.cloneItem(item));
+            itemAmountWrapper.newWrap(ItemStackUtil.cloneItem(itemStack));
             boolean find = false;
             for (ItemAmountWrapper existedItemWrapper : itemWithWrapperList) {
                 if (ItemStackUtil.isItemSimilar(itemAmountWrapper, existedItemWrapper)) {
-                    existedItemWrapper.addAmount(item.getAmount());
+                    existedItemWrapper.addAmount(itemStack.getAmount());
                     find = true;
                     break;
                 }
@@ -875,6 +875,10 @@ public final class ItemStackUtil {
         ItemStack result = new ItemStack(itemStack);
         ItemStackUtil.clearNBT(result);
         return result;
+    }
+
+    public static boolean isRawMaterial(@Nonnull ItemStack itemStack) {
+        return ItemStackUtil.isItemSimilar(itemStack, new ItemStack(itemStack.getType()));
     }
 
     @Nonnull
