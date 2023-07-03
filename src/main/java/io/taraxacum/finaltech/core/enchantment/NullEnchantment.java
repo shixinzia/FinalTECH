@@ -15,7 +15,7 @@ import javax.annotation.Nonnull;
  * @author Final_ROOT
  */
 public class NullEnchantment extends Enchantment {
-    public static final Enchantment ENCHANTMENT = new NullEnchantment(new NamespacedKey(JavaPlugin.getPlugin(FinalTech.class), "FINALTECH_NULL_ENCHANTMENT"));
+    public static final Enchantment INSTANCE = new NullEnchantment(new NamespacedKey(JavaPlugin.getPlugin(FinalTech.class), "FINALTECH_NULL_ENCHANTMENT"));
 
     private NullEnchantment(NamespacedKey key) {
         super(key);
@@ -64,7 +64,7 @@ public class NullEnchantment extends Enchantment {
     }
 
     public static void addAndHidden(@Nonnull ItemStack item) {
-        item.addUnsafeEnchantment(ENCHANTMENT, 0);
+        item.addUnsafeEnchantment(INSTANCE, 0);
         ItemStackUtil.addItemFlag(item, ItemFlag.HIDE_ENCHANTS);
     }
 }
