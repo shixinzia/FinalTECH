@@ -69,21 +69,21 @@ public class DatabaseTickerService extends BlockTickerService {
 
             public void tick(Block block, SlimefunItem slimefunItem, SlimefunBlockData data) {
                 LocationData locationData = new LocationDatabaseData(block.getLocation(), data);
-                for(Function<LocationData, Boolean> function : beforeTicks) {
-                    if(!function.apply(locationData)) {
-                        return;
-                    }
-                }
                 ticker.accept(() -> {
                     try {
+                        for (Function<LocationData, Boolean> function : beforeTicks) {
+                            if (!function.apply(locationData)) {
+                                return;
+                            }
+                        }
                         DatabaseTickerService.this.methodHandleTick.invokeExact(blockTicker, block, slimefunItem, data);
+                        for (Consumer<LocationData> consumer : afterTicks) {
+                            consumer.accept(locationData);
+                        }
                     } catch (Throwable e) {
                         throw new RuntimeException(e);
                     }
                 }, locationData);
-                for(Consumer<LocationData> consumer : afterTicks) {
-                    consumer.accept(locationData);
-                }
             }
 
             @Override
