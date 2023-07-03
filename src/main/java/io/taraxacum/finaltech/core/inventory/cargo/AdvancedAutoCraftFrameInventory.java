@@ -84,16 +84,19 @@ public class AdvancedAutoCraftFrameInventory extends AbstractMachineInventory im
         this.recipeTypeIdList = new HashSet<>(ConfigUtil.getItemStringList(slimefunItem.getId(), "recipe-type-id"));
     }
 
+    @Nonnull
     @Override
     protected int[] getBorder() {
         return this.border;
     }
 
+    @Nonnull
     @Override
     protected int[] getInputBorder() {
         return this.inputBorder;
     }
 
+    @Nonnull
     @Override
     protected int[] getOutputBorder() {
         return this.outputBorder;

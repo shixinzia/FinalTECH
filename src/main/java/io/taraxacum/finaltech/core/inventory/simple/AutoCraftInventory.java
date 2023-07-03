@@ -4,7 +4,7 @@ import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItem;
 import io.github.thebusybiscuit.slimefun4.core.machines.MachineOperation;
 import io.taraxacum.finaltech.FinalTech;
 import io.taraxacum.finaltech.core.inventory.AbstractOrdinaryMachineInventory;
-import io.taraxacum.finaltech.core.item.machine.operation.AutoCraft;
+import io.taraxacum.finaltech.core.item.machine.operation.CraftStorage;
 import io.taraxacum.finaltech.core.operation.AutoCraftOperation;
 import io.taraxacum.libs.slimefun.service.SlimefunLocationDataService;
 import me.mrCookieSlime.Slimefun.api.inventory.BlockMenu;
@@ -25,23 +25,26 @@ public class AutoCraftInventory extends AbstractOrdinaryMachineInventory {
     private final int[] outputSlot = new int[] {6, 7, 8, 15, 16, 17, 24, 25, 26, 33, 34, 35, 42, 43, 44, 51, 52, 53};
     public final int statusSlot = 4;
 
-    private final AutoCraft autoCraft;
+    private final CraftStorage craftStorage;
 
-    public AutoCraftInventory(@Nonnull AutoCraft autoCraft) {
-        super(autoCraft);
-        this.autoCraft = autoCraft;
+    public AutoCraftInventory(@Nonnull CraftStorage craftStorage) {
+        super(craftStorage);
+        this.craftStorage = craftStorage;
     }
 
+    @Nonnull
     @Override
     protected int[] getBorder() {
         return this.border;
     }
 
+    @Nonnull
     @Override
     protected int[] getInputBorder() {
         return this.inputBorder;
     }
 
+    @Nonnull
     @Override
     protected int[] getOutputBorder() {
         return this.outputBorder;
@@ -81,12 +84,12 @@ public class AutoCraftInventory extends AbstractOrdinaryMachineInventory {
         if (FinalTech.getLocationDataService() instanceof SlimefunLocationDataService slimefunLocationDataService) {
             BlockMenu blockMenu = slimefunLocationDataService.getBlockMenu(location);
             SlimefunItem slimefunItem = slimefunLocationDataService.getSlimefunItem(location);
-            if (blockMenu != null && slimefunItem == this.autoCraft) {
-                MachineOperation machineOperation = this.autoCraft.getMachineProcessor().getOperation(location);
+            if (blockMenu != null && slimefunItem == this.craftStorage) {
+                MachineOperation machineOperation = this.craftStorage.getMachineProcessor().getOperation(location);
                 if (machineOperation instanceof AutoCraftOperation autoCraftOperation) {
                     switch (requestType) {
-                        case INPUT -> this.autoCraft.doInput(blockMenu.toInventory(), autoCraftOperation);
-                        case OUTPUT -> this.autoCraft.doOutput(blockMenu.toInventory(), autoCraftOperation);
+                        case INPUT -> this.craftStorage.doInput(blockMenu.toInventory(), autoCraftOperation);
+                        case OUTPUT -> this.craftStorage.doOutput(blockMenu.toInventory(), autoCraftOperation);
                     }
                 }
 
@@ -106,8 +109,8 @@ public class AutoCraftInventory extends AbstractOrdinaryMachineInventory {
 
             ItemStack itemOnCursor = inventoryClickEvent.getWhoClicked().getItemOnCursor();
             SlimefunItem slimefunItem = SlimefunItem.getByItem(itemOnCursor);
-            if(slimefunItem != null && this.autoCraft.calAllowed(slimefunItem)) {
-                this.autoCraft.setupCraft(location, slimefunItem);
+            if(slimefunItem != null && this.craftStorage.calAllowed(slimefunItem)) {
+                this.craftStorage.setupCraft(location, slimefunItem);
             }
         };
     }

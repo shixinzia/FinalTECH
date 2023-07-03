@@ -34,6 +34,7 @@ public class ExpandedConfigurableTransporterInventory extends AbstractClickerInv
         this.range = range;
     }
 
+    @Nonnull
     @Override
     protected int[] getBorder() {
         return this.border;

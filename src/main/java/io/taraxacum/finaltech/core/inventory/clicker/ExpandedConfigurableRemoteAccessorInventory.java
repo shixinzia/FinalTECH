@@ -35,6 +35,7 @@ public class ExpandedConfigurableRemoteAccessorInventory extends AbstractClicker
         this.range = range;
     }
 
+    @Nonnull
     @Override
     protected int[] getBorder() {
         return this.border;

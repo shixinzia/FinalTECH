@@ -43,6 +43,7 @@ public class AreaAccessorInventory extends AbstractClickerInventory {
         this.range = range;
     }
 
+    @Nonnull
     @Override
     protected int[] getBorder() {
         return this.border;

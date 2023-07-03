@@ -106,16 +106,19 @@ public class ManualCraftMachineInventory extends AbstractManualMachineInventory 
 
     }
 
+    @Nonnull
     @Override
     protected int[] getBorder() {
         return border;
     }
 
+    @Nonnull
     @Override
     protected int[] getInputBorder() {
         return inputBorder;
     }
 
+    @Nonnull
     @Override
     protected int[] getOutputBorder() {
         return outputBorder;

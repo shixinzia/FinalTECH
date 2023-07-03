@@ -49,16 +49,19 @@ public class EquivalentExchangeTableInventory extends AbstractManualMachineInven
         super(machine);
     }
 
+    @Nonnull
     @Override
     protected int[] getBorder() {
         return border;
     }
 
+    @Nonnull
     @Override
     protected int[] getInputBorder() {
         return inputBorder;
     }
 
+    @Nonnull
     @Override
     protected int[] getOutputBorder() {
         return outputBorder;

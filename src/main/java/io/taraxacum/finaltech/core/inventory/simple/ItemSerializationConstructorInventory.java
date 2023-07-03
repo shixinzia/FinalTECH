@@ -10,6 +10,7 @@ import javax.annotation.Nonnull;
 /**
  * @author Final_ROOT
  */
+@Deprecated
 public class ItemSerializationConstructorInventory extends AbstractOrdinaryMachineInventory {
     private final int[] border = new int[] {45, 46, 47, 51, 52, 53};
     private final int[] inputBorder = new int[] {36, 37, 38, 39, 40, 41, 42, 43, 44};
@@ -23,16 +24,19 @@ public class ItemSerializationConstructorInventory extends AbstractOrdinaryMachi
         super(abstractMachine);
     }
 
+    @Nonnull
     @Override
     protected int[] getBorder() {
         return this.border;
     }
 
+    @Nonnull
     @Override
     protected int[] getInputBorder() {
         return this.inputBorder;
     }
 
+    @Nonnull
     @Override
     protected int[] getOutputBorder() {
         return this.outputBorder;

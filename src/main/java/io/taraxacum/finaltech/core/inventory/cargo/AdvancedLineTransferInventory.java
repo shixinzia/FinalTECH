@@ -28,6 +28,7 @@ public class AdvancedLineTransferInventory extends LineTransferInventory {
         super(slimefunItem);
     }
 
+    @Nonnull
     @Override
     protected int[] getBorder() {
         return this.border;

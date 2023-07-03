@@ -25,6 +25,7 @@ public class AdvancedLocationTransferInventory extends LocationTransferInventory
         super(slimefunItem);
     }
 
+    @Nonnull
     @Override
     protected int[] getBorder() {
         return this.border;

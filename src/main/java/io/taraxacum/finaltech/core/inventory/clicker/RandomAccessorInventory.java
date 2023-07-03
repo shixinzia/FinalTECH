@@ -27,6 +27,7 @@ public class RandomAccessorInventory extends AbstractClickerInventory {
         super(abstractClickerMachine);
     }
 
+    @Nonnull
     @Override
     protected int[] getBorder() {
         return this.border;

@@ -31,6 +31,7 @@ public class AdvancedMeshTransferInventory extends MeshTransferInventory {
         super(slimefunItem);
     }
 
+    @Nonnull
     @Override
     protected int[] getBorder() {
         return this.border;

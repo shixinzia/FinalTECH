@@ -14,16 +14,19 @@ public class NullInventory extends AbstractOrdinaryMachineInventory implements C
         super(machine);
     }
 
+    @Nonnull
     @Override
     protected int[] getBorder() {
         return new int[0];
     }
 
+    @Nonnull
     @Override
     protected int[] getInputBorder() {
         return new int[0];
     }
 
+    @Nonnull
     @Override
     protected int[] getOutputBorder() {
         return new int[0];
