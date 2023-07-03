@@ -12,8 +12,8 @@ import javax.annotation.Nonnull;
  * @author Final_ROOT
  */
 public abstract class AbstractTower extends AbstractMachine {
-    public AbstractTower(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item, @Nonnull RecipeType recipeType, @Nonnull ItemStack[] recipe) {
-        super(itemGroup, item, recipeType, recipe);
+    public AbstractTower(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item) {
+        super(itemGroup, item);
     }
 
     @Override

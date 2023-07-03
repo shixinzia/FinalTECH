@@ -25,8 +25,8 @@ public class PotionEffectPurifier extends UsableSlimefunItem implements RecipeIt
     private final double horizontalRange = ConfigUtil.getOrDefaultItemSetting(16, this, "horizontal-range");
     private final double verticalRange = ConfigUtil.getOrDefaultItemSetting(8, this, "vertical-range");
 
-    public PotionEffectPurifier(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
-        super(itemGroup, item, recipeType, recipe);
+    public PotionEffectPurifier(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item) {
+        super(itemGroup, item);
     }
 
     /**

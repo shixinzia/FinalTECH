@@ -6,6 +6,8 @@ import io.github.thebusybiscuit.slimefun4.api.recipes.RecipeType;
 import io.taraxacum.finaltech.util.ConfigUtil;
 import org.bukkit.inventory.ItemStack;
 
+import javax.annotation.Nonnull;
+
 /**
  * @author Final_ROOT
  */
@@ -13,8 +15,8 @@ public class BasicGenerator extends AbstractCubeElectricGenerator {
     private final int energy = ConfigUtil.getOrDefaultItemSetting(1, this, "energy");
     private final int range = ConfigUtil.getOrDefaultItemSetting(2, this, "range");
 
-    public BasicGenerator(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
-        super(itemGroup, item, recipeType, recipe);
+    public BasicGenerator(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item) {
+        super(itemGroup, item);
     }
 
     @Override

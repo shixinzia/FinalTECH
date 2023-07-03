@@ -18,8 +18,8 @@ import javax.annotation.Nonnull;
 public class MachineChargeCardL1 extends AbstractMachineChargeCard implements RecipeItem {
     private final double energy = ConfigUtil.getOrDefaultItemSetting(16.04, this, "energy");
 
-    public MachineChargeCardL1(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
-        super(itemGroup, item, recipeType, recipe);
+    public MachineChargeCardL1(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item) {
+        super(itemGroup, item);
     }
 
     @Override

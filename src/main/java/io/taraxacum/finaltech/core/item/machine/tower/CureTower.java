@@ -37,8 +37,8 @@ public class CureTower extends AbstractTower implements RecipeItem, MenuUpdater 
     private final double health = ConfigUtil.getOrDefaultItemSetting(0.025, this, "health");
     private int statusSlot;
 
-    public CureTower(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item, @Nonnull RecipeType recipeType, @Nonnull ItemStack[] recipe) {
-        super(itemGroup, item, recipeType, recipe);
+    public CureTower(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item) {
+        super(itemGroup, item);
     }
 
     @Nullable

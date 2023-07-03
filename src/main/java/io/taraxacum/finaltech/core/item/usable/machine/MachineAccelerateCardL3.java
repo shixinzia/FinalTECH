@@ -18,8 +18,8 @@ import javax.annotation.Nonnull;
 public class MachineAccelerateCardL3 extends AbstractMachineAccelerateCard implements RecipeItem {
     private final int times = ConfigUtil.getOrDefaultItemSetting(512, this, "times");
 
-    public MachineAccelerateCardL3(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
-        super(itemGroup, item, recipeType, recipe);
+    public MachineAccelerateCardL3(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item) {
+        super(itemGroup, item);
     }
 
     @Override

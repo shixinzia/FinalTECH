@@ -43,8 +43,8 @@ public class MultiFrameMachine extends AbstractMachine implements RecipeItem {
     private int[][][] workInputSlot;
     private int[][][] workOutputSlot;
 
-    public MultiFrameMachine(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item, @Nonnull RecipeType recipeType, @Nonnull ItemStack[] recipe) {
-        super(itemGroup, item, recipeType, recipe);
+    public MultiFrameMachine(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item) {
+        super(itemGroup, item);
     }
 
     @Nullable

@@ -19,8 +19,8 @@ public class MachineActivateCardL3 extends AbstractMachineActivateCard implement
     private final int times = ConfigUtil.getOrDefaultItemSetting(256, this, "times");
     private final double energy = ConfigUtil.getOrDefaultItemSetting(65536.64, this, "energy");
 
-    public MachineActivateCardL3(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
-        super(itemGroup, item, recipeType, recipe);
+    public MachineActivateCardL3(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item) {
+        super(itemGroup, item);
     }
 
     @Override

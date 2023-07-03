@@ -40,8 +40,8 @@ public class ConsumableSimulateClickMachine extends AbstractTower implements Rec
     private final Set<String> notAllowedId = new HashSet<>(ConfigUtil.getItemStringList(this, "not-allowed-id"));
     private final double rangeRate = ConfigUtil.getOrDefaultItemSetting(0.4, this, "range-rate");
 
-    public ConsumableSimulateClickMachine(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item, @Nonnull RecipeType recipeType, @Nonnull ItemStack[] recipe) {
-        super(itemGroup, item, recipeType, recipe);
+    public ConsumableSimulateClickMachine(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item) {
+        super(itemGroup, item);
     }
 
     @Nullable

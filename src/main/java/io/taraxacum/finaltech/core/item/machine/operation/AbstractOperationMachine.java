@@ -24,8 +24,8 @@ import javax.annotation.Nonnull;
 public abstract class AbstractOperationMachine extends AbstractMachine implements MachineProcessHolder<MachineOperation>, RecipeItem {
     private final MachineProcessor<MachineOperation> processor;
 
-    public AbstractOperationMachine(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
-        super(itemGroup, item, recipeType, recipe);
+    public AbstractOperationMachine(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item) {
+        super(itemGroup, item);
         this.processor = new MachineProcessor<>(this);
     }
 

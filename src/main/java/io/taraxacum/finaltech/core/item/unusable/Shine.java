@@ -23,8 +23,8 @@ import javax.annotation.Nonnull;
 public class Shine extends UnusableSlimefunItem implements RecipeItem, SimpleValidItem {
     private final ItemWrapper templateValidItem;
 
-    public Shine(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
-        super(itemGroup, item, recipeType, recipe);
+    public Shine(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item) {
+        super(itemGroup, item);
         ItemStack validItem = new ItemStack(this.getItem());
         SfItemUtil.setSpecialItemKey(validItem);
         this.templateValidItem = new ItemWrapper(validItem);

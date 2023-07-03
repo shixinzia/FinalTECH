@@ -38,8 +38,8 @@ import java.util.List;
 public class FuelOperator extends AbstractFaceMachine implements RecipeItem {
     private final List<String> notAllowedId = ConfigUtil.getItemStringList(this, "not-allowed-id");
 
-    public FuelOperator(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
-        super(itemGroup, item, recipeType, recipe);
+    public FuelOperator(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item) {
+        super(itemGroup, item);
     }
 
     @Nullable

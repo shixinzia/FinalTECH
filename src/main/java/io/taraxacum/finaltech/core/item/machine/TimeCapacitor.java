@@ -36,8 +36,8 @@ public class TimeCapacitor extends AbstractMachine implements EnergyNetComponent
     private final int capacity = ConfigUtil.getOrDefaultItemSetting(16777216, this, "capacity");
     private int statusSlot;
 
-    public TimeCapacitor(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item, @Nonnull RecipeType recipeType, @Nonnull ItemStack[] recipe) {
-        super(itemGroup, item, recipeType, recipe);
+    public TimeCapacitor(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item) {
+        super(itemGroup, item);
     }
 
     @Nullable

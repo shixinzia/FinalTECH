@@ -34,8 +34,8 @@ public class CopyCard extends UnusableSlimefunItem implements RecipeItem, ValidI
     private final String itemLoreWithoutColor = "⌫⌧⌧⌧⌧⌧⌧⌧⌧⌧⌧⌧⌧⌧⌧⌧⌧⌧⌧⌧⌧⌧⌧⌦";
     private final String itemLore = TextUtil.colorPseudorandomString(itemLoreWithoutColor, FinalTech.getSeed());
 
-    public CopyCard(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
-        super(itemGroup, item, recipeType, recipe);
+    public CopyCard(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item, @Nonnull RecipeType recipeType) {
+        super(itemGroup, item, recipeType, new ItemStack[0]);
     }
 
     @Override
@@ -72,7 +72,7 @@ public class CopyCard extends UnusableSlimefunItem implements RecipeItem, ValidI
 
         result.setAmount(1);
         StringItemUtil.setItemInCard(result, temp, amount);
-        List<String> loreList = JavaUtil.toList(ConfigUtil.getStatusMenuLore(FinalTech.getLanguageManager(), SfItemUtil.getIdFormatName(CopyCard.class),
+        List<String> loreList = JavaUtil.toList(ConfigUtil.getStatusMenuLore(FinalTech.getLanguageManager(), this.getId(),
                 ItemStackUtil.getItemName(temp),
                 amount));
         loreList.add(0, this.itemLore);
@@ -82,7 +82,7 @@ public class CopyCard extends UnusableSlimefunItem implements RecipeItem, ValidI
     }
 
     public boolean isTargetItem(@Nonnull ItemStack itemStack) {
-        if (Tag.SHULKER_BOXES.isTagged(itemStack.getType()) || Material.BUNDLE.equals(itemStack.getType()) && ItemStackUtil.itemStackToString(itemStack).length() > 7000) {
+        if (Tag.SHULKER_BOXES.isTagged(itemStack.getType()) || Material.BUNDLE.equals(itemStack.getType())) {
             return false;
         }
 

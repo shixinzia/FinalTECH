@@ -40,8 +40,8 @@ public class AdvancedMeshTransfer extends AbstractCargo implements RecipeItem {
     private final int particleInterval = 2;
     private int[] itemMatch;
 
-    public AdvancedMeshTransfer(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
-        super(itemGroup, item, recipeType, recipe);
+    public AdvancedMeshTransfer(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item) {
+        super(itemGroup, item);
     }
 
     @Nullable

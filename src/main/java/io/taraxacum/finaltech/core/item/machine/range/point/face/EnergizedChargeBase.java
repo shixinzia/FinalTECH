@@ -38,8 +38,8 @@ public class EnergizedChargeBase extends AbstractFaceMachine implements RecipeIt
     private final double efficiency = ConfigUtil.getOrDefaultItemSetting(0.25, this, "efficiency");
     private int statusSlot;
 
-    public EnergizedChargeBase(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
-        super(itemGroup, item, recipeType, recipe);
+    public EnergizedChargeBase(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item) {
+        super(itemGroup, item);
     }
 
     @Nullable

@@ -24,8 +24,8 @@ import javax.annotation.Nullable;
  * @author Final_ROOT
  */
 public class StackStorageUnit extends AbstractStorageUnit implements RecipeItem {
-    public StackStorageUnit(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
-        super(itemGroup, item, recipeType, recipe);
+    public StackStorageUnit(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item) {
+        super(itemGroup, item);
     }
 
     @Nullable

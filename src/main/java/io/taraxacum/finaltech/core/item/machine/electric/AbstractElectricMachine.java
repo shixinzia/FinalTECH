@@ -17,8 +17,8 @@ import javax.annotation.Nonnull;
  * @author Final_ROOT
  */
 public abstract class AbstractElectricMachine extends AbstractMachine implements EnergyNetComponent {
-    public AbstractElectricMachine(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item, @Nonnull RecipeType recipeType, @Nonnull ItemStack[] recipe) {
-        super(itemGroup, item, recipeType, recipe);
+    public AbstractElectricMachine(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item) {
+        super(itemGroup, item);
     }
 
     @Nonnull

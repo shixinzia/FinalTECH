@@ -7,11 +7,17 @@ import io.taraxacum.finaltech.core.interfaces.PointMachine;
 import io.taraxacum.finaltech.core.item.machine.range.AbstractRangeMachine;
 import org.bukkit.inventory.ItemStack;
 
+import javax.annotation.Nonnull;
+
 /**
  * @author Final_ROOT
  */
 public abstract class AbstractPointMachine extends AbstractRangeMachine implements PointMachine {
-    public AbstractPointMachine(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
-        super(itemGroup, item, recipeType, recipe);
+    public AbstractPointMachine(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item) {
+        super(itemGroup, item);
+    }
+
+    public AbstractPointMachine(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item, @Nonnull RecipeType recipeType, @Nonnull ItemStack[] itemStacks) {
+        super(itemGroup, item, recipeType, itemStacks);
     }
 }

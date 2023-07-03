@@ -22,8 +22,8 @@ public abstract class AbstractManualMachine extends AbstractMachine {
 
     private AbstractManualMachineInventory inventory;
 
-    public AbstractManualMachine(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
-        super(itemGroup, item, recipeType, recipe);
+    public AbstractManualMachine(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item) {
+        super(itemGroup, item);
     }
 
     @Nonnull

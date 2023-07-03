@@ -51,8 +51,8 @@ public abstract class AbstractCubeElectricGenerator extends AbstractCubeMachine 
     private final ItemWrapper itemWrapper = new ItemWrapper(this.getItem());
     protected int statusSlot;
 
-    public AbstractCubeElectricGenerator(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
-        super(itemGroup, item, recipeType, recipe);
+    public AbstractCubeElectricGenerator(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item) {
+        super(itemGroup, item);
     }
 
     @Nullable

@@ -32,8 +32,8 @@ import java.util.Map;
 public class FuelAccelerator extends AbstractFaceMachine implements RecipeItem {
     private final Map<Location, BukkitTask> locationBukkitTaskMap = new HashMap<>();
 
-    public FuelAccelerator(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
-        super(itemGroup, item, recipeType, recipe);
+    public FuelAccelerator(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item) {
+        super(itemGroup, item);
     }
 
     @Nullable

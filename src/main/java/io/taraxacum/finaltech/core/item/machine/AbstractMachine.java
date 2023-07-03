@@ -29,8 +29,17 @@ import javax.annotation.Nullable;
 public abstract class AbstractMachine extends AbstractMySlimefunItem {
     private AbstractMachineInventory inventoryTemplate;
 
-    public AbstractMachine(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item, @Nonnull RecipeType recipeType, @Nonnull ItemStack[] recipe) {
-        super(itemGroup, item, recipeType, recipe);
+    public AbstractMachine(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item) {
+        super(itemGroup, item);
+        if (FinalTech.getMultiThreadLevel() >= 2) {
+            FinalTech.addAsyncSlimefunItem(this.getId());
+        } else if(!this.isSynchronized() && FinalTech.getMultiThreadLevel() >= 1) {
+            FinalTech.addAsyncSlimefunItem(this.getId());
+        }
+    }
+
+    public AbstractMachine(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item, @Nonnull RecipeType recipeType, @Nonnull ItemStack[] itemStacks) {
+        super(itemGroup, item, recipeType, itemStacks);
         if (FinalTech.getMultiThreadLevel() >= 2) {
             FinalTech.addAsyncSlimefunItem(this.getId());
         } else if(!this.isSynchronized() && FinalTech.getMultiThreadLevel() >= 1) {

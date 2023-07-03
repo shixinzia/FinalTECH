@@ -29,8 +29,8 @@ import javax.annotation.Nullable;
  * @author Final_ROOT
  */
 public class LogicCrafter extends AbstractMachine implements RecipeItem {
-    public LogicCrafter(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item, @Nonnull RecipeType recipeType, @Nonnull ItemStack[] recipe) {
-        super(itemGroup, item, recipeType, recipe);
+    public LogicCrafter(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item) {
+        super(itemGroup, item);
     }
 
     @Nullable

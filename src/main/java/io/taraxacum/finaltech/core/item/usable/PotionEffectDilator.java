@@ -17,8 +17,8 @@ import javax.annotation.Nonnull;
  * @author Final_ROOT
  */
 public class PotionEffectDilator extends UsableSlimefunItem implements RecipeItem {
-    public PotionEffectDilator(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
-        super(itemGroup, item, recipeType, recipe);
+    public PotionEffectDilator(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item) {
+        super(itemGroup, item);
     }
 
     @Override

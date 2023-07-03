@@ -47,8 +47,8 @@ public class MatrixAccelerator extends AbstractCubeMachine implements RecipeItem
     private final int asyncThreshold = ConfigUtil.getOrDefaultItemSetting(1_600_000, this, "threshold-async");
     private int statusSlot;
 
-    public MatrixAccelerator(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
-        super(itemGroup, item, recipeType, recipe);
+    public MatrixAccelerator(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item) {
+        super(itemGroup, item);
         this.notAllowedId.add(this.getId());
     }
 

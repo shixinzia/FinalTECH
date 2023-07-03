@@ -32,10 +32,12 @@ import java.util.Set;
 /**
  * @author Final_ROOT
  */
+@Deprecated
 public class DustFactoryStone extends AbstractMachine implements RecipeItem {
     private final double sleep = ConfigUtil.getOrDefaultItemSetting(4, this, "sleep");
-    public DustFactoryStone(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
-        super(itemGroup, item, recipeType, recipe);
+
+    public DustFactoryStone(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item) {
+        super(itemGroup, item);
     }
 
     @Nullable

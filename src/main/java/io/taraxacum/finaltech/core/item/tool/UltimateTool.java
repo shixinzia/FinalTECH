@@ -20,8 +20,8 @@ public abstract class UltimateTool extends AbstractMySlimefunItem {
     private final Map<Player, Long> timeMap = new HashMap<>();
     private final long intervalThreshold = ConfigUtil.getOrDefaultItemSetting(20, this, "interval-threshold");
 
-    public UltimateTool(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item, @Nonnull RecipeType recipeType, @Nonnull ItemStack[] recipe) {
-        super(itemGroup, item, recipeType, recipe);
+    public UltimateTool(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item) {
+        super(itemGroup, item);
         this.addItemHandler((ToolUseHandler) (blockBreakEvent, itemStack, fortune, drops) -> {
             blockBreakEvent.setDropItems(false);
             Player player = blockBreakEvent.getPlayer();

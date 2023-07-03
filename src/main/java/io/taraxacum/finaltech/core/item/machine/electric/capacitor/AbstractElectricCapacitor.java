@@ -25,8 +25,8 @@ import javax.annotation.Nullable;
 public abstract class AbstractElectricCapacitor extends AbstractElectricMachine implements MenuUpdater {
     protected int statusSlot;
 
-    public AbstractElectricCapacitor(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
-        super(itemGroup, item, recipeType, recipe);
+    public AbstractElectricCapacitor(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item) {
+        super(itemGroup, item);
     }
 
     @Nullable

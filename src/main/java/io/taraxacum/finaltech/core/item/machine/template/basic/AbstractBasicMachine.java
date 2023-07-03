@@ -33,8 +33,8 @@ public abstract class AbstractBasicMachine extends AbstractMachine implements Re
     private int recipeLockSlot;
 
     @ParametersAreNonnullByDefault
-    protected AbstractBasicMachine(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
-        super(itemGroup, item, recipeType, recipe);
+    protected AbstractBasicMachine(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item) {
+        super(itemGroup, item);
     }
 
     @Nullable

@@ -26,8 +26,8 @@ import javax.annotation.Nullable;
  * @author Final_ROOT
  */
 public class FuelCharger extends AbstractFaceMachine implements RecipeItem {
-    public FuelCharger(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
-        super(itemGroup, item, recipeType, recipe);
+    public FuelCharger(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item) {
+        super(itemGroup, item);
     }
 
     @Nullable

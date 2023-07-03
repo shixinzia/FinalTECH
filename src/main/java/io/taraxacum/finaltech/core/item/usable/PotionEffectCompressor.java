@@ -17,8 +17,8 @@ import javax.annotation.Nonnull;
  * @author Final_ROOT
  */
 public class PotionEffectCompressor extends UsableSlimefunItem implements RecipeItem {
-    public PotionEffectCompressor(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
-        super(itemGroup, item, recipeType, recipe);
+    public PotionEffectCompressor(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item) {
+        super(itemGroup, item);
     }
 
     /**

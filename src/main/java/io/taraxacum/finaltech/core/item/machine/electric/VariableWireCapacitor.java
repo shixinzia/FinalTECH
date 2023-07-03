@@ -37,8 +37,8 @@ public class VariableWireCapacitor extends AbstractElectricMachine implements Re
     private final int capacity = ConfigUtil.getOrDefaultItemSetting(65536, this, "capacity");
     private int statusSlot;
 
-    public VariableWireCapacitor(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
-        super(itemGroup, item, recipeType, recipe);
+    public VariableWireCapacitor(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item) {
+        super(itemGroup, item);
     }
 
     @Nullable

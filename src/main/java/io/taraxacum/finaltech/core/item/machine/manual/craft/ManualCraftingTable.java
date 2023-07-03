@@ -6,14 +6,15 @@ import io.github.thebusybiscuit.slimefun4.api.recipes.RecipeType;
 import io.taraxacum.libs.plugin.util.ItemStackUtil;
 import org.bukkit.inventory.*;
 
+import javax.annotation.Nonnull;
 import java.util.*;
 
 /**
  * @author Final_ROOT
  */
 public class ManualCraftingTable extends AbstractManualCraftMachine{
-    public ManualCraftingTable(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
-        super(itemGroup, item, recipeType, recipe);
+    public ManualCraftingTable(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item) {
+        super(itemGroup, item);
     }
 
     @Override

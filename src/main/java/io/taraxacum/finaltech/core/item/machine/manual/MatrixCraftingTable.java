@@ -25,8 +25,8 @@ import java.util.List;
  * @author Final_ROOT
  */
 public class MatrixCraftingTable extends AbstractManualMachine implements RecipeItem {
-    public MatrixCraftingTable(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
-        super(itemGroup, item, recipeType, recipe);
+    public MatrixCraftingTable(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item) {
+        super(itemGroup, item);
     }
 
     @Nonnull

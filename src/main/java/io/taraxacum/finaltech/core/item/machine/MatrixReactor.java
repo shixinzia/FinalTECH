@@ -51,8 +51,8 @@ public class MatrixReactor extends AbstractMachine implements RecipeItem, MenuUp
     private int[] orderedDustSlot;
     private int[] unorderedDustSlot;
 
-    public MatrixReactor(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
-        super(itemGroup, item, recipeType, recipe);
+    public MatrixReactor(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item) {
+        super(itemGroup, item);
     }
 
     @Nullable

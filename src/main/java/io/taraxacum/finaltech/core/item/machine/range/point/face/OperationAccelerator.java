@@ -18,8 +18,8 @@ public class OperationAccelerator extends AbstractOperationAccelerator {
     private final int capacity = ConfigUtil.getOrDefaultItemSetting(20000000, this, "capacity");
     private final int efficiency = ConfigUtil.getOrDefaultItemSetting(1, this, "efficiency");
 
-    public OperationAccelerator(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
-        super(itemGroup, item, recipeType, recipe);
+    public OperationAccelerator(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item) {
+        super(itemGroup, item);
     }
 
     @Override

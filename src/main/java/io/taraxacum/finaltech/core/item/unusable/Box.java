@@ -26,8 +26,8 @@ public class Box extends UnusableSlimefunItem implements RecipeItem, SimpleValid
 
     private final ItemWrapper templateValidItem;
 
-    public Box(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
-        super(itemGroup, item, recipeType, recipe);
+    public Box(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType) {
+        super(itemGroup, item);
         ItemStack validItem = new ItemStack(this.getItem());
         SfItemUtil.setSpecialItemKey(validItem);
         this.templateValidItem = new ItemWrapper(validItem);

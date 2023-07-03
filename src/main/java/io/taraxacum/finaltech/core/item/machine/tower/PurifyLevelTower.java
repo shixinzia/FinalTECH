@@ -37,8 +37,8 @@ public class PurifyLevelTower extends AbstractTower implements RecipeItem, MenuU
     private final double mulRange = ConfigUtil.getOrDefaultItemSetting(0.2, this, "range-mul");
     private int statusSlot;
 
-    public PurifyLevelTower(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item, @Nonnull RecipeType recipeType, @Nonnull ItemStack[] recipe) {
-        super(itemGroup, item, recipeType, recipe);
+    public PurifyLevelTower(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item) {
+        super(itemGroup, item);
     }
 
     @Nullable

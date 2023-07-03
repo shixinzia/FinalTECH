@@ -16,8 +16,8 @@ import javax.annotation.Nonnull;
  * @author Final_ROOT
  */
 public abstract class AbstractCargo extends AbstractMachine {
-    public AbstractCargo(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
-        super(itemGroup, item, recipeType, recipe);
+    public AbstractCargo(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item) {
+        super(itemGroup, item);
     }
 
     @Nonnull

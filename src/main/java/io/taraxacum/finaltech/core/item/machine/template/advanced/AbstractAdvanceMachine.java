@@ -37,8 +37,8 @@ public abstract class AbstractAdvanceMachine extends AbstractMachine implements 
     private int statusSlot;
     private int recipeLockSlot;
 
-    protected AbstractAdvanceMachine(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
-        super(itemGroup, item, recipeType, recipe);
+    protected AbstractAdvanceMachine(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item) {
+        super(itemGroup, item);
     }
 
     @Nullable

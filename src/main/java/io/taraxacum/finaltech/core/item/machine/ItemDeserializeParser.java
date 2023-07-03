@@ -34,9 +34,10 @@ import javax.annotation.Nullable;
  * It's not a function class!
  * @author Final_ROOT
  */
+@Deprecated
 public class ItemDeserializeParser extends AbstractMachine implements RecipeItem {
-    public ItemDeserializeParser(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
-        super(itemGroup, item, recipeType, recipe);
+    public ItemDeserializeParser(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item) {
+        super(itemGroup, item);
     }
 
     @Nullable

@@ -39,8 +39,8 @@ public abstract class AbstractGeneratorMachine extends AbstractMachine implement
     private int moduleSlot;
     private int statusSlot;
 
-    public AbstractGeneratorMachine(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
-        super(itemGroup, item, recipeType, recipe);
+    public AbstractGeneratorMachine(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item) {
+        super(itemGroup, item);
     }
 
     @Nullable

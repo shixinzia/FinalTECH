@@ -29,8 +29,8 @@ public class ReplaceableCard extends UnusableSlimefunItem implements RecipeItem,
     @Nullable
     private final Material extraSourceMaterial;
 
-    public ReplaceableCard(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe, @Nonnull Material targetMaterial, @Nullable Material extraSourceMaterial) {
-        super(itemGroup, item, recipeType, recipe);
+    public ReplaceableCard(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item, @Nonnull RecipeType recipeType, @Nonnull Material targetMaterial, @Nullable Material extraSourceMaterial) {
+        super(itemGroup, item, recipeType, new ItemStack[] {new ItemStack(targetMaterial)});
         if(MATERIAL_SLIMEFUN_ITEM_MAP.containsKey(targetMaterial)) {
             throw new IllegalArgumentException("duplicated material while registering " + this.getId());
         }

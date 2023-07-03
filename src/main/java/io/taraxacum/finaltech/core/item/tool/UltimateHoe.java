@@ -14,8 +14,8 @@ import javax.annotation.Nonnull;
  * @author Final_ROOT
  */
 public class UltimateHoe extends UltimateTool implements RecipeItem {
-    public UltimateHoe(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item, @Nonnull RecipeType recipeType, @Nonnull ItemStack[] recipe) {
-        super(itemGroup, item, recipeType, recipe);
+    public UltimateHoe(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item) {
+        super(itemGroup, item);
     }
 
     @Override

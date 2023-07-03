@@ -43,8 +43,8 @@ public class ConfigurationPaster extends AbstractMachine implements RecipeItem, 
     private final int range = ConfigUtil.getOrDefaultItemSetting(16, this, "range");
     private int digitSlot;
 
-    public ConfigurationPaster(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item, @Nonnull RecipeType recipeType, @Nonnull ItemStack[] recipe) {
-        super(itemGroup, item, recipeType, recipe);
+    public ConfigurationPaster(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item) {
+        super(itemGroup, item);
     }
 
     @Nullable

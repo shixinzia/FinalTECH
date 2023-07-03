@@ -29,8 +29,8 @@ import javax.annotation.Nullable;
 public class CobbleStoneFactory extends AbstractMachine implements RecipeItem {
     private final ItemWrapper cobbleStone = new ItemWrapper(new ItemStack(Material.COBBLESTONE));
 
-    public CobbleStoneFactory(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item, @Nonnull RecipeType recipeType, @Nonnull ItemStack[] recipe) {
-        super(itemGroup, item, recipeType, recipe);
+    public CobbleStoneFactory(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item) {
+        super(itemGroup, item);
     }
 
     @Nullable

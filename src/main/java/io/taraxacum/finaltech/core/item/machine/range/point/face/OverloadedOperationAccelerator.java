@@ -19,8 +19,8 @@ public class OverloadedOperationAccelerator extends AbstractOperationAccelerator
     private final int baseEfficiency = ConfigUtil.getOrDefaultItemSetting(0, this, "base-efficiency");
     private final int randomEfficiency = ConfigUtil.getOrDefaultItemSetting(4, this, "random-efficiency");
 
-    public OverloadedOperationAccelerator(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
-        super(itemGroup, item, recipeType, recipe);
+    public OverloadedOperationAccelerator(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item) {
+        super(itemGroup, item);
     }
 
     @Override

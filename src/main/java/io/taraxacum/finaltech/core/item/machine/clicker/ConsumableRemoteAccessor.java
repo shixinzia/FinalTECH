@@ -11,6 +11,7 @@ import io.taraxacum.finaltech.util.ConfigUtil;
 import io.taraxacum.finaltech.util.RecipeUtil;
 import org.bukkit.inventory.ItemStack;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 /**
@@ -19,8 +20,8 @@ import javax.annotation.Nullable;
 public class ConsumableRemoteAccessor extends AbstractClickerMachine implements RecipeItem {
     private final int range = ConfigUtil.getOrDefaultItemSetting(16, this, "range");
 
-    public ConsumableRemoteAccessor(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
-        super(itemGroup, item, recipeType, recipe);
+    public ConsumableRemoteAccessor(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item) {
+        super(itemGroup, item);
     }
 
     @Nullable

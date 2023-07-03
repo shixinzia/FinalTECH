@@ -41,8 +41,8 @@ public class ConfigurationCopier extends AbstractRangeMachine implements RecipeI
     private final int range = ConfigUtil.getOrDefaultItemSetting(16, this, "range");
     private int digitSlot;
 
-    public ConfigurationCopier(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item, @Nonnull RecipeType recipeType, @Nonnull ItemStack[] recipe) {
-        super(itemGroup, item, recipeType, recipe);
+    public ConfigurationCopier(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item) {
+        super(itemGroup, item);
     }
 
     @Nullable

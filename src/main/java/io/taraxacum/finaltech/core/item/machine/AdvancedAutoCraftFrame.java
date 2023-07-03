@@ -31,8 +31,8 @@ public class AdvancedAutoCraftFrame extends AbstractMachine implements RecipeIte
     private final Map<Location, AdvancedMachineRecipe> locationRecipeMap = new HashMap<>();
     private AdvancedAutoCraftFrameInventory advancedAutoCraftFrameInventory;
 
-    public AdvancedAutoCraftFrame(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
-        super(itemGroup, item, recipeType, recipe);
+    public AdvancedAutoCraftFrame(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item) {
+        super(itemGroup, item);
     }
 
     @Nullable

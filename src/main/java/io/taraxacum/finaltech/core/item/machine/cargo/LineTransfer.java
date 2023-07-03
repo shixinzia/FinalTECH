@@ -46,8 +46,8 @@ public class LineTransfer extends AbstractCargo implements RecipeItem {
     private final int particleInterval = 2;
     private int[] itemMatch;
 
-    public LineTransfer(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
-        super(itemGroup, item, recipeType, recipe);
+    public LineTransfer(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item) {
+        super(itemGroup, item);
     }
 
     @Nullable

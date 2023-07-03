@@ -24,8 +24,8 @@ import javax.annotation.Nullable;
  * @author Final_ROOT
  */
 public class DistributeLeftStorageUnit extends AbstractStorageUnit implements RecipeItem {
-    public DistributeLeftStorageUnit(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
-        super(itemGroup, item, recipeType, recipe);
+    public DistributeLeftStorageUnit(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item) {
+        super(itemGroup, item);
     }
 
     @Nullable

@@ -41,8 +41,8 @@ public class DustGenerator extends AbstractMachine implements RecipeItem, MenuUp
 
     private int statusSlot;
 
-    public DustGenerator(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
-        super(itemGroup, item, recipeType, recipe);
+    public DustGenerator(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item) {
+        super(itemGroup, item);
     }
 
     @Nullable

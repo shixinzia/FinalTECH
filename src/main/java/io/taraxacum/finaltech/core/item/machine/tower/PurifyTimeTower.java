@@ -37,8 +37,8 @@ public class PurifyTimeTower extends AbstractTower implements RecipeItem, MenuUp
     private final double mulRange = ConfigUtil.getOrDefaultItemSetting(0.2, this, "range-mul");
     private int statusSlot;
 
-    public PurifyTimeTower(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item, @Nonnull RecipeType recipeType, @Nonnull ItemStack[] recipe) {
-        super(itemGroup, item, recipeType, recipe);
+    public PurifyTimeTower(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item) {
+        super(itemGroup, item);
     }
 
     @Nullable

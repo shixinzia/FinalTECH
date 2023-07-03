@@ -8,6 +8,7 @@ import io.taraxacum.finaltech.setup.FinalTechItemStacks;
 import io.taraxacum.libs.slimefun.dto.RandomMachineRecipe;
 import org.bukkit.inventory.ItemStack;
 
+import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,8 +16,8 @@ import java.util.List;
  * @author Final_ROOT
  */
 public class DigitalExtraction extends AbstractExtractionMachine implements RecipeItem {
-    public DigitalExtraction(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
-        super(itemGroup, item, recipeType, recipe);
+    public DigitalExtraction(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item) {
+        super(itemGroup, item);
     }
 
     @Override

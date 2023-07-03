@@ -20,8 +20,8 @@ import javax.annotation.Nullable;
 public class ExpandedConsumableTransporter extends AbstractClickerMachine implements RecipeItem {
     private final int range = ConfigUtil.getOrDefaultItemSetting(16, this, "range");
 
-    public ExpandedConsumableTransporter(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item, @Nonnull RecipeType recipeType, @Nonnull ItemStack[] recipe) {
-        super(itemGroup, item, recipeType, recipe);
+    public ExpandedConsumableTransporter(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item) {
+        super(itemGroup, item);
     }
 
     @Nullable

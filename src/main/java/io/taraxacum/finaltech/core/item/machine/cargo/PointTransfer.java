@@ -52,8 +52,8 @@ public class PointTransfer extends AbstractCargo implements RecipeItem {
     private final int range = ConfigUtil.getOrDefaultItemSetting(8, this, "range");
     private int[] matchSlot;
 
-    public PointTransfer(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
-        super(itemGroup, item, recipeType, recipe);
+    public PointTransfer(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item) {
+        super(itemGroup, item);
     }
 
     @Nullable

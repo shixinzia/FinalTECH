@@ -24,7 +24,39 @@ import java.util.List;
  */
 // TODO: Optimization
 public class UnusableSlimefunItem extends AbstractMySlimefunItem {
-    public UnusableSlimefunItem(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
+    public UnusableSlimefunItem(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item) {
+        super(itemGroup, item);
+        this.addItemHandler(MachineUtil.BLOCK_PLACE_HANDLER_DENY);
+        this.addItemHandler(new ItemUseHandler() {
+            @Override
+            @EventHandler(priority = EventPriority.LOWEST)
+            public void onRightClick(PlayerRightClickEvent e) {
+                e.cancel();
+            }
+        });
+        this.addItemHandler(new WeaponUseHandler() {
+            @Override
+            @EventHandler(priority = EventPriority.LOWEST)
+            public void onHit(@Nonnull EntityDamageByEntityEvent e, @Nonnull Player player, @Nonnull ItemStack item) {
+                e.setCancelled(true);
+            }
+        });
+        this.addItemHandler(new EntityInteractHandler() {
+            @Override
+            @EventHandler(priority = EventPriority.LOWEST)
+            public void onInteract(PlayerInteractEntityEvent e, ItemStack item, boolean offHand) {
+                e.setCancelled(true);
+            }
+        });
+        this.addItemHandler(new ToolUseHandler() {
+            @Override
+            @EventHandler(priority = EventPriority.LOWEST)
+            public void onToolUse(BlockBreakEvent e, ItemStack tool, int fortune, List<ItemStack> drops) {
+                e.setCancelled(true);
+            }
+        });
+    }
+    public UnusableSlimefunItem(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item, @Nonnull RecipeType recipeType, @Nonnull ItemStack[] recipe) {
         super(itemGroup, item, recipeType, recipe);
         this.addItemHandler(MachineUtil.BLOCK_PLACE_HANDLER_DENY);
         this.addItemHandler(new ItemUseHandler() {
@@ -57,7 +89,7 @@ public class UnusableSlimefunItem extends AbstractMySlimefunItem {
         });
     }
 
-    public UnusableSlimefunItem(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe, @Nullable ItemStack recipeOutput) {
+    public UnusableSlimefunItem(@Nonnull ItemGroup itemGroup,@Nonnull  SlimefunItemStack item,@Nonnull  RecipeType recipeType, @Nonnull ItemStack[] recipe, @Nullable ItemStack recipeOutput) {
         super(itemGroup, item, recipeType, recipe, recipeOutput);
         this.addItemHandler(MachineUtil.BLOCK_PLACE_HANDLER_DENY);
         this.addItemHandler(new ItemUseHandler() {

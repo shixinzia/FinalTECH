@@ -32,8 +32,8 @@ import javax.annotation.Nullable;
  * @author Final_ROOT
  */
 public class BasicFrameMachine extends AbstractMachine implements RecipeItem {
-    public BasicFrameMachine(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
-        super(itemGroup, item, recipeType, recipe);
+    public BasicFrameMachine(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item) {
+        super(itemGroup, item);
     }
 
     @Nullable

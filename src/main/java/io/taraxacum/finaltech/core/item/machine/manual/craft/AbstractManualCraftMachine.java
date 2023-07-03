@@ -39,8 +39,8 @@ public abstract class AbstractManualCraftMachine extends AbstractManualMachine i
     private int charge = ConfigUtil.getOrDefaultItemSetting(1, this, "charge");
     private int consume = ConfigUtil.getOrDefaultItemSetting(1, this, "consume");
 
-    public AbstractManualCraftMachine(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
-        super(itemGroup, item, recipeType, recipe);
+    public AbstractManualCraftMachine(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item) {
+        super(itemGroup, item);
     }
 
     @Nonnull

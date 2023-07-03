@@ -36,8 +36,8 @@ public abstract class AbstractConversionMachine extends AbstractMachine implemen
     private int moduleSlot;
     private int statusSlot;
 
-    public AbstractConversionMachine(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
-        super(itemGroup, item, recipeType, recipe);
+    public AbstractConversionMachine(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item) {
+        super(itemGroup, item);
     }
 
     @Nullable

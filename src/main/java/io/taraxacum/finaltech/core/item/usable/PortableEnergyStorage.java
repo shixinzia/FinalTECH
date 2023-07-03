@@ -40,8 +40,8 @@ public class PortableEnergyStorage extends UsableSlimefunItem implements RecipeI
     private final Set<String> notAllowedId = new HashSet<>(ConfigUtil.getItemStringList(this, "not-allowed-id"));
     private final NamespacedKey key = new NamespacedKey(FinalTech.getInstance(), this.getId());
 
-    public PortableEnergyStorage(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
-        super(itemGroup, item, recipeType, recipe);
+    public PortableEnergyStorage(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item) {
+        super(itemGroup, item);
     }
 
     /**

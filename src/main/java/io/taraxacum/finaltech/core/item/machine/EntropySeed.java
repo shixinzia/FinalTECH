@@ -36,8 +36,8 @@ public class EntropySeed extends AbstractMachine implements RecipeItem {
     private final String key = "key";
     private final String value = "value";
 
-    public EntropySeed(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item, @Nonnull RecipeType recipeType, @Nonnull ItemStack[] recipe) {
-        super(itemGroup, item, recipeType, recipe);
+    public EntropySeed(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item) {
+        super(itemGroup, item);
     }
 
     @Nullable

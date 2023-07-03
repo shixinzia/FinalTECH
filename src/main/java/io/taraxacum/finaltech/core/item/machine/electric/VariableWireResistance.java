@@ -35,8 +35,8 @@ public class VariableWireResistance extends AbstractElectricMachine implements R
     private final String capacityString = String.valueOf(this.capacity);
     private int statusSlot;
 
-    public VariableWireResistance(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item, @Nonnull RecipeType recipeType, @Nonnull ItemStack[] recipe) {
-        super(itemGroup, item, recipeType, recipe);
+    public VariableWireResistance(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item) {
+        super(itemGroup, item);
     }
 
     @Nullable

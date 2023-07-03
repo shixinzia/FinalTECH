@@ -17,8 +17,8 @@ import javax.annotation.Nullable;
  * @author Final_ROOT
  */
 public class ClickWorkMachine extends AbstractClickerMachine implements RecipeItem {
-    public ClickWorkMachine(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item, @Nonnull RecipeType recipeType, @Nonnull ItemStack[] recipe) {
-        super(itemGroup, item, recipeType, recipe);
+    public ClickWorkMachine(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item) {
+        super(itemGroup, item);
     }
 
     @Nullable

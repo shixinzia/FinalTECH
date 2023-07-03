@@ -38,8 +38,8 @@ public class EquivalentExchangeTable extends AbstractManualMachine implements Re
     private final String key = "v";
     private int parseItemSlot;
 
-    public EquivalentExchangeTable(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
-        super(itemGroup, item, recipeType, recipe);
+    public EquivalentExchangeTable(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item) {
+        super(itemGroup, item);
     }
 
     @Nonnull

@@ -30,8 +30,8 @@ public abstract class AbstractExpandedElectricCapacitor extends AbstractElectric
     protected static boolean registeredListener = false;
     protected final String key = "s";
 
-    public AbstractExpandedElectricCapacitor(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
-        super(itemGroup, item, recipeType, recipe);
+    public AbstractExpandedElectricCapacitor(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item) {
+        super(itemGroup, item);
     }
 
     @Override

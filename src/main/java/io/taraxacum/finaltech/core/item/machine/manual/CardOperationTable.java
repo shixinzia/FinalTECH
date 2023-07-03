@@ -19,11 +19,12 @@ import java.util.List;
 /**
  * @author Final_ROOT
  */
+@Deprecated
 public class CardOperationTable extends AbstractManualMachine implements RecipeItem {
     public List<CardOperationPortInventory.Craft> craftList;
 
-    public CardOperationTable(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
-        super(itemGroup, item, recipeType, recipe);
+    public CardOperationTable(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item) {
+        super(itemGroup, item);
     }
 
     @Nonnull

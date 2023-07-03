@@ -30,8 +30,8 @@ import java.math.BigInteger;
  * @author Final_ROOT
  */
 public class EnergyOutputTable extends AbstractMachine implements RecipeItem {
-    public EnergyOutputTable(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item, @Nonnull RecipeType recipeType, @Nonnull ItemStack[] recipe) {
-        super(itemGroup, item, recipeType, recipe);
+    public EnergyOutputTable(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item) {
+        super(itemGroup, item);
     }
 
     @Nullable

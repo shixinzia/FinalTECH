@@ -37,8 +37,8 @@ import javax.annotation.Nullable;
 public class StorageInteractPort extends AbstractCargo implements RecipeItem {
     private final int searchLimit = ConfigUtil.getOrDefaultItemSetting(3, this, "search-limit");
 
-    public StorageInteractPort(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
-        super(itemGroup, item, recipeType, recipe);
+    public StorageInteractPort(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item) {
+        super(itemGroup, item);
     }
 
     @Nullable

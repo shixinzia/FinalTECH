@@ -32,8 +32,8 @@ public class Ether extends UnusableSlimefunItem implements GEOResource, SimpleVa
     private final int baseAmountCustom = ConfigUtil.getOrDefaultItemSetting(16, this, "base-amount-custom");
     private final int maxDeviation = ConfigUtil.getOrDefaultItemSetting(8, this, "max-deviation");
 
-    public Ether(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
-        super(itemGroup, item, recipeType, recipe);
+    public Ether(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item, @Nonnull RecipeType recipeType) {
+        super(itemGroup, item, recipeType, new ItemStack[0]);
         ItemStack validItem = new ItemStack(this.getItem());
         SfItemUtil.setSpecialItemKey(validItem);
         this.templateValidItem = new ItemWrapper(validItem);

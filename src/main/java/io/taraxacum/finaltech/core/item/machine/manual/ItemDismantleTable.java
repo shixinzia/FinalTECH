@@ -35,8 +35,8 @@ public class ItemDismantleTable extends AbstractManualMachine implements RecipeI
     private final String count = ConfigUtil.getOrDefaultItemSetting("600", this, "count");
     private final String limit = ConfigUtil.getOrDefaultItemSetting("900", this, "limit");
 
-    public ItemDismantleTable(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
-        super(itemGroup, item, recipeType, recipe);
+    public ItemDismantleTable(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item) {
+        super(itemGroup, item);
     }
 
     @Nonnull

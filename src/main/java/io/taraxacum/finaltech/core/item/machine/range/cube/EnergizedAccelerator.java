@@ -46,8 +46,8 @@ public class EnergizedAccelerator extends AbstractCubeMachine implements EnergyN
     private final int capacity = ConfigUtil.getOrDefaultItemSetting(20000000, this, "capacity");
     private int statusSlot;
 
-    public EnergizedAccelerator(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
-        super(itemGroup, item, recipeType, recipe);
+    public EnergizedAccelerator(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item) {
+        super(itemGroup, item);
         this.notAllowedId.add(this.getId());
     }
 

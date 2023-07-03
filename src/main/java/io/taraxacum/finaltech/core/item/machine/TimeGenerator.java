@@ -37,8 +37,8 @@ public class TimeGenerator extends AbstractMachine implements EnergyNetProvider,
     private final int capacity = ConfigUtil.getOrDefaultItemSetting(16777216, this, "capacity");
     private int statusSlot;
 
-    public TimeGenerator(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item, @Nonnull RecipeType recipeType, @Nonnull ItemStack[] recipe) {
-        super(itemGroup, item, recipeType, recipe);
+    public TimeGenerator(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item) {
+        super(itemGroup, item);
     }
 
     @Nullable
@@ -75,7 +75,6 @@ public class TimeGenerator extends AbstractMachine implements EnergyNetProvider,
                 FinalTech.getLocationDataService().setLocationData(locationData, this.key, String.valueOf(time));
             } else if (!oldTime.equals(String.valueOf(time))) {
                 charge *= 2;
-                System.out.println("world time: " + world.getTime() + " / time: " + time);
                 FinalTech.getLocationDataService().setLocationData(locationData, this.key, String.valueOf(time));
             }
         }

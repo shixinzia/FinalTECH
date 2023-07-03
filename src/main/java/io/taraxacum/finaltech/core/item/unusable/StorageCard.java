@@ -31,8 +31,8 @@ public class StorageCard extends UnusableSlimefunItem implements RecipeItem, Val
     private final String itemLoreWithoutColor = "⌫⌧⌧⌧⌧⌧⌧⌧⌧⌧⌧⌧⌧⌧⌧⌧⌧⌧⌧⌧⌧⌦";
     private final String itemLore = TextUtil.colorRandomString(this.itemLoreWithoutColor);
 
-    public StorageCard(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
-        super(itemGroup, item, recipeType, recipe);
+    public StorageCard(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item) {
+        super(itemGroup, item);
         ItemStackUtil.addLoreToFirst(item, this.itemLore);
     }
 

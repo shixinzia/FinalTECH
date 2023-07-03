@@ -23,8 +23,8 @@ public class MatrixMachineActivateCard extends AbstractMachineActivateCard imple
     private final int times = ConfigUtil.getOrDefaultItemSetting(10800, this, "times");
     private final double energy = ConfigUtil.getOrDefaultItemSetting(Integer.MAX_VALUE / 2 + 0.5, this, "energy");
 
-    public MatrixMachineActivateCard(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
-        super(itemGroup, item, recipeType, recipe);
+    public MatrixMachineActivateCard(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item) {
+        super(itemGroup, item);
     }
 
     @Override

@@ -24,8 +24,8 @@ import javax.annotation.Nullable;
  * @author Final_ROOT
  */
 public abstract class AbstractLogicComparator extends AbstractMachine {
-    public AbstractLogicComparator(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item, @Nonnull RecipeType recipeType, @Nonnull ItemStack[] recipe) {
-        super(itemGroup, item, recipeType, recipe);
+    public AbstractLogicComparator(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item) {
+        super(itemGroup, item);
     }
 
     @Nullable

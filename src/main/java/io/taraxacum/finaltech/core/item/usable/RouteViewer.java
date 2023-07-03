@@ -30,8 +30,8 @@ public class RouteViewer extends UsableSlimefunItem implements RecipeItem {
     private final int interval = ConfigUtil.getOrDefaultItemSetting(500, this, "interval");
     private final int threshold = ConfigUtil.getOrDefaultItemSetting(2, this, "threshold");
 
-    public RouteViewer(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
-        super(itemGroup, item, recipeType, recipe);
+    public RouteViewer(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item) {
+        super(itemGroup, item);
     }
 
     /**

@@ -28,8 +28,8 @@ import javax.annotation.Nullable;
  * @author Final_ROOT
  */
 public class DigitAdder extends AbstractMachine implements RecipeItem {
-    public DigitAdder(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item, @Nonnull RecipeType recipeType, @Nonnull ItemStack[] recipe) {
-        super(itemGroup, item, recipeType, recipe);
+    public DigitAdder(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item) {
+        super(itemGroup, item);
     }
 
     @Nullable

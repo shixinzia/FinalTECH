@@ -5,6 +5,7 @@ import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItemStack;
 import io.github.thebusybiscuit.slimefun4.api.recipes.RecipeType;
 import io.taraxacum.finaltech.FinalTech;
 import io.taraxacum.finaltech.core.interfaces.RecipeItem;
+import io.taraxacum.finaltech.core.interfaces.UnCopiableItem;
 import io.taraxacum.libs.plugin.dto.ItemWrapper;
 import io.taraxacum.libs.plugin.util.ItemStackUtil;
 import io.taraxacum.finaltech.util.ConstantTableUtil;
@@ -18,11 +19,11 @@ import javax.annotation.Nonnull;
 /**
  * @author Final_ROOT
  */
-public class Singularity extends UnusableSlimefunItem implements RecipeItem, SimpleValidItem {
+public class Singularity extends UnusableSlimefunItem implements RecipeItem, SimpleValidItem, UnCopiableItem {
     private final ItemWrapper templateValidItem;
 
-    public Singularity(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
-        super(itemGroup, item, recipeType, recipe);
+    public Singularity(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item, @Nonnull RecipeType recipeType) {
+        super(itemGroup, item, recipeType, new ItemStack[0]);
         ItemStack validItem = new ItemStack(this.getItem());
         SfItemUtil.setSpecialItemKey(validItem);
         this.templateValidItem = new ItemWrapper(validItem);

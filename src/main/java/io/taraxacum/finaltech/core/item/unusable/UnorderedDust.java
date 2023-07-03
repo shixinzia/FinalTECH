@@ -20,8 +20,8 @@ import javax.annotation.Nullable;
 public class UnorderedDust extends UnusableSlimefunItem implements RecipeItem, SimpleValidItem {
     private final ItemWrapper templateValidItem;
 
-    public UnorderedDust(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
-        super(itemGroup, item, recipeType, recipe);
+    public UnorderedDust(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item, @Nonnull RecipeType recipeType) {
+        super(itemGroup, item, recipeType, new ItemStack[0]);
         ItemStack validItem = new ItemStack(this.getItem());
         SfItemUtil.setSpecialItemKey(validItem);
         this.templateValidItem = new ItemWrapper(validItem);

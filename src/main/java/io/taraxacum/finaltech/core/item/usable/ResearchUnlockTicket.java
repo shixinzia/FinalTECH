@@ -27,8 +27,8 @@ import java.util.Random;
  * @author Final_ROOT
  */
 public class ResearchUnlockTicket extends UsableSlimefunItem implements RecipeItem {
-    public ResearchUnlockTicket(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
-        super(itemGroup, item, recipeType, recipe);
+    public ResearchUnlockTicket(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item) {
+        super(itemGroup, item);
     }
 
     @Override

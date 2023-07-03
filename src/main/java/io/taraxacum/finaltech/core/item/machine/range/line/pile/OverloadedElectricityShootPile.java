@@ -27,8 +27,8 @@ import javax.annotation.Nonnull;
 public class OverloadedElectricityShootPile extends AbstractElectricityShootPile {
     private final int range = ConfigUtil.getOrDefaultItemSetting(16, this, "range");
 
-    public OverloadedElectricityShootPile(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
-        super(itemGroup, item, recipeType, recipe);
+    public OverloadedElectricityShootPile(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item) {
+        super(itemGroup, item);
     }
 
     @Override

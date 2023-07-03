@@ -39,8 +39,8 @@ public class LocationTransfer extends AbstractCargo implements RecipeItem {
     private final int particleInterval = 2;
     private int locationRecorderSlot;
 
-    public LocationTransfer(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
-        super(itemGroup, item, recipeType, recipe);
+    public LocationTransfer(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item) {
+        super(itemGroup, item);
     }
 
     @Nullable

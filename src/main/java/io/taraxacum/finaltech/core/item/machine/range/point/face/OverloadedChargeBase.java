@@ -41,8 +41,8 @@ public class OverloadedChargeBase extends AbstractFaceMachine implements RecipeI
     private final double maxLimit = ConfigUtil.getOrDefaultItemSetting(2, this, "max-limit");
     private int statusSLot;
 
-    public OverloadedChargeBase(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
-        super(itemGroup, item, recipeType, recipe);
+    public OverloadedChargeBase(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item) {
+        super(itemGroup, item);
     }
 
     @Nullable

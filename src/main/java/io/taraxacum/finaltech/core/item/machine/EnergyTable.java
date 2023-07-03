@@ -32,8 +32,8 @@ import java.math.BigInteger;
 public class EnergyTable extends AbstractMachine implements RecipeItem {
     private int cardSlot;
 
-    public EnergyTable(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item, @Nonnull RecipeType recipeType, @Nonnull ItemStack[] recipe) {
-        super(itemGroup, item, recipeType, recipe);
+    public EnergyTable(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item) {
+        super(itemGroup, item);
     }
 
     @Nullable

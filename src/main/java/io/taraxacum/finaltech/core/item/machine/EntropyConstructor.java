@@ -26,8 +26,8 @@ import javax.annotation.Nullable;
  * @author Final_ROOT
  */
 public class EntropyConstructor extends AbstractMachine implements RecipeItem {
-    public EntropyConstructor(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
-        super(itemGroup, item, recipeType, recipe);
+    public EntropyConstructor(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item) {
+        super(itemGroup, item);
     }
 
     @Nullable

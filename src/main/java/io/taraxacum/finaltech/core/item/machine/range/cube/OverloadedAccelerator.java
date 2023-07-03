@@ -44,8 +44,8 @@ public class OverloadedAccelerator extends AbstractCubeMachine implements Recipe
     private final int range = ConfigUtil.getOrDefaultItemSetting(2, this, "range");
     private int statusSlot;
 
-    public OverloadedAccelerator(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
-        super(itemGroup, item, recipeType, recipe);
+    public OverloadedAccelerator(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item) {
+        super(itemGroup, item);
         this.notAllowedId.add(this.getId());
     }
 

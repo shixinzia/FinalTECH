@@ -33,8 +33,8 @@ import java.util.List;
  * @author Final_ROOT
  */
 public abstract class AbstractExtractionMachine extends AbstractMachine implements RecipeItem {
-    public AbstractExtractionMachine(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
-        super(itemGroup, item, recipeType, recipe);
+    public AbstractExtractionMachine(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item) {
+        super(itemGroup, item);
     }
 
     @Nullable
