@@ -2,9 +2,19 @@ package io.taraxacum.finaltech.util;
 
 import io.github.thebusybiscuit.slimefun4.api.items.ItemState;
 import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItem;
+import io.github.thebusybiscuit.slimefun4.api.player.PlayerProfile;
+import io.github.thebusybiscuit.slimefun4.api.researches.Research;
 import io.github.thebusybiscuit.slimefun4.core.handlers.BlockBreakHandler;
 import io.github.thebusybiscuit.slimefun4.core.handlers.BlockPlaceHandler;
+import io.github.thebusybiscuit.slimefun4.implementation.Slimefun;
+import io.github.thebusybiscuit.slimefun4.utils.ChestMenuUtils;
+import io.taraxacum.common.util.ReflectionUtil;
 import io.taraxacum.finaltech.FinalTech;
+import io.taraxacum.libs.plugin.dto.ComplexOptional;
+import io.taraxacum.finaltech.core.exception.ParseErrorException;
+import io.taraxacum.finaltech.core.interfaces.ExtraParameterItem;
+import io.taraxacum.finaltech.core.interfaces.SpecialResearch;
+import io.taraxacum.finaltech.setup.FinalTechItemStacks;
 import io.taraxacum.libs.plugin.dto.AdvancedMachineRecipe;
 import io.taraxacum.libs.plugin.dto.ItemAmountWrapper;
 import io.taraxacum.finaltech.core.item.machine.AbstractMachine;
@@ -15,6 +25,8 @@ import io.taraxacum.libs.slimefun.service.SlimefunLocationDataService;
 import me.mrCookieSlime.Slimefun.api.inventory.BlockMenu;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.entity.Player;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.inventory.Inventory;
@@ -29,6 +41,8 @@ import java.util.*;
  * @author Final_ROOT
  */
 public final class MachineUtil {
+    private static Map<String, ItemStack> itemStackCache = new HashMap<>();
+
     public static final BlockPlaceHandler BLOCK_PLACE_HANDLER_PLACER_ALLOW = new BlockPlaceHandler(true) {
         @Override
         public void onPlayerPlace(@Nonnull BlockPlaceEvent blockPlaceEvent) {
@@ -234,5 +248,71 @@ public final class MachineUtil {
         itemStack.setItemMeta(itemMeta);
 
         return itemStack;
+    }
+
+    @Nonnull
+    public static ItemStack getLockedItem(@Nonnull Player player, @Nonnull Research research) {
+        ItemStack itemStack = ItemStackUtil.cloneItem(ChestMenuUtils.getNotResearchedItem());
+        List<String> stringList = new ArrayList<>();
+        if (research instanceof SpecialResearch specialResearch) {
+            stringList = List.of(specialResearch.getShowText(player));
+        } else {
+            Optional<PlayerProfile> optionalPlayerProfile = PlayerProfile.find(player);
+            if (optionalPlayerProfile.isPresent() && !optionalPlayerProfile.get().hasUnlocked(research)) {
+                // todo translate
+                stringList.add("§7" + research.getName(player));
+                stringList.add("§4§l" + Slimefun.getLocalization().getMessage(player, "guide.locked"));
+                stringList.add("§a> Click to unlock");
+                stringList.add("");
+                stringList.add("§7Cost: §b" + research.getCost() + " Level(s)");
+            }
+        }
+
+        ItemStackUtil.setLore(itemStack, stringList);
+        return itemStack;
+    }
+
+    @Nonnull
+    public static ComplexOptional<ItemStack> getItemStackById(@Nonnull String itemId) {
+        // TODO clear item stack cache
+        if (itemStackCache.containsKey(itemId)) {
+            return new ComplexOptional<>(itemStackCache.get(itemId));
+        }
+
+        if ("error".equals(itemId)) {
+            return new ComplexOptional<>();
+        }
+
+        SlimefunItem slimefunItem = SlimefunItem.getById(itemId);
+        if (slimefunItem instanceof ExtraParameterItem extraParameterItem) {
+            return new ComplexOptional<>(strings -> {
+                try {
+                    return extraParameterItem.getByExtraParameter(strings);
+                } catch (ParseErrorException e) {
+                    e.printStackTrace();
+                    return null;
+                }
+            });
+        } else if (slimefunItem != null) {
+            itemStackCache.put(itemId, slimefunItem.getItem());
+            return new ComplexOptional<>(slimefunItem.getItem());
+        } else {
+            Material material = Material.getMaterial(itemId);
+            if (material != null) {
+                ItemStack itemStack = new ItemStack(material);
+                itemStackCache.put(itemId, itemStack);
+                return new ComplexOptional<>(itemStack);
+            } else if (itemId.startsWith("FINALTECH_")) {
+                String prefix = "FINALTECH_";
+                ItemStack itemStack = ReflectionUtil.getStaticValue(FinalTechItemStacks.class, itemId.substring(prefix.length()));
+                if (itemStack != null) {
+                    itemStackCache.put(itemId, itemStack);
+                    return new ComplexOptional<>(itemStack);
+                }
+            }
+        }
+
+        itemStackCache.put(itemId, null);
+        return new ComplexOptional<>();
     }
 }
