@@ -36,14 +36,14 @@ public class EquivalentExchangeTableInventory extends AbstractManualMachineInven
     public final int statusSlot = 40;
 
     private final ItemStack parseBorderIcon = ItemStackUtil.newItemStack(Material.PURPLE_STAINED_GLASS_PANE,
-            FinalTech.getLanguageString("items", SfItemUtil.getIdFormatName(EquivalentExchangeTable.class), "parse-border-icon", "name"),
-            FinalTech.getLanguageStringArray("items", SfItemUtil.getIdFormatName(EquivalentExchangeTable.class), "parse-border-icon", "lore"));
+            FinalTech.getLanguageString("items", this.getId(), "parse-border-icon", "name"),
+            FinalTech.getLanguageStringArray("items", this.getId(), "parse-border-icon", "lore"));
     private final ItemStack parseStatusIcon = ItemStackUtil.newItemStack(Material.YELLOW_STAINED_GLASS_PANE,
-            FinalTech.getLanguageString("items", SfItemUtil.getIdFormatName(EquivalentExchangeTable.class), "parse-result-icon", "name"),
-            FinalTech.getLanguageStringArray("items", SfItemUtil.getIdFormatName(EquivalentExchangeTable.class), "parse-result-icon", "lore"));
+            FinalTech.getLanguageString("items", this.getId(), "parse-result-icon", "name"),
+            FinalTech.getLanguageStringArray("items", this.getId(), "parse-result-icon", "lore"));
     private final ItemStack craftIcon = ItemStackUtil.newItemStack(Material.GREEN_STAINED_GLASS_PANE,
-            FinalTech.getLanguageString("items", SfItemUtil.getIdFormatName(EquivalentExchangeTable.class), "status-icon", "name"),
-            FinalTech.getLanguageStringArray("items", SfItemUtil.getIdFormatName(EquivalentExchangeTable.class), "status-icon", "lore"));
+            FinalTech.getLanguageString("items", this.getId(), "status-icon", "name"),
+            FinalTech.getLanguageStringArray("items", this.getId(), "status-icon", "lore"));
 
     public EquivalentExchangeTableInventory(@Nonnull AbstractMachine machine) {
         super(machine);

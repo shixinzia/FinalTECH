@@ -121,7 +121,7 @@ public class AreaAccessorInventory extends AbstractClickerInventory {
                 BlockMenu blockMenu = slimefunLocationDataService.getBlockMenu((SlimefunLocationData) locationData);
                 if (slimefunItem != null && blockMenu != null) {
                     ItemStack icon = MachineUtil.cloneAsDescriptiveItemWithLore(slimefunItem.getItem(),
-                            FinalTech.getLanguageManager().replaceStringArray(FinalTech.getLanguageStringArray("items", SfItemUtil.getIdFormatName(AreaAccessor.class), "temp-icon", "lore"),
+                            FinalTech.getLanguageManager().replaceStringArray(FinalTech.getLanguageStringArray("items", this.getId(), "temp-icon", "lore"),
                                 String.valueOf(finalLocation.getBlockX() - location.getBlockX()),
                                 String.valueOf(finalLocation.getBlockY() - location.getBlockY()),
                                 String.valueOf(finalLocation.getBlockZ() - location.getBlockZ())));
@@ -142,7 +142,7 @@ public class AreaAccessorInventory extends AbstractClickerInventory {
                             javaPlugin.getServer().getScheduler().runTaskAsynchronously(javaPlugin, () -> ParticleUtil.drawLineByDistance(javaPlugin, Particle.WAX_OFF, 0, 0.25, LocationUtil.getCenterLocation(location.getBlock()), LocationUtil.getCenterLocation(blockMenu.getBlock())));
                             blockMenu.open(player);
                         } else {
-                            player.sendMessage(FinalTech.getLanguageString("items", SfItemUtil.getIdFormatName(AreaAccessor.class), "message", "no-permission", "location"));
+                            player.sendMessage(FinalTech.getLanguageString("items", AreaAccessorInventory.this.getId(), "message", "no-permission", "location"));
                         }
                     });
                     continue;
