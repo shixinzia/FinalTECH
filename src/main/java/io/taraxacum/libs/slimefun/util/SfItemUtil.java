@@ -18,7 +18,9 @@ import java.util.Random;
  */
 public class SfItemUtil {
     private static final NamespacedKey SLIMEFUN_ITEM_KEY = new NamespacedKey(Slimefun.instance(), "slimefun_item");
+    @Deprecated
     private static final NamespacedKey SPECIAL_ITEM_KEY = new NamespacedKey(FinalTech.getInstance(), "ft_item");
+    @Deprecated
     private static final String SPECIAL_ITEM_VALUE = String.valueOf(FinalTech.getConfigManager().getOrDefault(new Random().nextLong(Long.MAX_VALUE), "valid-item-seed"));
 
     @Nonnull
@@ -64,6 +66,7 @@ public class SfItemUtil {
         ItemStackUtil.setNBT(itemStack, SLIMEFUN_ITEM_KEY, id);
     }
 
+    @Deprecated
     public static boolean hasSpecialItemKey(@Nonnull ItemStack itemStack) {
         if(!itemStack.hasItemMeta()) {
             return false;
@@ -73,6 +76,7 @@ public class SfItemUtil {
         return persistentDataContainer.has(SPECIAL_ITEM_KEY, PersistentDataType.STRING) && SPECIAL_ITEM_VALUE.equals(persistentDataContainer.get(SPECIAL_ITEM_KEY, PersistentDataType.STRING));
     }
 
+    @Deprecated
     public static void setSpecialItemKey(@Nonnull ItemStack itemStack) {
         ItemStackUtil.setNBT(itemStack, SPECIAL_ITEM_KEY, SPECIAL_ITEM_VALUE);
     }
