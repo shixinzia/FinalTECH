@@ -37,7 +37,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 /**
  * @author Final_ROOT
  */
-public class DustFactoryDirt extends AbstractOperationMachine implements RecipeItem, MenuUpdater {
+public class DustFactory extends AbstractOperationMachine implements RecipeItem, MenuUpdater {
     private final int baseAmountDifficulty = ConfigUtil.getOrDefaultItemSetting(1024, this, "difficulty", "base", "amount");
     private final int baseTypeDifficulty = ConfigUtil.getOrDefaultItemSetting(16, this, "difficulty", "base", "type");
     private final int multiAmountDifficulty = ConfigUtil.getOrDefaultItemSetting(64, this, "difficulty", "multi", "amount");
@@ -49,8 +49,8 @@ public class DustFactoryDirt extends AbstractOperationMachine implements RecipeI
     private final List<Location> locationList;
     private int statusSlot;
 
-    public DustFactoryDirt(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
-        super(itemGroup, item, recipeType, recipe);
+    public DustFactory(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item) {
+        super(itemGroup, item);
         this.locationList = FinalTech.isAsyncSlimefunItem(this.getId()) ? new ArrayList<>() : new CopyOnWriteArrayList<>();
     }
 
@@ -71,14 +71,14 @@ public class DustFactoryDirt extends AbstractOperationMachine implements RecipeI
                 Location location = blockBreakEvent.getBlock().getLocation();
                 if(FinalTech.getLocationDataService() instanceof SlimefunLocationDataService slimefunLocationDataService) {
                     BlockMenu blockMenu = slimefunLocationDataService.getBlockMenu(location);
-                    if(blockMenu != null && blockMenu.getPreset().getID().equals(DustFactoryDirt.this.getId())) {
+                    if(blockMenu != null && blockMenu.getPreset().getID().equals(DustFactory.this.getId())) {
                         Inventory inventory = blockMenu.toInventory();
-                        InventoryUtil.dropItems(inventory, location, DustFactoryDirt.this.getInputSlot());
-                        InventoryUtil.dropItems(inventory, location, DustFactoryDirt.this.getOutputSlot());
+                        InventoryUtil.dropItems(inventory, location, DustFactory.this.getInputSlot());
+                        InventoryUtil.dropItems(inventory, location, DustFactory.this.getOutputSlot());
                     }
                 }
 
-                DustFactoryDirt.this.getMachineProcessor().endOperation(location);
+                DustFactory.this.getMachineProcessor().endOperation(location);
             }
         };
     }
