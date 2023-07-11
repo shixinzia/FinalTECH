@@ -3,13 +3,13 @@ package io.taraxacum.finaltech.core.item.machine.cargo;
 import io.github.thebusybiscuit.slimefun4.api.items.ItemGroup;
 import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItem;
 import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItemStack;
-import io.github.thebusybiscuit.slimefun4.api.recipes.RecipeType;
 import io.github.thebusybiscuit.slimefun4.core.handlers.BlockBreakHandler;
 import io.github.thebusybiscuit.slimefun4.core.handlers.BlockPlaceHandler;
 import io.github.thebusybiscuit.slimefun4.implementation.Slimefun;
 import io.github.thebusybiscuit.slimefun4.libraries.paperlib.PaperLib;
 import io.taraxacum.common.util.JavaUtil;
 import io.taraxacum.finaltech.FinalTech;
+import io.taraxacum.finaltech.core.interfaces.LogicInjectableItem;
 import io.taraxacum.finaltech.core.inventory.AbstractMachineInventory;
 import io.taraxacum.finaltech.core.inventory.cargo.PointTransferInventory;
 import io.taraxacum.libs.plugin.dto.InvWithSlots;
@@ -35,22 +35,23 @@ import org.bukkit.block.data.Directional;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
-import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import java.util.*;
+import java.util.function.BiConsumer;
 
 /**
  * @author Final_ROOT
  */
-public class PointTransfer extends AbstractCargo implements RecipeItem {
+public class PointTransfer extends AbstractCargo implements RecipeItem, LogicInjectableItem {
     private final double particleDistance = 0.25;
     private final int particleInterval = 2;
     private final int range = ConfigUtil.getOrDefaultItemSetting(8, this, "range");
     private int[] matchSlot;
+    private BiConsumer<Inventory, LocationData> logicInjectInventoryUpdater;
 
     public PointTransfer(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item) {
         super(itemGroup, item);
@@ -61,6 +62,7 @@ public class PointTransfer extends AbstractCargo implements RecipeItem {
     protected AbstractMachineInventory setMachineInventory() {
         PointTransferInventory pointTransferInventory = new PointTransferInventory(this);
         this.matchSlot = pointTransferInventory.itemMatchSlot;
+        this.logicInjectInventoryUpdater = pointTransferInventory::updateCargoFilter;
         return pointTransferInventory;
     }
 
@@ -276,5 +278,19 @@ public class PointTransfer extends AbstractCargo implements RecipeItem {
     public void registerDefaultRecipes() {
         RecipeUtil.registerDescriptiveRecipe(FinalTech.getLanguageManager(), this,
                 String.valueOf(this.range));
+    }
+
+    @Override
+    public void injectLogic(@Nonnull LocationData locationData, boolean logic) {
+        if (logic) {
+            CargoFilter.OPTION.setOrClearValue(FinalTech.getLocationDataService(), locationData, CargoFilter.VALUE_BLACK);
+        } else {
+            CargoFilter.OPTION.setOrClearValue(FinalTech.getLocationDataService(), locationData, CargoFilter.VALUE_WHITE);
+        }
+
+        Inventory inventory = FinalTech.getLocationDataService().getInventory(locationData);
+        if (inventory != null) {
+            this.logicInjectInventoryUpdater.accept(inventory, locationData);
+        }
     }
 }

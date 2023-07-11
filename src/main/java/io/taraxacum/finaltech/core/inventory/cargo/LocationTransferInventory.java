@@ -133,4 +133,8 @@ public class LocationTransferInventory extends AbstractMachineInventory implemen
         SlotSearchLine.L2_OPTION.checkAndUpdateIcon(inventory, this.line2Slot, FinalTech.getLocationDataService(), location);
         SlotSearchLine.L3_OPTION.checkAndUpdateIcon(inventory, this.line3Slot, FinalTech.getLocationDataService(), location);
     }
+
+    public void updateCargoOrder(@Nonnull Inventory inventory, @Nonnull LocationData locationData) {
+        CargoOrder.OPTION.checkAndUpdateIcon(inventory, this.cargoOrderSlot, FinalTech.getLocationDataService(), locationData);
+    }
 }

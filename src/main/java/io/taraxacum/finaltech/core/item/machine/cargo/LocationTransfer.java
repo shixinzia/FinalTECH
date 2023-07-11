@@ -3,12 +3,12 @@ package io.taraxacum.finaltech.core.item.machine.cargo;
 import io.github.thebusybiscuit.slimefun4.api.items.ItemGroup;
 import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItem;
 import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItemStack;
-import io.github.thebusybiscuit.slimefun4.api.recipes.RecipeType;
 import io.github.thebusybiscuit.slimefun4.core.handlers.BlockBreakHandler;
 import io.github.thebusybiscuit.slimefun4.core.handlers.BlockPlaceHandler;
 import io.github.thebusybiscuit.slimefun4.implementation.Slimefun;
 import io.taraxacum.common.util.JavaUtil;
 import io.taraxacum.finaltech.FinalTech;
+import io.taraxacum.finaltech.core.interfaces.LogicInjectableItem;
 import io.taraxacum.finaltech.core.inventory.AbstractMachineInventory;
 import io.taraxacum.finaltech.core.inventory.cargo.LocationTransferInventory;
 import io.taraxacum.finaltech.util.*;
@@ -30,14 +30,16 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.BiConsumer;
 
 /**
  * @author Final_ROOT
  */
-public class LocationTransfer extends AbstractCargo implements RecipeItem {
+public class LocationTransfer extends AbstractCargo implements RecipeItem, LogicInjectableItem {
     private final double particleDistance = 0.25;
     private final int particleInterval = 2;
     private int locationRecorderSlot;
+    private BiConsumer<Inventory, LocationData> logicInjectInventoryUpdater;
 
     public LocationTransfer(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item) {
         super(itemGroup, item);
@@ -48,6 +50,7 @@ public class LocationTransfer extends AbstractCargo implements RecipeItem {
     protected AbstractMachineInventory setMachineInventory() {
         LocationTransferInventory locationTransferInventory = new LocationTransferInventory(this);
         this.locationRecorderSlot = locationTransferInventory.locationRecorderSlot;
+        this.logicInjectInventoryUpdater = locationTransferInventory::updateCargoOrder;
         return locationTransferInventory;
     }
 
@@ -149,5 +152,19 @@ public class LocationTransfer extends AbstractCargo implements RecipeItem {
     @Override
     public void registerDefaultRecipes() {
         RecipeUtil.registerDescriptiveRecipe(FinalTech.getLanguageManager(), this);
+    }
+
+    @Override
+    public void injectLogic(@Nonnull LocationData locationData, boolean logic) {
+        if (logic) {
+            CargoOrder.OPTION.setOrClearValue(FinalTech.getLocationDataService(), locationData, CargoOrder.VALUE_POSITIVE);
+        } else {
+            CargoOrder.OPTION.setOrClearValue(FinalTech.getLocationDataService(), locationData, CargoOrder.VALUE_REVERSE);
+        }
+
+        Inventory inventory = FinalTech.getLocationDataService().getInventory(locationData);
+        if (inventory != null) {
+            this.logicInjectInventoryUpdater.accept(inventory, locationData);
+        }
     }
 }
