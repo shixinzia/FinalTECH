@@ -29,7 +29,7 @@ public class ResearchTable extends AbstractClickerMachine {
         super.register(addon);
 
         ShapedRecipe recipe = new ShapedRecipe(new NamespacedKey(this.getAddon().getJavaPlugin(), this.getId()), this.getRecipeOutput());
-        recipe.shape("ddd","dsd","ccc");
+        recipe.shape("ddd", "dsd", "ccc");
         recipe.setIngredient('d', Material.DIAMOND);
         recipe.setIngredient('s', new RecipeChoice.ExactChoice(Slimefun.getRegistry().getSlimefunGuide(SlimefunGuideMode.SURVIVAL_MODE).getItem()));
         recipe.setIngredient('c', Material.CRYING_OBSIDIAN);
