@@ -69,7 +69,7 @@ public class ConsumableTransporterInventory extends AbstractClickerInventory imp
                         }
                         blockList.add(targetBlock);
 
-                        if(targetBlock.getType().isAir()) {
+                        if (targetBlock.getChunk().isLoaded() && targetBlock.getType().isAir()) {
                             JavaPlugin javaPlugin = this.slimefunItem.getAddon().getJavaPlugin();
                             javaPlugin.getServer().getScheduler().runTaskAsynchronously(javaPlugin, () -> ParticleUtil.drawCubeByBlock(javaPlugin, Particle.WAX_OFF, 0, blockList));
 
@@ -83,7 +83,7 @@ public class ConsumableTransporterInventory extends AbstractClickerInventory imp
                         for (int i = 0; i < this.range; i++) {
                             targetBlock = targetBlock.getRelative(blockFace);
                             blockList.add(targetBlock);
-                            if(targetBlock.getType().isAir()) {
+                            if (targetBlock.getChunk().isLoaded() && targetBlock.getType().isAir()) {
                                 JavaPlugin javaPlugin = this.slimefunItem.getAddon().getJavaPlugin();
                                 javaPlugin.getServer().getScheduler().runTaskAsynchronously(javaPlugin, () -> ParticleUtil.drawCubeByBlock(javaPlugin, Particle.WAX_OFF, 0, blockList));
 
