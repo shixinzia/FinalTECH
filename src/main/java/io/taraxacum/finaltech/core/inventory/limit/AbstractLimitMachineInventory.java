@@ -5,6 +5,7 @@ import io.github.thebusybiscuit.slimefun4.utils.itemstack.ItemStackWrapper;
 import io.taraxacum.finaltech.FinalTech;
 import io.taraxacum.finaltech.core.inventory.AbstractMachineInventory;
 import io.taraxacum.finaltech.core.option.MachineMaxStack;
+import io.taraxacum.libs.plugin.dto.LocationData;
 import io.taraxacum.libs.plugin.interfaces.LogicInventory;
 import io.taraxacum.libs.plugin.util.ItemStackUtil;
 import org.bukkit.Location;
@@ -119,4 +120,13 @@ public abstract class AbstractLimitMachineInventory extends AbstractMachineInven
     protected abstract int[] getInputSlot();
 
     protected abstract int[] getOutputSlot();
+
+    public void updateMachineMaxStack(@Nonnull Inventory inventory, @Nonnull LocationData locationData) {
+        MachineMaxStack.OPTION.checkOrSetDefault(FinalTech.getLocationDataService(), locationData);
+        String quantity = MachineMaxStack.OPTION.getOrDefaultValue(FinalTech.getLocationDataService(), locationData);
+        ItemStack itemStack = inventory.getItem(this.getMachineMaxStackSlot());
+        if (!ItemStackUtil.isItemNull(itemStack)) {
+            MachineMaxStack.OPTION.updateLore(itemStack, quantity);
+        }
+    }
 }
