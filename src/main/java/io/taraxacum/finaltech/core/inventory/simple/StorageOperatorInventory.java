@@ -8,6 +8,7 @@ import io.taraxacum.finaltech.core.option.EnableOption;
 import io.taraxacum.finaltech.util.LocationUtil;
 import io.taraxacum.finaltech.util.SqlUtil;
 import io.taraxacum.libs.plugin.dto.ItemWrapper;
+import io.taraxacum.libs.plugin.dto.LocationData;
 import io.taraxacum.libs.plugin.interfaces.LogicInventory;
 import io.taraxacum.libs.plugin.util.ItemStackUtil;
 import io.taraxacum.libs.slimefun.service.SlimefunLocationDataService;
@@ -198,5 +199,9 @@ public class StorageOperatorInventory extends AbstractOrdinaryMachineInventory i
                 e.printStackTrace();
             }
         };
+    }
+
+    public void updateEnable(@Nonnull Inventory inventory, @Nonnull LocationData locationData) {
+        EnableOption.OPTION.checkAndUpdateIcon(inventory, this.enableSlot, FinalTech.getLocationDataService(), locationData);
     }
 }
