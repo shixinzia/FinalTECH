@@ -71,7 +71,7 @@ public class OverloadedAccelerator extends AbstractCubeMachine implements Recipe
     @Override
     protected void tick(@Nonnull Block block, @Nonnull SlimefunItem slimefunItem, @Nonnull LocationData locationData) {
         Inventory inventory = FinalTech.getLocationDataService().getInventory(locationData);
-        if(inventory == null) {
+        if (inventory == null) {
             return;
         }
 
@@ -86,7 +86,8 @@ public class OverloadedAccelerator extends AbstractCubeMachine implements Recipe
                 return -1;
             }
             LocationData tempLocationData = FinalTech.getLocationDataService().getLocationData(location);
-            if(tempLocationData != null && this.calAllowed(LocationDataUtil.getSlimefunItem(FinalTech.getLocationDataService(), tempLocationData))) {
+            if(tempLocationData != null
+                    && this.calAllowed(LocationDataUtil.getSlimefunItem(FinalTech.getLocationDataService(), tempLocationData))) {
                 int distance = Math.abs(location.getBlockX() - blockLocation.getBlockX()) + Math.abs(location.getBlockY() - blockLocation.getBlockY()) + Math.abs(location.getBlockZ() - blockLocation.getBlockZ());
                 locationDataMap.computeIfAbsent(distance, d -> new ArrayList<>(d * d * 4 + 2)).add(tempLocationData);
                 tempLocationData.cloneLocation();
@@ -113,9 +114,9 @@ public class OverloadedAccelerator extends AbstractCubeMachine implements Recipe
                 Collections.shuffle(locationDataList);
                 for (LocationData tempLocationData : locationDataList) {
                     SlimefunItem sfItem = LocationDataUtil.getSlimefunItem(FinalTech.getLocationDataService(), tempLocationData);
-                    if(sfItem instanceof EnergyNetComponent energyNetComponent) {
+                    if (sfItem instanceof EnergyNetComponent energyNetComponent) {
                         BlockTicker blockTicker = sfItem.getBlockTicker();
-                        if(blockTicker != null) {
+                        if (blockTicker != null) {
                             int capacity = energyNetComponent.getCapacity();
                             int energy = Integer.parseInt(EnergyUtil.getCharge(FinalTech.getLocationDataService(), tempLocationData));
                             if (energy > capacity) {
@@ -123,33 +124,23 @@ public class OverloadedAccelerator extends AbstractCubeMachine implements Recipe
 
                                 boolean async = FinalTech.isAsyncSlimefunItem(sfItem.getId());
                                 Runnable runnable = () -> {
-                                    if(async) {
+                                    if (async) {
                                         LocationData nowLocationData = FinalTech.getLocationDataService().getLocationData(tempLocationData.getLocation());
-                                        if(nowLocationData == null || !sfItem.getId().equals(LocationDataUtil.getId(FinalTech.getLocationDataService(), nowLocationData))) {
+                                        if (nowLocationData == null || !sfItem.getId().equals(LocationDataUtil.getId(FinalTech.getLocationDataService(), nowLocationData))) {
                                             return;
                                         }
                                     }
 
-                                    int machineEnergy = energy;
-                                    int currentMachineEnergy;
-                                    int times = 1;
+                                    int lastMachineEnergy;
+                                    int currentMachineEnergy = energy;
                                     try {
-                                        while (machineEnergy >= capacity) {
+                                        do {
+                                            lastMachineEnergy = currentMachineEnergy;
                                             FinalTech.getBlockTickerService().run(blockTicker, tempLocationData);
                                             currentMachineEnergy = Integer.parseInt(EnergyUtil.getCharge(FinalTech.getLocationDataService(), tempLocationData));
-                                            if(currentMachineEnergy >= machineEnergy) {
-                                                break;
-                                            }
-                                            machineEnergy = currentMachineEnergy - capacity * times++;
-                                            if(machineEnergy >= 0) {
-                                                EnergyUtil.setCharge(FinalTech.getLocationDataService(), tempLocationData, String.valueOf(machineEnergy));
-                                            } else {
-                                                break;
-                                            }
-                                        }
+                                        } while (currentMachineEnergy < lastMachineEnergy);
                                     } catch (Throwable e) {
                                         e.printStackTrace();
-                                        throw new RuntimeException(e);
                                     }
                                 };
 
@@ -169,7 +160,7 @@ public class OverloadedAccelerator extends AbstractCubeMachine implements Recipe
             }
         }
 
-        if(hasViewer) {
+        if (hasViewer) {
             this.updateInv(inventory, this.statusSlot, this,
                     String.valueOf(count),
                     String.valueOf(accelerateCount));
@@ -196,7 +187,7 @@ public class OverloadedAccelerator extends AbstractCubeMachine implements Recipe
         int minY = Math.max(location.getBlockY() - this.range, world.getMinHeight());
         int minZ = location.getBlockZ() - this.range;
         int maxX = location.getBlockX() + this.range;
-        int maxY  = Math.min(location.getBlockY() + this.range, world.getMaxHeight());
+        int maxY = Math.min(location.getBlockY() + this.range, world.getMaxHeight());
         int maxZ = location.getBlockZ() + this.range;
         Location[] locations = new Location[(maxX - minX + 1) * (maxY - minY + 1) + (maxZ - minZ + 1)];
         for (int x = minX; x <= maxX; x++) {
