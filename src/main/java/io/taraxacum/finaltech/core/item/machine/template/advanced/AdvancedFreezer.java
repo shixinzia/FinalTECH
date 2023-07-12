@@ -10,7 +10,7 @@ import javax.annotation.Nonnull;
 /**
  * @author Final_ROOT
  */
-public class AdvancedFreezer extends AbstractAdvanceMachine {
+public class AdvancedFreezer extends AbstractAdvanceMachined {
     public AdvancedFreezer(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item) {
         super(itemGroup, item);
     }

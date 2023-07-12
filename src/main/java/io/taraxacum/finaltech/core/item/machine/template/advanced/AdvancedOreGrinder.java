@@ -10,7 +10,7 @@ import javax.annotation.Nonnull;
 /**
  * @author Final_ROOT
  */
-public class AdvancedOreGrinder extends AbstractAdvanceMachine {
+public class AdvancedOreGrinder extends AbstractAdvanceMachined {
     public AdvancedOreGrinder(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item) {
         super(itemGroup, item);
     }

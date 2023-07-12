@@ -10,7 +10,7 @@ import javax.annotation.Nonnull;
 /**
  * @author Final_ROOT
  */
-public class AdvancedIngotFactory extends AbstractAdvanceMachine {
+public class AdvancedIngotFactory extends AbstractAdvanceMachined {
     public AdvancedIngotFactory(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item) {
         super(itemGroup, item);
     }

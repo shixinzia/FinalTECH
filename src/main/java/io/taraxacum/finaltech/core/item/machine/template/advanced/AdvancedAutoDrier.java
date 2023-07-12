@@ -10,7 +10,7 @@ import javax.annotation.Nonnull;
 /**
  * @author Final_ROOT
  */
-public class AdvancedAutoDrier extends AbstractAdvanceMachine {
+public class AdvancedAutoDrier extends AbstractAdvanceMachined {
     public AdvancedAutoDrier(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item) {
         super(itemGroup, item);
     }

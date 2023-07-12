@@ -9,7 +9,7 @@ import javax.annotation.Nonnull;
 /**
  * @author Final_ROOT
  */
-public class AdvancedGoldPan extends AbstractAdvanceMachine {
+public class AdvancedGoldPan extends AbstractAdvanceMachined {
     public AdvancedGoldPan(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item) {
         super(itemGroup, item);
     }

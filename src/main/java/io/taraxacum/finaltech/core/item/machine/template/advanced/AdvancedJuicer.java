@@ -10,7 +10,7 @@ import javax.annotation.Nonnull;
 /**
  * @author Final_ROOT
  */
-public class AdvancedJuicer extends AbstractAdvanceMachine{
+public class AdvancedJuicer extends AbstractAdvanceMachined {
     public AdvancedJuicer(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item) {
         super(itemGroup, item);
     }

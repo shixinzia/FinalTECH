@@ -10,7 +10,7 @@ import javax.annotation.Nonnull;
 /**
  * @author Final_ROOT
  */
-public class AdvancedCarbonPress extends AbstractAdvanceMachine {
+public class AdvancedCarbonPress extends AbstractAdvanceMachined {
     public AdvancedCarbonPress(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item) {
         super(itemGroup, item);
     }

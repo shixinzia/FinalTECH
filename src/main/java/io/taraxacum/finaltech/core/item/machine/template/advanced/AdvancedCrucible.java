@@ -10,7 +10,7 @@ import javax.annotation.Nonnull;
 /**
  * @author Final_ROOT
  */
-public class AdvancedCrucible extends AbstractAdvanceMachine {
+public class AdvancedCrucible extends AbstractAdvanceMachined {
     public AdvancedCrucible(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item) {
         super(itemGroup, item);
     }

@@ -10,7 +10,7 @@ import javax.annotation.Nonnull;
 /**
  * @author Final_ROOT
  */
-public class AdvancedHeatedPressureChamber extends AbstractAdvanceMachine {
+public class AdvancedHeatedPressureChamber extends AbstractAdvanceMachined {
     public AdvancedHeatedPressureChamber(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item) {
         super(itemGroup, item);
     }

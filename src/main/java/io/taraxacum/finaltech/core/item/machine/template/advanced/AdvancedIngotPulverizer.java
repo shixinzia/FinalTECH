@@ -10,7 +10,7 @@ import javax.annotation.Nonnull;
 /**
  * @author Final_ROOT
  */
-public class AdvancedIngotPulverizer extends AbstractAdvanceMachine {
+public class AdvancedIngotPulverizer extends AbstractAdvanceMachined {
     public AdvancedIngotPulverizer(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item) {
         super(itemGroup, item);
     }
