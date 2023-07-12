@@ -23,7 +23,7 @@ import java.util.Map;
  */
 public abstract class AbstractClickerMachine extends AbstractMachine {
     private final Map<Location, Integer> locationCountMap = new HashMap<>();
-    private final int countThreshold = ConfigUtil.getOrDefaultItemSetting(Slimefun.getTickerTask().getTickRate() / 2, this, "count-threshold");
+    protected final int countThreshold = ConfigUtil.getOrDefaultItemSetting(Slimefun.getTickerTask().getTickRate() / 2, this, "count-threshold");
 
     public AbstractClickerMachine(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item) {
         super(itemGroup, item);
