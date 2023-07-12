@@ -2,9 +2,7 @@ package io.taraxacum.finaltech.core.item.unusable.module;
 
 import io.github.thebusybiscuit.slimefun4.api.items.ItemGroup;
 import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItemStack;
-import io.github.thebusybiscuit.slimefun4.api.recipes.RecipeType;
 import io.taraxacum.finaltech.core.item.unusable.UnusableSlimefunItem;
-import org.bukkit.inventory.ItemStack;
 
 import javax.annotation.Nonnull;
 

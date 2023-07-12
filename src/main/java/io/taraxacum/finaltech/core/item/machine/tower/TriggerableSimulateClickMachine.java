@@ -3,14 +3,13 @@ package io.taraxacum.finaltech.core.item.machine.tower;
 import io.github.thebusybiscuit.slimefun4.api.items.ItemGroup;
 import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItem;
 import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItemStack;
-import io.github.thebusybiscuit.slimefun4.api.recipes.RecipeType;
 import io.github.thebusybiscuit.slimefun4.core.handlers.BlockBreakHandler;
 import io.github.thebusybiscuit.slimefun4.core.handlers.BlockPlaceHandler;
 import io.taraxacum.finaltech.FinalTech;
 import io.taraxacum.finaltech.core.interfaces.DigitalItem;
 import io.taraxacum.finaltech.core.interfaces.RecipeItem;
 import io.taraxacum.finaltech.core.inventory.AbstractMachineInventory;
-import io.taraxacum.finaltech.core.inventory.simple.ConsumableSimulateClickMachineInventory;
+import io.taraxacum.finaltech.core.inventory.simple.TriggerableSimulateClickMachineInventory;
 import io.taraxacum.finaltech.util.ConfigUtil;
 import io.taraxacum.finaltech.util.LocationUtil;
 import io.taraxacum.finaltech.util.MachineUtil;
@@ -36,18 +35,18 @@ import java.util.Set;
 /**
  * @author Final_ROOT
  */
-public class ConsumableSimulateClickMachine extends AbstractTower implements RecipeItem {
+public class TriggerableSimulateClickMachine extends AbstractTower implements RecipeItem {
     private final Set<String> notAllowedId = new HashSet<>(ConfigUtil.getItemStringList(this, "not-allowed-id"));
     private final double rangeRate = ConfigUtil.getOrDefaultItemSetting(0.4, this, "range-rate");
 
-    public ConsumableSimulateClickMachine(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item) {
+    public TriggerableSimulateClickMachine(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item) {
         super(itemGroup, item);
     }
 
     @Nullable
     @Override
     protected AbstractMachineInventory setMachineInventory() {
-        return new ConsumableSimulateClickMachineInventory(this);
+        return new TriggerableSimulateClickMachineInventory(this);
     }
 
     @Nonnull

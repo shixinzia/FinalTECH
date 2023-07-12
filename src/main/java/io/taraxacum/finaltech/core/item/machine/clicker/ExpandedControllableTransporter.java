@@ -2,14 +2,12 @@ package io.taraxacum.finaltech.core.item.machine.clicker;
 
 import io.github.thebusybiscuit.slimefun4.api.items.ItemGroup;
 import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItemStack;
-import io.github.thebusybiscuit.slimefun4.api.recipes.RecipeType;
 import io.taraxacum.finaltech.FinalTech;
 import io.taraxacum.finaltech.core.interfaces.RecipeItem;
 import io.taraxacum.finaltech.core.inventory.AbstractMachineInventory;
-import io.taraxacum.finaltech.core.inventory.clicker.ConfigurableRemoteAccessorInventory;
+import io.taraxacum.finaltech.core.inventory.clicker.ExpandedControllableTransporterInventory;
 import io.taraxacum.finaltech.util.ConfigUtil;
 import io.taraxacum.finaltech.util.RecipeUtil;
-import org.bukkit.inventory.ItemStack;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -17,17 +15,17 @@ import javax.annotation.Nullable;
 /**
  * @author Final_ROOT
  */
-public class ConfigurableRemoteAccessor extends AbstractClickerMachine implements RecipeItem {
+public class ExpandedControllableTransporter extends AbstractClickerMachine implements RecipeItem {
     private final int range = ConfigUtil.getOrDefaultItemSetting(16, this, "range");
 
-    public ConfigurableRemoteAccessor(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item) {
+    public ExpandedControllableTransporter(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item) {
         super(itemGroup, item);
     }
 
     @Nullable
     @Override
     protected AbstractMachineInventory setMachineInventory() {
-        return new ConfigurableRemoteAccessorInventory(this, this.range);
+        return new ExpandedControllableTransporterInventory(this, this.range);
     }
 
     @Override
