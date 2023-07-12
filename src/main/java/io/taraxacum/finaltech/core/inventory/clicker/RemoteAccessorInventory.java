@@ -52,7 +52,7 @@ public class RemoteAccessorInventory extends AbstractClickerInventory {
             Block targetBlock = block;
             for (int i = 0; i < this.range; i++) {
                 targetBlock = targetBlock.getRelative(blockFace);
-                if(!targetBlock.getChunk().isLoaded()) {
+                if (!targetBlock.getChunk().isLoaded()) {
                     return;
                 }
                 BlockMenu blockMenu = slimefunLocationDataService.getBlockMenu(targetBlock.getLocation());

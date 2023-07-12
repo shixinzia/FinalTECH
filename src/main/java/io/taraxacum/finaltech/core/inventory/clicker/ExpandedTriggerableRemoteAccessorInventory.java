@@ -24,13 +24,16 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import javax.annotation.Nonnull;
 
-public class ExpandedConfigurableRemoteAccessorInventory extends AbstractClickerInventory implements LogicInventory {
+/**
+ * @author Final_ROOT
+ */
+public class ExpandedTriggerableRemoteAccessorInventory extends AbstractClickerInventory implements LogicInventory {
     private final int[] border = new int[] {0, 1, 2, 4, 6, 7, 8};
     private final int[] contentSlot = new int[] {3, 5};
 
     private final int range;
 
-    public ExpandedConfigurableRemoteAccessorInventory(@Nonnull AbstractClickerMachine abstractClickerMachine, int range) {
+    public ExpandedTriggerableRemoteAccessorInventory(@Nonnull AbstractClickerMachine abstractClickerMachine, int range) {
         super(abstractClickerMachine);
         this.range = range;
     }
@@ -48,8 +51,8 @@ public class ExpandedConfigurableRemoteAccessorInventory extends AbstractClicker
 
     @Override
     protected void openFunction(@Nonnull Player player, @Nonnull Location location, @Nonnull Inventory inventory) {
-        // TODO async
         int digit = -1;
+        ItemStack[] digitItems = new ItemStack[this.contentSlot.length];
         for(int i = 0; i < this.contentSlot.length; i++) {
             if(i == 0) {
                 digit = 0;
@@ -68,6 +71,7 @@ public class ExpandedConfigurableRemoteAccessorInventory extends AbstractClicker
                 break;
             }
             digit += digitalItem.getDigit();
+            digitItems[i] = item;
         }
 
         Block block = location.getBlock();
@@ -81,7 +85,7 @@ public class ExpandedConfigurableRemoteAccessorInventory extends AbstractClicker
 
                 if(digit > 0) {
                     targetBlock = targetBlock.getRelative(blockFace, digit);
-                    if(!targetBlock.getChunk().isLoaded()) {
+                    if (!targetBlock.getChunk().isLoaded()) {
                         return;
                     }
                     if(FinalTech.getLocationDataService() instanceof SlimefunLocationDataService slimefunLocationDataService) {
@@ -97,12 +101,12 @@ public class ExpandedConfigurableRemoteAccessorInventory extends AbstractClicker
                 } else if(digit == 0) {
                     for (int i = 0; i < this.range; i++) {
                         targetBlock = targetBlock.getRelative(blockFace);
-                        if(!targetBlock.getChunk().isLoaded()) {
+                        if (!targetBlock.getChunk().isLoaded()) {
                             return;
                         }
-                        if(FinalTech.getLocationDataService() instanceof SlimefunLocationDataService slimefunLocationDataService) {
+                        if (FinalTech.getLocationDataService() instanceof SlimefunLocationDataService slimefunLocationDataService) {
                             BlockMenu targetBlockMenu = slimefunLocationDataService.getBlockMenu(targetBlock.getLocation());
-                            if(targetBlockMenu != null && targetBlockMenu.canOpen(targetBlock, player)) {
+                            if (targetBlockMenu != null && targetBlockMenu.canOpen(targetBlock, player)) {
                                 JavaPlugin javaPlugin = this.slimefunItem.getAddon().getJavaPlugin();
                                 Block finalTargetBlock = targetBlock;
                                 javaPlugin.getServer().getScheduler().runTaskAsynchronously(javaPlugin, () -> ParticleUtil.drawCubeByBlock(javaPlugin, Particle.WAX_OFF, 0, finalTargetBlock));
@@ -111,6 +115,12 @@ public class ExpandedConfigurableRemoteAccessorInventory extends AbstractClicker
                                 break;
                             }
                         }
+                    }
+                }
+
+                for(ItemStack digitItemStack : digitItems) {
+                    if(!ItemStackUtil.isItemNull(digitItemStack)) {
+                        digitItemStack.setAmount(digitItemStack.getAmount() - 1);
                     }
                 }
                 return;

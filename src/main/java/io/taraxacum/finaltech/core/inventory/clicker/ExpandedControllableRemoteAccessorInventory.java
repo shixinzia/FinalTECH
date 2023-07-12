@@ -24,13 +24,16 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import javax.annotation.Nonnull;
 
-public class ConsumableRemoteAccessorInventory extends AbstractClickerInventory implements LogicInventory {
-    private final int[] border = new int[] {0, 1, 2, 3, 5, 6, 7, 8};
-    private final int[] contentSlot = new int[] {4};
+/**
+ * @author Final_ROOT
+ */
+public class ExpandedControllableRemoteAccessorInventory extends AbstractClickerInventory implements LogicInventory {
+    private final int[] border = new int[] {0, 1, 2, 4, 6, 7, 8};
+    private final int[] contentSlot = new int[] {3, 5};
 
     private final int range;
 
-    public ConsumableRemoteAccessorInventory(@Nonnull AbstractClickerMachine abstractClickerMachine, int range) {
+    public ExpandedControllableRemoteAccessorInventory(@Nonnull AbstractClickerMachine abstractClickerMachine, int range) {
         super(abstractClickerMachine);
         this.range = range;
     }
@@ -48,23 +51,55 @@ public class ConsumableRemoteAccessorInventory extends AbstractClickerInventory 
 
     @Override
     protected void openFunction(@Nonnull Player player, @Nonnull Location location, @Nonnull Inventory inventory) {
+        // TODO async
+        int digit = -1;
+        for(int i = 0; i < this.contentSlot.length; i++) {
+            if(i == 0) {
+                digit = 0;
+            } else {
+                digit *= 16;
+            }
+
+            ItemStack item = inventory.getItem(this.contentSlot[i]);
+            if(ItemStackUtil.isItemNull(item)) {
+                digit = -1;
+                break;
+            }
+            SlimefunItem slimefunItem = SlimefunItem.getByItem(item);
+            if(!(slimefunItem instanceof DigitalItem digitalItem)) {
+                digit = -1;
+                break;
+            }
+            digit += digitalItem.getDigit();
+        }
+
         Block block = location.getBlock();
-        ItemStack itemStack = inventory.getItem(this.contentSlot[0]);
-        if(!ItemStackUtil.isItemNull(itemStack)) {
-            int amount = itemStack.getAmount();
-            SlimefunItem slimefunItem = SlimefunItem.getByItem(itemStack);
-            if (slimefunItem instanceof DigitalItem digitalItem) {
-                InventoryUtil.closeInv(inventory);
+        if(digit != -1) {
+            InventoryUtil.closeInv(inventory);
 
-                int digit = digitalItem.getDigit();
+            BlockData blockData = block.getState().getBlockData();
+            if (blockData instanceof Directional) {
+                BlockFace blockFace = ((Directional) blockData).getFacing();
+                Block targetBlock = block;
 
-                BlockData blockData = block.getState().getBlockData();
-                if (blockData instanceof Directional) {
-                    BlockFace blockFace = ((Directional) blockData).getFacing();
-                    Block targetBlock = block;
-
-                    if(digit > 0) {
-                        targetBlock = targetBlock.getRelative(blockFace, digit);
+                if(digit > 0) {
+                    targetBlock = targetBlock.getRelative(blockFace, digit);
+                    if(!targetBlock.getChunk().isLoaded()) {
+                        return;
+                    }
+                    if(FinalTech.getLocationDataService() instanceof SlimefunLocationDataService slimefunLocationDataService) {
+                        BlockMenu targetBlockMenu = slimefunLocationDataService.getBlockMenu(targetBlock.getLocation());
+                        if(targetBlockMenu != null && targetBlockMenu.canOpen(targetBlock, player)) {
+                            JavaPlugin javaPlugin = this.slimefunItem.getAddon().getJavaPlugin();
+                            Block finalTargetBlock = targetBlock;
+                            javaPlugin.getServer().getScheduler().runTaskAsynchronously(javaPlugin, () -> ParticleUtil.drawCubeByBlock(javaPlugin, Particle.WAX_OFF, 0, finalTargetBlock));
+                            javaPlugin.getServer().getScheduler().runTaskAsynchronously(javaPlugin, () -> ParticleUtil.drawLineByDistance(javaPlugin, Particle.WAX_OFF, 0, 0.25, LocationUtil.getCenterLocation(block), LocationUtil.getCenterLocation(finalTargetBlock)));
+                            targetBlockMenu.open(player);
+                        }
+                    }
+                } else if(digit == 0) {
+                    for (int i = 0; i < this.range; i++) {
+                        targetBlock = targetBlock.getRelative(blockFace);
                         if(!targetBlock.getChunk().isLoaded()) {
                             return;
                         }
@@ -76,31 +111,10 @@ public class ConsumableRemoteAccessorInventory extends AbstractClickerInventory 
                                 javaPlugin.getServer().getScheduler().runTaskAsynchronously(javaPlugin, () -> ParticleUtil.drawCubeByBlock(javaPlugin, Particle.WAX_OFF, 0, finalTargetBlock));
                                 javaPlugin.getServer().getScheduler().runTaskAsynchronously(javaPlugin, () -> ParticleUtil.drawLineByDistance(javaPlugin, Particle.WAX_OFF, 0, 0.25, LocationUtil.getCenterLocation(block), LocationUtil.getCenterLocation(finalTargetBlock)));
                                 targetBlockMenu.open(player);
-                            }
-                        }
-                    } else if(digit == 0) {
-                        for (int i = 0; i < this.range; i++) {
-                            targetBlock = targetBlock.getRelative(blockFace);
-                            if(!targetBlock.getChunk().isLoaded()) {
-                                return;
-                            }
-                            if(FinalTech.getLocationDataService() instanceof SlimefunLocationDataService slimefunLocationDataService) {
-                                BlockMenu targetBlockMenu = slimefunLocationDataService.getBlockMenu(targetBlock.getLocation());
-                                if(targetBlockMenu != null && targetBlockMenu.canOpen(targetBlock, player)) {
-                                    JavaPlugin javaPlugin = this.slimefunItem.getAddon().getJavaPlugin();
-                                    Block finalTargetBlock = targetBlock;
-                                    javaPlugin.getServer().getScheduler().runTaskAsynchronously(javaPlugin, () -> ParticleUtil.drawCubeByBlock(javaPlugin, Particle.WAX_OFF, 0, finalTargetBlock));
-                                    javaPlugin.getServer().getScheduler().runTaskAsynchronously(javaPlugin, () -> ParticleUtil.drawLineByDistance(javaPlugin, Particle.WAX_OFF, 0, 0.25, LocationUtil.getCenterLocation(block), LocationUtil.getCenterLocation(finalTargetBlock)));
-                                    targetBlockMenu.open(player);
-                                    break;
-                                }
+                                break;
                             }
                         }
                     }
-                }
-
-                if(itemStack.getAmount() == amount) {
-                    itemStack.setAmount(itemStack.getAmount() - 1);
                 }
                 return;
             }

@@ -23,13 +23,16 @@ import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ConsumableTransporterInventory extends AbstractClickerInventory implements LogicInventory {
+/**
+ * @author Final_ROOT
+ */
+public class TriggerableTransporterInventory extends AbstractClickerInventory implements LogicInventory {
     private final int[] border = new int[] {0, 1, 2, 3, 5, 6, 7, 8};
     private final int[] contentSlot = new int[] {4};
 
     private final int range;
 
-    public ConsumableTransporterInventory(@Nonnull AbstractClickerMachine abstractClickerMachine, int range) {
+    public TriggerableTransporterInventory(@Nonnull AbstractClickerMachine abstractClickerMachine, int range) {
         super(abstractClickerMachine);
         this.range = range;
     }

@@ -10,13 +10,13 @@ import javax.annotation.Nonnull;
 /**
  * @author Final_ROOT
  */
-public class ConsumableSimulateClickMachineInventory extends AbstractOrdinaryMachineInventory {
+public class TriggerableSimulateClickMachineInventory extends AbstractOrdinaryMachineInventory {
     private final int[] border = new int[] {0, 1, 2, 3, 5, 6, 7, 8};
     private final int[] inputBorder = new int[0];
     private final int[] outputBorder = new int[0];
     private final int[] contentSlot = new int[] {4};
 
-    public ConsumableSimulateClickMachineInventory(@Nonnull AbstractMachine machine) {
+    public TriggerableSimulateClickMachineInventory(@Nonnull AbstractMachine machine) {
         super(machine);
     }
 

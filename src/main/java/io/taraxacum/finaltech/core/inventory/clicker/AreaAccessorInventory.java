@@ -129,7 +129,7 @@ public class AreaAccessorInventory extends AbstractClickerInventory {
                     simpleVirtualInventory.getInventory().setItem(this.tempContent[i], icon);
                     simpleVirtualInventory.setOnClick(this.tempContent[i], inventoryClickEvent -> {
                         inventoryClickEvent.setCancelled(true);
-                        if(!finalLocation.getChunk().isLoaded()) {
+                        if (!finalLocation.getChunk().isLoaded()) {
                             player.closeInventory();
                             return;
                         }
