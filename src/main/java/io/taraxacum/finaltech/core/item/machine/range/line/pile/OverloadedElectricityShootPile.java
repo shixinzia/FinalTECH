@@ -47,20 +47,23 @@ public class OverloadedElectricityShootPile extends AbstractElectricityShootPile
                     && !this.notAllowedId.contains(LocationDataUtil.getId(FinalTech.getLocationDataService(), locationData))
                     && LocationDataUtil.getSlimefunItem(FinalTech.getLocationDataService(), locationData) instanceof EnergyNetComponent energyNetComponent
                     && !JavaUtil.matchOnce(energyNetComponent.getEnergyComponentType(), EnergyNetComponentType.CAPACITOR, EnergyNetComponentType.GENERATOR)) {
-                int componentCapacity = Integer.MAX_VALUE;
-                int componentEnergy = Integer.parseInt(EnergyUtil.getCharge(FinalTech.getLocationDataService(), locationData));
-                int transferEnergy = Math.max(componentCapacity - componentEnergy, 0) / 2;
-                transferEnergy = Math.min(transferEnergy, summary.getCapacitorEnergy());
-                if (transferEnergy > 0) {
-                    EnergyUtil.setCharge(FinalTech.getLocationDataService(), locationData, String.valueOf(componentEnergy + transferEnergy));
-                    summary.setCapacitorEnergy(summary.getCapacitorEnergy() - transferEnergy);
-                    summary.setEnergyCharge(StringNumberUtil.add(summary.getEnergyCharge(), String.valueOf(transferEnergy)));
-                    if(summary.isDrawParticle()) {
-                        final Location finalLocation = location.clone();
-                        JavaPlugin javaPlugin = this.getAddon().getJavaPlugin();
-                        javaPlugin.getServer().getScheduler().runTaskAsynchronously(javaPlugin, () -> ParticleUtil.drawCubeByBlock(javaPlugin, Particle.WAX_OFF, 0, finalLocation.getBlock()));
+                int componentCapacity = energyNetComponent.getCapacity();
+                if (componentCapacity > 0) {
+                    int componentEnergy = Integer.parseInt(EnergyUtil.getCharge(FinalTech.getLocationDataService(), locationData));
+                    if (componentEnergy < componentCapacity / 2) {
+                        int transferEnergy = Math.min(summary.getCapacitorEnergy(), componentCapacity / 2);
+                        if (transferEnergy > 0) {
+                            EnergyUtil.setCharge(FinalTech.getLocationDataService(), locationData, String.valueOf(componentEnergy + transferEnergy));
+                            summary.setCapacitorEnergy(summary.getCapacitorEnergy() - transferEnergy);
+                            summary.setEnergyCharge(StringNumberUtil.add(summary.getEnergyCharge(), String.valueOf(transferEnergy)));
+                            if (summary.isDrawParticle()) {
+                                final Location finalLocation = location.clone();
+                                JavaPlugin javaPlugin = this.getAddon().getJavaPlugin();
+                                javaPlugin.getServer().getScheduler().runTaskAsynchronously(javaPlugin, () -> ParticleUtil.drawCubeByBlock(javaPlugin, Particle.WAX_OFF, 0, finalLocation.getBlock()));
+                            }
+                            return 1;
+                        }
                     }
-                    return 1;
                 }
             }
             return 0;
