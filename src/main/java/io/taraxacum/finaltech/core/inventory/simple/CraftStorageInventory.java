@@ -5,7 +5,7 @@ import io.github.thebusybiscuit.slimefun4.core.machines.MachineOperation;
 import io.taraxacum.finaltech.FinalTech;
 import io.taraxacum.finaltech.core.inventory.AbstractOrdinaryMachineInventory;
 import io.taraxacum.finaltech.core.item.machine.operation.CraftStorage;
-import io.taraxacum.finaltech.core.operation.AutoCraftOperation;
+import io.taraxacum.finaltech.core.operation.CraftStorageOperation;
 import io.taraxacum.libs.slimefun.service.SlimefunLocationDataService;
 import me.mrCookieSlime.Slimefun.api.inventory.BlockMenu;
 import org.bukkit.Location;
@@ -17,7 +17,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.function.Consumer;
 
-public class AutoCraftInventory extends AbstractOrdinaryMachineInventory {
+public class CraftStorageInventory extends AbstractOrdinaryMachineInventory {
     private final int[] border = new int[] {4, 13, 22, 31, 40, 49};
     private final int[] inputBorder = new int[] {3, 12, 21, 30, 39, 48};
     private final int[] outputBorder = new int[] {5, 14, 23, 32, 41, 50};
@@ -27,7 +27,7 @@ public class AutoCraftInventory extends AbstractOrdinaryMachineInventory {
 
     private final CraftStorage craftStorage;
 
-    public AutoCraftInventory(@Nonnull CraftStorage craftStorage) {
+    public CraftStorageInventory(@Nonnull CraftStorage craftStorage) {
         super(craftStorage);
         this.craftStorage = craftStorage;
     }
@@ -86,10 +86,10 @@ public class AutoCraftInventory extends AbstractOrdinaryMachineInventory {
             SlimefunItem slimefunItem = slimefunLocationDataService.getSlimefunItem(location);
             if (blockMenu != null && slimefunItem == this.craftStorage) {
                 MachineOperation machineOperation = this.craftStorage.getMachineProcessor().getOperation(location);
-                if (machineOperation instanceof AutoCraftOperation autoCraftOperation) {
+                if (machineOperation instanceof CraftStorageOperation craftStorageOperation) {
                     switch (requestType) {
-                        case INPUT -> this.craftStorage.doInput(blockMenu.toInventory(), autoCraftOperation);
-                        case OUTPUT -> this.craftStorage.doOutput(blockMenu.toInventory(), autoCraftOperation);
+                        case INPUT -> this.craftStorage.doInput(blockMenu.toInventory(), craftStorageOperation);
+                        case OUTPUT -> this.craftStorage.doOutput(blockMenu.toInventory(), craftStorageOperation);
                     }
                 }
 
