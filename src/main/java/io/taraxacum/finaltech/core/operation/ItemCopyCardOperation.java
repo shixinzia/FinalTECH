@@ -14,22 +14,24 @@ import javax.annotation.Nullable;
 /**
  * @author Final_ROOT
  */
+@Deprecated
 public class ItemCopyCardOperation implements ItemSerializationConstructorOperation {
-    private double count;
-    private final int difficulty;
+    private long count;
+    private long difficulty;
     private final ItemStack matchItem;
     private final ItemWrapper matchItemWrapper;
     private final ItemStack copyCardItem;
     private final ItemStack showItem;
 
-    protected ItemCopyCardOperation(@Nonnull ItemStack item) {
-        this.count = item.getAmount();
+    protected ItemCopyCardOperation(@Nonnull ItemStack itemStack) {
+        this.count = itemStack.getAmount();
         this.difficulty = ConstantTableUtil.ITEM_COPY_CARD_AMOUNT;
-        this.matchItem = item.clone();
+        this.matchItem = itemStack.clone();
         this.matchItem.setAmount(1);
         this.matchItemWrapper = new ItemWrapper(this.matchItem);
         this.copyCardItem = FinalTechItems.COPY_CARD.getValidItem(this.matchItem, "1");
-        this.showItem = new CustomItemStack(item.getType(), FinalTech.getLanguageString("items", FinalTechItems.ITEM_SERIALIZATION_CONSTRUCTOR.getId(), "copy-card", "name"));
+        this.showItem = ItemStackUtil.newItemStack(itemStack.getType(),
+                FinalTech.getLanguageString("items", FinalTechItems.ITEM_SERIALIZATION_CONSTRUCTOR.getId(), "copy-card", "name"));
         this.updateShowItem();
     }
 
@@ -37,8 +39,12 @@ public class ItemCopyCardOperation implements ItemSerializationConstructorOperat
         return this.count;
     }
 
-    public void setCount(double count) {
+    public void setCount(long count) {
         this.count = count;
+    }
+
+    public void setDifficulty(long difficulty) {
+        this.difficulty = difficulty;
     }
 
     @Nonnull
@@ -59,38 +65,33 @@ public class ItemCopyCardOperation implements ItemSerializationConstructorOperat
 
     @Override
     public void updateShowItem() {
-        ItemStackUtil.setLore(this.showItem, FinalTech.getLanguageManager().replaceStringArray(FinalTech.getLanguageStringArray("items", FinalTechItems.ITEM_SERIALIZATION_CONSTRUCTOR.getId(), "copy-card", "lore"),
-                ItemStackUtil.getItemName(this.matchItem),
-                String.format("%.8f", this.count),
-                String.valueOf(this.difficulty),
-                String.valueOf(FinalTechItems.ITEM_SERIALIZATION_CONSTRUCTOR.getEfficiency() > 0 ? 1 / FinalTechItems.ITEM_SERIALIZATION_CONSTRUCTOR.getEfficiency() : "INFINITY")));
+        ItemStackUtil.setLore(this.showItem,
+                FinalTech.getLanguageManager().replaceStringArray(FinalTech.getLanguageStringArray("items", FinalTechItems.ITEM_SERIALIZATION_CONSTRUCTOR.getId(), "copy-card", "lore"),
+                        ItemStackUtil.getItemName(this.matchItem),
+                        String.format("%.8f", this.count),
+                        String.valueOf(this.difficulty)));
     }
 
     @Override
     public int addItem(@Nullable ItemStack itemStack) {
         if (!this.isFinished()) {
             if (ItemStackUtil.isItemSimilar(itemStack, this.matchItemWrapper)) {
-                double efficiency = FinalTechItems.ITEM_SERIALIZATION_CONSTRUCTOR.getEfficiency();
-                efficiency = Math.min(efficiency, 1);
-                if(efficiency <= 0) {
-                    return 0;
-                }
-                if (itemStack.getAmount() * efficiency + this.count < this.difficulty) {
+                if (itemStack.getAmount() + this.count < this.difficulty) {
                     int amount = itemStack.getAmount();
                     itemStack.setAmount(itemStack.getAmount() - amount);
-                    this.count += amount * efficiency;
+                    this.count += amount;
                     return amount;
                 } else {
-                    int amount = (int) Math.ceil((this.difficulty - this.count) / efficiency);
+                    int amount = (int) (this.difficulty - this.count);
                     itemStack.setAmount(itemStack.getAmount() - amount);
                     this.count = this.difficulty;
                     return amount;
                 }
             } else if (FinalTechItems.ITEM_PHONY.verifyItem(itemStack)) {
-                double amount = Math.min(itemStack.getAmount(), this.difficulty - this.count);
-                itemStack.setAmount(itemStack.getAmount() - (int) Math.ceil(amount));
+                int amount = (int) Math.min(itemStack.getAmount(), this.difficulty - this.count);
+                itemStack.setAmount(itemStack.getAmount() - amount);
                 this.count += amount;
-                return (int) Math.ceil(amount);
+                return amount;
             }
         }
         return 0;
@@ -116,12 +117,12 @@ public class ItemCopyCardOperation implements ItemSerializationConstructorOperat
     @Deprecated
     @Override
     public int getProgress() {
-        return (int) Math.floor(this.count);
+        return 0;
     }
 
     @Deprecated
     @Override
     public int getTotalTicks() {
-        return this.difficulty;
+        return 0;
     }
 }
