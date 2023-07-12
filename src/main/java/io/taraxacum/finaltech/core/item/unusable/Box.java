@@ -6,7 +6,6 @@ import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItemStack;
 import io.github.thebusybiscuit.slimefun4.api.recipes.RecipeType;
 import io.taraxacum.finaltech.FinalTech;
 import io.taraxacum.finaltech.core.interfaces.RecipeItem;
-import io.taraxacum.finaltech.core.listener.BoxListener;
 import io.taraxacum.finaltech.util.ConfigUtil;
 import io.taraxacum.finaltech.util.RecipeUtil;
 import io.taraxacum.libs.plugin.dto.ItemWrapper;
@@ -36,10 +35,6 @@ public class Box extends UnusableSlimefunItem implements RecipeItem, SimpleValid
     @Override
     public void register(@Nonnull SlimefunAddon addon) {
         super.register(addon);
-        if(!this.isDisabled()) {
-            PluginManager pluginManager = addon.getJavaPlugin().getServer().getPluginManager();
-            pluginManager.registerEvents(new BoxListener(this.height), addon.getJavaPlugin());
-        }
     }
 
     @Override
