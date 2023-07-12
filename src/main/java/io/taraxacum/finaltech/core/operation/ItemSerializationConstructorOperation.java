@@ -10,6 +10,7 @@ import javax.annotation.Nullable;
 /**
  * @author Final_ROOT
  */
+@Deprecated
 public interface ItemSerializationConstructorOperation extends MachineOperation {
     int COPY_CARD = 1;
     int ITEM_PHONY = 2;
