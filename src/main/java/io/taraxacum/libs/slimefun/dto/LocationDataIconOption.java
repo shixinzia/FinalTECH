@@ -1,6 +1,7 @@
 package io.taraxacum.libs.slimefun.dto;
 
 import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItem;
+import io.taraxacum.libs.plugin.dto.LocationData;
 import io.taraxacum.libs.plugin.interfaces.LocationDataService;
 import io.taraxacum.libs.plugin.util.ItemStackUtil;
 import org.bukkit.Location;
@@ -44,6 +45,11 @@ public class LocationDataIconOption extends LocationDataOption {
 
     public void checkAndUpdateIcon(@Nonnull Inventory inventory, int slot, @Nonnull LocationDataService locationDataService, @Nonnull Location location) {
         String value = this.getOrDefaultValue(locationDataService, location);
+        inventory.setItem(slot, this.getOrErrorIcon(value));
+    }
+
+    public void checkAndUpdateIcon(@Nonnull Inventory inventory, int slot, @Nonnull LocationDataService locationDataService, @Nonnull LocationData locationData) {
+        String value = this.getOrDefaultValue(locationDataService, locationData);
         inventory.setItem(slot, this.getOrErrorIcon(value));
     }
 
