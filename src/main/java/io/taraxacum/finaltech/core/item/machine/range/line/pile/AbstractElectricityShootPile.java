@@ -75,7 +75,10 @@ public abstract class AbstractElectricityShootPile extends AbstractLineMachine i
         if (blockData instanceof Directional directional) {
             Runnable runnable = () -> {
                 Inventory inventory = FinalTech.getLocationDataService().getInventory(locationData);
-                boolean hasViewer = inventory != null && !inventory.getViewers().isEmpty();
+                if (inventory == null) {
+                    return;
+                }
+                boolean hasViewer = !inventory.getViewers().isEmpty() || RouteShow.VALUE_TRUE.equals(RouteShow.OPTION.getOrDefaultValue(FinalTech.getLocationDataService(), locationData));
 
                 int count = 0;
                 Summary summary = new Summary(hasViewer || RouteShow.VALUE_TRUE.equals(RouteShow.OPTION.getOrDefaultValue(FinalTech.getLocationDataService(), locationData)));
