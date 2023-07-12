@@ -6,8 +6,11 @@ import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItemStack;
 import io.github.thebusybiscuit.slimefun4.core.handlers.BlockBreakHandler;
 import io.github.thebusybiscuit.slimefun4.core.handlers.BlockPlaceHandler;
 import io.taraxacum.finaltech.FinalTech;
+import io.taraxacum.finaltech.core.interfaces.DigitInjectableItem;
+import io.taraxacum.finaltech.core.interfaces.LogicInjectableItem;
 import io.taraxacum.finaltech.core.inventory.AbstractMachineInventory;
 import io.taraxacum.finaltech.core.inventory.limit.lock.AdvancedMachineInventory;
+import io.taraxacum.finaltech.core.option.MachineMaxStack;
 import io.taraxacum.libs.plugin.dto.LocationData;
 import io.taraxacum.libs.plugin.util.InventoryUtil;
 import io.taraxacum.libs.slimefun.dto.AdvancedCraft;
@@ -26,15 +29,18 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.BiConsumer;
 
 /**
  * @author Final_ROOT
  */
-public abstract class AbstractAdvanceMachine extends AbstractMachine implements RecipeItem {
+public abstract class AbstractAdvanceMachine extends AbstractMachine implements RecipeItem, DigitInjectableItem, LogicInjectableItem {
     private final String offsetKey = "offset";
     private int moduleSlot;
     private int statusSlot;
     private int recipeLockSlot;
+    private BiConsumer<Inventory, LocationData> logicInjectInventoryUpdater;
+    private BiConsumer<Inventory, LocationData> digitInjectInventoryUpdater;
 
     protected AbstractAdvanceMachine(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item) {
         super(itemGroup, item);
@@ -47,6 +53,8 @@ public abstract class AbstractAdvanceMachine extends AbstractMachine implements 
         this.moduleSlot = advancedMachineInventory.moduleSlot;
         this.statusSlot = advancedMachineInventory.statusSlot;
         this.recipeLockSlot = advancedMachineInventory.recipeLockSlot;
+        this.logicInjectInventoryUpdater = advancedMachineInventory::updateMachineRecipeLock;
+        this.digitInjectInventoryUpdater = advancedMachineInventory::updateMachineMaxStack;
         return advancedMachineInventory;
     }
 
@@ -108,5 +116,29 @@ public abstract class AbstractAdvanceMachine extends AbstractMachine implements 
     @Override
     protected boolean isSynchronized() {
         return false;
+    }
+
+    @Override
+    public void injectDigit(@Nonnull LocationData locationData, int digit) {
+        MachineMaxStack.OPTION.setOrClearValue(FinalTech.getLocationDataService(), locationData, String.valueOf(digit));
+
+        Inventory inventory = FinalTech.getLocationDataService().getInventory(locationData);
+        if (inventory != null) {
+            this.digitInjectInventoryUpdater.accept(inventory, locationData);
+        }
+    }
+
+    @Override
+    public void injectLogic(@Nonnull LocationData locationData, boolean logic) {
+        if (logic) {
+            MachineRecipeLock.OPTION.setOrClearValue(FinalTech.getLocationDataService(), locationData, MachineRecipeLock.VALUE_UNLOCK);
+        } else {
+            MachineRecipeLock.OPTION.setOrClearValue(FinalTech.getLocationDataService(), locationData, MachineRecipeLock.VALUE_LOCK_OFF);
+        }
+
+        Inventory inventory = FinalTech.getLocationDataService().getInventory(locationData);
+        if (inventory != null) {
+            this.logicInjectInventoryUpdater.accept(inventory, locationData);
+        }
     }
 }
