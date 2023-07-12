@@ -7,7 +7,7 @@ import io.github.thebusybiscuit.slimefun4.core.handlers.BlockBreakHandler;
 import io.github.thebusybiscuit.slimefun4.core.machines.MachineOperation;
 import io.taraxacum.finaltech.FinalTech;
 import io.taraxacum.finaltech.core.inventory.AbstractMachineInventory;
-import io.taraxacum.finaltech.core.inventory.simple.SuperAutoCraftInventory;
+import io.taraxacum.finaltech.core.inventory.simple.AdvancedCraftStorageInventory;
 import io.taraxacum.finaltech.core.operation.CraftStorageOperation;
 import io.taraxacum.finaltech.util.ConfigUtil;
 import io.taraxacum.finaltech.util.MachineUtil;
@@ -66,9 +66,9 @@ public class AdvancedCraftStorage extends CraftStorage {
     @Nullable
     @Override
     protected AbstractMachineInventory setMachineInventory() {
-        SuperAutoCraftInventory superAutoCraftInventory = new SuperAutoCraftInventory(this);
-        this.parseSlot = superAutoCraftInventory.parseSlot;
-        return superAutoCraftInventory;
+        AdvancedCraftStorageInventory advancedCraftStorageInventory = new AdvancedCraftStorageInventory(this);
+        this.parseSlot = advancedCraftStorageInventory.parseSlot;
+        return advancedCraftStorageInventory;
     }
 
     @Nonnull

@@ -5,7 +5,7 @@ import io.github.thebusybiscuit.slimefun4.core.machines.MachineOperation;
 import io.taraxacum.finaltech.FinalTech;
 import io.taraxacum.finaltech.core.inventory.AbstractOrdinaryMachineInventory;
 import io.taraxacum.finaltech.core.item.machine.operation.AdvancedCraftStorage;
-import io.taraxacum.finaltech.core.operation.AutoCraftOperation;
+import io.taraxacum.finaltech.core.operation.CraftStorageOperation;
 import io.taraxacum.libs.slimefun.service.SlimefunLocationDataService;
 import me.mrCookieSlime.Slimefun.api.inventory.BlockMenu;
 import org.bukkit.Location;
@@ -17,7 +17,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.function.Consumer;
 
-public class SuperAutoCraftInventory extends AbstractOrdinaryMachineInventory {
+public class AdvancedCraftStorageInventory extends AbstractOrdinaryMachineInventory {
     private final int[] border = new int[] {4, 13, 22, 31, 36, 37, 38, 39, 40, 41, 42, 43 ,44};
     private final int[] inputBorder = new int[] {3, 12, 21, 30};
     private final int[] outputBorder = new int[] {5, 14, 23, 32};
@@ -28,7 +28,7 @@ public class SuperAutoCraftInventory extends AbstractOrdinaryMachineInventory {
 
     private final AdvancedCraftStorage advancedCraftStorage;
 
-    public SuperAutoCraftInventory(@Nonnull AdvancedCraftStorage advancedCraftStorage) {
+    public AdvancedCraftStorageInventory(@Nonnull AdvancedCraftStorage advancedCraftStorage) {
         super(advancedCraftStorage);
         this.advancedCraftStorage = advancedCraftStorage;
     }
@@ -87,10 +87,10 @@ public class SuperAutoCraftInventory extends AbstractOrdinaryMachineInventory {
             SlimefunItem slimefunItem = slimefunLocationDataService.getSlimefunItem(location);
             if (blockMenu != null && slimefunItem == this.advancedCraftStorage) {
                 MachineOperation machineOperation = this.advancedCraftStorage.getMachineProcessor().getOperation(location);
-                if(machineOperation instanceof AutoCraftOperation autoCraftOperation) {
+                if(machineOperation instanceof CraftStorageOperation craftStorageOperation) {
                     switch (requestType) {
-                        case INPUT -> this.advancedCraftStorage.doInput(blockMenu.toInventory(), autoCraftOperation);
-                        case OUTPUT -> this.advancedCraftStorage.doOutput(blockMenu.toInventory(), autoCraftOperation);
+                        case INPUT -> this.advancedCraftStorage.doInput(blockMenu.toInventory(), craftStorageOperation);
+                        case OUTPUT -> this.advancedCraftStorage.doOutput(blockMenu.toInventory(), craftStorageOperation);
                     }
                 }
             }
