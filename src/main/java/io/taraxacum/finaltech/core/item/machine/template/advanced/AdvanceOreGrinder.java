@@ -10,13 +10,13 @@ import javax.annotation.Nonnull;
 /**
  * @author Final_ROOT
  */
-public class AdvancedHeatedPressureChamber extends AbstractAdvanceMachined {
-    public AdvancedHeatedPressureChamber(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item) {
+public class AdvanceOreGrinder extends AbstractAdvanceMachine {
+    public AdvanceOreGrinder(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item) {
         super(itemGroup, item);
     }
 
     @Override
     public void registerDefaultRecipes() {
-        RecipeUtil.registerRecipeBySlimefunId(this, SlimefunItems.HEATED_PRESSURE_CHAMBER.getItemId());
+        RecipeUtil.registerRecipeBySlimefunId(this, SlimefunItems.ELECTRIC_ORE_GRINDER.getItemId());
     }
 }

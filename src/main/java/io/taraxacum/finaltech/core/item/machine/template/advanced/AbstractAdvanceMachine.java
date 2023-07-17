@@ -34,7 +34,7 @@ import java.util.function.BiConsumer;
 /**
  * @author Final_ROOT
  */
-public abstract class AbstractAdvanceMachined extends AbstractMachine implements RecipeItem, DigitInjectableItem, LogicInjectableItem {
+public abstract class AbstractAdvanceMachine extends AbstractMachine implements RecipeItem, DigitInjectableItem, LogicInjectableItem {
     private final String offsetKey = "offset";
     private int moduleSlot;
     private int statusSlot;
@@ -42,7 +42,7 @@ public abstract class AbstractAdvanceMachined extends AbstractMachine implements
     private BiConsumer<Inventory, LocationData> logicInjectInventoryUpdater;
     private BiConsumer<Inventory, LocationData> digitInjectInventoryUpdater;
 
-    protected AbstractAdvanceMachined(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item) {
+    protected AbstractAdvanceMachine(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item) {
         super(itemGroup, item);
     }
 

@@ -13,8 +13,8 @@ import javax.annotation.Nonnull;
 /**
  * @author Final_ROOT
  */
-public class AdvancedDustWasher extends AbstractAdvanceMachined {
-    public AdvancedDustWasher(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item) {
+public class AdvanceDustWasher extends AbstractAdvanceMachine {
+    public AdvanceDustWasher(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item) {
         super(itemGroup, item);
     }
 

@@ -10,13 +10,13 @@ import javax.annotation.Nonnull;
 /**
  * @author Final_ROOT
  */
-public class AdvancedFreezer extends AbstractAdvanceMachined {
-    public AdvancedFreezer(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item) {
+public class AdvanceHeatedPressureChamber extends AbstractAdvanceMachine {
+    public AdvanceHeatedPressureChamber(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item) {
         super(itemGroup, item);
     }
 
     @Override
     public void registerDefaultRecipes() {
-        RecipeUtil.registerRecipeBySlimefunId(this, SlimefunItems.FREEZER.getItemId());
+        RecipeUtil.registerRecipeBySlimefunId(this, SlimefunItems.HEATED_PRESSURE_CHAMBER.getItemId());
     }
 }
