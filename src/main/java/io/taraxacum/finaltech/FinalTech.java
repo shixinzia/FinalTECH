@@ -1,27 +1,26 @@
 package io.taraxacum.finaltech;
 
-import com.sun.jdi.VirtualMachineManager;
 import io.github.thebusybiscuit.slimefun4.api.SlimefunAddon;
 import io.github.thebusybiscuit.slimefun4.core.config.SlimefunDatabaseManager;
 import io.github.thebusybiscuit.slimefun4.implementation.Slimefun;
 import io.taraxacum.common.api.RunnableLockFactory;
 import io.taraxacum.common.util.ReflectionUtil;
 import io.taraxacum.common.util.StringNumberUtil;
+import io.taraxacum.finaltech.core.service.ItemService;
 import io.taraxacum.finaltech.core.service.LogService;
 import io.taraxacum.finaltech.core.service.impl.FakeLogService;
+import io.taraxacum.finaltech.core.service.impl.SimpleInventoryHistoryService;
+import io.taraxacum.finaltech.core.service.impl.SimpleItemService;
+import io.taraxacum.finaltech.setup.FinalTechItemStacks;
 import io.taraxacum.finaltech.setup.Updater;
 import io.taraxacum.finaltech.util.ConstantTableUtil;
-import io.taraxacum.libs.plugin.dto.ConfigFileManager;
-import io.taraxacum.libs.plugin.dto.*;
-import io.taraxacum.finaltech.setup.FinalTechItemStacks;
 import io.taraxacum.finaltech.util.SetupUtil;
-import io.taraxacum.libs.slimefun.dto.ItemValueTable;
-import io.taraxacum.libs.slimefun.service.BlockTickerService;
-import io.taraxacum.libs.slimefun.service.impl.BlockStorageDataService;
-import io.taraxacum.libs.slimefun.service.impl.BlockStorageTickerService;
-import io.taraxacum.libs.slimefun.service.impl.DatabaseDataService;
+import io.taraxacum.libs.plugin.dto.*;
 import io.taraxacum.libs.plugin.interfaces.LocationDataService;
-import io.taraxacum.libs.slimefun.service.impl.DatabaseTickerService;
+import io.taraxacum.libs.plugin.service.InventoryHistoryService;
+import io.taraxacum.libs.slimefun.dto.ItemValueTableV2;
+import io.taraxacum.libs.slimefun.service.BlockTickerService;
+import io.taraxacum.libs.slimefun.service.impl.*;
 import org.bstats.bukkit.Metrics;
 import org.bstats.charts.AdvancedPie;
 import org.bukkit.Bukkit;
@@ -71,8 +70,10 @@ public class FinalTech extends JavaPlugin implements SlimefunAddon {
     private ConfigFileManager value;
     private ConfigFileManager item;
     private ConfigFileManager template;
+    private ConfigFileManager recipe;
     private LanguageManager languageManager;
     private LogService logService;
+    private ItemService itemService;
     private Set<String> asyncSlimefunIdSet = new HashSet<>();
     private Set<String> antiAccelerateSlimefunIdSet = new HashSet<>();
     private Set<String> performanceLimitSlimefunIdSet = new HashSet<>();
@@ -86,6 +87,8 @@ public class FinalTech extends JavaPlugin implements SlimefunAddon {
     private BukkitTask bukkitTask;
     private LocationDataService locationDataService;
     private BlockTickerService blockTickerService;
+    private InventoryHistoryService slimefunGuideHistoryService = new SlimefunGuideService();
+    private InventoryHistoryService simpleInventoryHistoryService = new SimpleInventoryHistoryService();
     private final String version = Updater.LATEST_VERSION;
     private static FinalTech instance;
 
@@ -101,6 +104,7 @@ public class FinalTech extends JavaPlugin implements SlimefunAddon {
             this.value = ConfigFileManager.getOrNewInstance(this, "value");
             this.item = ConfigFileManager.getOrNewInstance(this, "item");
             this.template = ConfigFileManager.getOrNewInstance(this, "template");
+            this.recipe = ConfigFileManager.getOrNewInstance(this, "recipe");
 
             String language = this.config.getOrDefault("en-US", "language");
             this.languageManager = LanguageManager.getOrNewInstance(this, language);
@@ -112,6 +116,9 @@ public class FinalTech extends JavaPlugin implements SlimefunAddon {
 
         /* set log service. */
         this.logService = new FakeLogService();
+
+        /* set item manager */
+        this.itemService = new SimpleItemService();
 
         /* set language manager */
         SetupUtil.setupLanguageManager(this.languageManager);
@@ -198,6 +205,18 @@ public class FinalTech extends JavaPlugin implements SlimefunAddon {
             this.multiThreadLevel = 0;
         }
 
+        if(this.multiThreadLevel > 0) {
+            /* set runnable factory */
+            String mode = this.config.getOrDefault("1", "multi-thread", "mode");
+            if("2".equals(mode)) {
+                String countStr = this.config.getOrDefault("auto", "multi-thread", "mode-2", "threads");
+                int count = "auto".equals(countStr) ? Runtime.getRuntime().availableProcessors() : Integer.parseInt(countStr);
+                this.locationRunnableFactory = new BukkitTaskManager<>(this, count);
+                this.entityRunnableFactory = new BukkitTaskManager<>(this, count);
+                this.logger.warning("You are using a unstable version multi thread tweak!");
+            }
+        }
+
         /* configure whether to force slimefun items to run async */
         this.forceSlimefunMultiThread = this.config.getOrDefault(false, "force-slimefun-multi-thread", "enable");
         if (this.forceSlimefunMultiThread && !this.config.getOrDefault(false, "force-slimefun-multi-thread", "warn-I_know_what_I'm_doing_and_I_will_be_responsible_for_it")) {
@@ -249,7 +268,6 @@ public class FinalTech extends JavaPlugin implements SlimefunAddon {
                 currentNanoTime = System.nanoTime();
                 FinalTech.instance.tps = Math.min(FULL_SLIMEFUN_TICK.divide(BigDecimal.valueOf(Math.max(1, currentNanoTime - lastNanoTime)), 10, RoundingMode.FLOOR).doubleValue(), 20);
                 lastNanoTime = currentNanoTime;
-
                 FinalTech.instance.slimefunTickCount++;
             }
         }, tickRate - 1, tickRate);
@@ -292,9 +310,9 @@ public class FinalTech extends JavaPlugin implements SlimefunAddon {
         /* setup item value table */
         int itemValueTableDelay = this.config.getOrDefault(10, "setups", "item-value-table", "delay");
         if(itemValueTableDelay >= 0) {
-            this.getServer().getScheduler().runTaskLater(this, () -> ItemValueTable.getInstance().init(), itemValueTableDelay);
+            this.getServer().getScheduler().runTaskLater(this, () -> ItemValueTableV2.getInstance().init(this.value), itemValueTableDelay);
         } else {
-            ItemValueTable.getInstance().init();
+            ItemValueTableV2.getInstance().init(this.value);
         }
 
         /* setup slimefun machine block ticker */
@@ -352,7 +370,6 @@ public class FinalTech extends JavaPlugin implements SlimefunAddon {
 
     @Override
     public void onDisable() {
-        ServerRunnableLockFactory.stop();
         if (this.bukkitTask != null) {
             this.bukkitTask.cancel();
         }
@@ -459,6 +476,10 @@ public class FinalTech extends JavaPlugin implements SlimefunAddon {
         return instance.item;
     }
 
+    public static ConfigFileManager getRecipeManager() {
+        return instance.recipe;
+    }
+
     public static LanguageManager getLanguageManager() {
         return instance.languageManager;
     }
@@ -480,6 +501,10 @@ public class FinalTech extends JavaPlugin implements SlimefunAddon {
     @Nonnull
     public static LogService getLogService() {
         return instance.logService;
+    }
+
+    public static ItemService getItemService() {
+        return instance.itemService;
     }
 
     public static boolean isAsyncSlimefunItem(@Nonnull String id) {
@@ -539,5 +564,13 @@ public class FinalTech extends JavaPlugin implements SlimefunAddon {
 
     public static BlockTickerService getBlockTickerService() {
         return instance.blockTickerService;
+    }
+
+    public static InventoryHistoryService getSlimefunGuideHistoryService() {
+        return instance.slimefunGuideHistoryService;
+    }
+
+    public static InventoryHistoryService getSimpleInventoryHistoryService() {
+        return instance.simpleInventoryHistoryService;
     }
 }
