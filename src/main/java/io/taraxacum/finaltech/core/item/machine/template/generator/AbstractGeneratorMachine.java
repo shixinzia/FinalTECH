@@ -48,7 +48,7 @@ public abstract class AbstractGeneratorMachine extends AbstractMachine implement
         GeneratorMachineInventory generatorMachineInventory = new GeneratorMachineInventory(this);
         this.moduleSlot = generatorMachineInventory.moduleSlot;
         this.statusSlot = generatorMachineInventory.statusSlot;
-        return null;
+        return generatorMachineInventory;
     }
 
     @Nonnull
