@@ -21,6 +21,9 @@ import org.bukkit.inventory.Inventory;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+/**
+ * @author Final_ROOT
+ */
 public class SadEnergyRegulator extends AbstractMachine implements MenuUpdater {
     private int statusSlot;
     public SadEnergyRegulator(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item) {
@@ -54,27 +57,20 @@ public class SadEnergyRegulator extends AbstractMachine implements MenuUpdater {
         Location location = block.getLocation();
         EnergyNet energyNetwork = AlteredEnergyNet.getNetworkFromLocationOrCreate(location);
         if (energyNetwork instanceof AlteredEnergyNet alteredEnergyNet) {
-            try {
-                AlteredEnergyNet.Summary summary = alteredEnergyNet.tick(block, slimefunItem);
-                Inventory inventory = FinalTech.getLocationDataService().getInventory(locationData);
-                if(inventory != null && !inventory.getViewers().isEmpty()) {
-                    this.updateInv(inventory, this.statusSlot, slimefunItem,
-                            String.valueOf(summary.getConsumerAmount()),
-                            String.valueOf(summary.getConsumerEnergy()),
-                            String.valueOf(summary.getConsumerCapacity()),
-                            String.valueOf(summary.getGeneratorAmount()),
-                            String.valueOf(summary.getGeneratorEnergy()),
-                            String.valueOf(summary.getGeneratorCapacity()),
-                            String.valueOf(summary.getCapacitorAmount()),
-                            String.valueOf(summary.getCapacitorEnergy()),
-                            String.valueOf(summary.getCapacitorCapacity()),
-                            String.valueOf(summary.getGeneratedEnergy()),
-                            String.valueOf(summary.getTransferredEnergy()));
-                }
-            } catch (Throwable e) {
-                e.printStackTrace();
-                throw new RuntimeException(e);
-            }
+            alteredEnergyNet.tick(locationData, (inventory, summary) -> {
+                this.updateInv(inventory, this.statusSlot, slimefunItem,
+                        String.valueOf(summary.getConsumerAmount()),
+                        String.valueOf(summary.getConsumerEnergy()),
+                        String.valueOf(summary.getConsumerCapacity()),
+                        String.valueOf(summary.getGeneratorAmount()),
+                        String.valueOf(summary.getGeneratorEnergy()),
+                        String.valueOf(summary.getGeneratorCapacity()),
+                        String.valueOf(summary.getCapacitorAmount()),
+                        String.valueOf(summary.getCapacitorEnergy()),
+                        String.valueOf(summary.getCapacitorCapacity()),
+                        String.valueOf(summary.getGeneratedEnergy()),
+                        String.valueOf(summary.getTransferredEnergy()));
+            }, block, slimefunItem);
         }
     }
 
