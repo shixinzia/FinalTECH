@@ -76,7 +76,7 @@ public class ManualCraftMachineInventory extends AbstractManualMachineInventory 
 
     @Override
     public int getSize() {
-        return 0;
+        return 54;
     }
 
     @Override
