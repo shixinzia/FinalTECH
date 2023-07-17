@@ -45,7 +45,7 @@ public abstract class AbstractConversionMachine extends AbstractMachine implemen
         ConversionMachineInventory conversionMachineInventory = new ConversionMachineInventory(this);
         this.moduleSlot = conversionMachineInventory.moduleSlot;
         this.statusSlot = conversionMachineInventory.statusSlot;
-        return null;
+        return conversionMachineInventory;
     }
 
     @Nonnull
