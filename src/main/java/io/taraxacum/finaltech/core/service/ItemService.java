@@ -12,7 +12,4 @@ public interface ItemService {
 
     @Nonnull
     NamespacedKey getIdKey();
-
-    @Nonnull
-    PersistentDataType getIdDataType();
 }

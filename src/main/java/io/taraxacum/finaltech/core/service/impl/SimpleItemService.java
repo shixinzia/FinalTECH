@@ -17,10 +17,4 @@ public class SimpleItemService implements ItemService {
     public NamespacedKey getIdKey() {
         return new NamespacedKey(Slimefun.instance(), "slimefun_item");
     }
-
-    @Nonnull
-    @Override
-    public PersistentDataType getIdDataType() {
-        return PersistentDataType.STRING;
-    }
 }
