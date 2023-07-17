@@ -10,13 +10,13 @@ import javax.annotation.Nonnull;
 /**
  * @author Final_ROOT
  */
-public class AdvancedCrucible extends AbstractAdvanceMachined {
-    public AdvancedCrucible(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item) {
+public class AdvanceAutoDrier extends AbstractAdvanceMachine {
+    public AdvanceAutoDrier(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item) {
         super(itemGroup, item);
     }
 
     @Override
     public void registerDefaultRecipes() {
-        RecipeUtil.registerRecipeBySlimefunId(this, SlimefunItems.ELECTRIFIED_CRUCIBLE.getItemId());
+        RecipeUtil.registerRecipeBySlimefunId(this, SlimefunItems.AUTO_DRIER.getItemId());
     }
 }

@@ -10,8 +10,8 @@ import javax.annotation.Nonnull;
 /**
  * @author Final_ROOT
  */
-public class AdvancedPress extends AbstractAdvanceMachined {
-    public AdvancedPress(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item) {
+public class AdvancePress extends AbstractAdvanceMachine {
+    public AdvancePress(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item) {
         super(itemGroup, item);
     }
 

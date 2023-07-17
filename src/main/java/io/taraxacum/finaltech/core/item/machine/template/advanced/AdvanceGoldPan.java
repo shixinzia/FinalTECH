@@ -2,7 +2,6 @@ package io.taraxacum.finaltech.core.item.machine.template.advanced;
 
 import io.github.thebusybiscuit.slimefun4.api.items.ItemGroup;
 import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItemStack;
-import io.github.thebusybiscuit.slimefun4.implementation.SlimefunItems;
 import io.taraxacum.finaltech.util.RecipeUtil;
 
 import javax.annotation.Nonnull;
@@ -10,13 +9,14 @@ import javax.annotation.Nonnull;
 /**
  * @author Final_ROOT
  */
-public class AdvancedCarbonPress extends AbstractAdvanceMachined {
-    public AdvancedCarbonPress(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item) {
+public class AdvanceGoldPan extends AbstractAdvanceMachine {
+    public AdvanceGoldPan(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item) {
         super(itemGroup, item);
     }
 
     @Override
     public void registerDefaultRecipes() {
-        RecipeUtil.registerRecipeBySlimefunId(this, SlimefunItems.CARBON_PRESS.getItemId());
+        RecipeUtil.registerGoldPan(this);
+        RecipeUtil.registerNetherGoldPan(this);
     }
 }
