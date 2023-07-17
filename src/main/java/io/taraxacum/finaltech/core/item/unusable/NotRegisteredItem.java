@@ -10,6 +10,7 @@ import org.bukkit.inventory.ItemStack;
 import javax.annotation.Nonnull;
 
 /**
+ * This item will not be truly registered.
  * @author Final_ROOT
  */
 public class NotRegisteredItem extends UnusableSlimefunItem implements VisibleItem {
