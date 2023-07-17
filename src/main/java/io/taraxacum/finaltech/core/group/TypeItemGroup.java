@@ -14,6 +14,7 @@ import org.bukkit.entity.Player;
 import javax.annotation.Nonnull;
 
 /**
+ * Yeah it need to be updated.
  * @author Final_ROOT
  */
 public class TypeItemGroup extends FlexItemGroup {
