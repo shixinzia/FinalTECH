@@ -34,14 +34,14 @@ public class ChestMenuUtil {
         return new BlockMenuPreset(inventoryTemplate.getId(), inventoryTemplate.getName()) {
             @Override
             public void init() {
-                int maxSlot = 1;
+                int maxSlot = -1;
                 for (Map.Entry<Integer, ItemStack> entry : inventoryTemplate.getDefaultItemStacks().entrySet()) {
                     this.addItem(entry.getKey(), entry.getValue());
                     this.addMenuClickHandler(entry.getKey(), ChestMenuUtils.getEmptyClickHandler());
                     maxSlot = Math.max(maxSlot, entry.getKey());
                 }
 
-                if(maxSlot / 9 + 1 != inventoryTemplate.getSize() / 9) {
+                if (maxSlot == -1 || maxSlot / 9 + 1 != inventoryTemplate.getSize() / 9) {
                     this.setSize(inventoryTemplate.getSize());
                 }
             }
