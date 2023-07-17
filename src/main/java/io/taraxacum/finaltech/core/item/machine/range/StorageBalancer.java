@@ -77,6 +77,10 @@ public class StorageBalancer extends AbstractRangeMachine implements RecipeItem 
             }
         }
 
+        if (faceDataMap.isEmpty()) {
+            return;
+        }
+
         Runnable runnable = () -> {
             for (MapData inputMapData : faceDataMap.values()) {
                 Map<String, AbstractStorageMachine.ItemWithAmount> itemMap = inputMapData.itemMap;
