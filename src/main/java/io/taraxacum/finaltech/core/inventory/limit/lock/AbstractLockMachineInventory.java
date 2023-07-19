@@ -3,6 +3,7 @@ package io.taraxacum.finaltech.core.inventory.limit.lock;
 import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItem;
 import io.taraxacum.finaltech.FinalTech;
 import io.taraxacum.finaltech.core.inventory.limit.AbstractLimitMachineInventory;
+import io.taraxacum.finaltech.core.option.MachineMaxStack;
 import io.taraxacum.finaltech.core.option.MachineRecipeLock;
 import io.taraxacum.libs.plugin.dto.LocationData;
 import io.taraxacum.libs.plugin.util.ItemStackUtil;
@@ -31,6 +32,7 @@ public abstract class AbstractLockMachineInventory extends AbstractLimitMachineI
     @Override
     protected void initSelf() {
         super.initSelf();
+        this.defaultItemStack.put(this.getRecipeLockSlot(), MachineRecipeLock.ICON);
     }
 
     @Override
