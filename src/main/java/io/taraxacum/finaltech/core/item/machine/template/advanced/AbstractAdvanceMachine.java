@@ -9,7 +9,7 @@ import io.taraxacum.finaltech.FinalTech;
 import io.taraxacum.finaltech.core.interfaces.DigitInjectableItem;
 import io.taraxacum.finaltech.core.interfaces.LogicInjectableItem;
 import io.taraxacum.finaltech.core.inventory.AbstractMachineInventory;
-import io.taraxacum.finaltech.core.inventory.limit.lock.AdvancedMachineInventory;
+import io.taraxacum.finaltech.core.inventory.limit.lock.AdvanceMachineInventory;
 import io.taraxacum.finaltech.core.option.MachineMaxStack;
 import io.taraxacum.libs.plugin.dto.LocationData;
 import io.taraxacum.libs.plugin.util.InventoryUtil;
@@ -49,13 +49,13 @@ public abstract class AbstractAdvanceMachine extends AbstractMachine implements 
     @Nullable
     @Override
     protected AbstractMachineInventory setMachineInventory() {
-        AdvancedMachineInventory advancedMachineInventory = new AdvancedMachineInventory(this);
-        this.moduleSlot = advancedMachineInventory.moduleSlot;
-        this.statusSlot = advancedMachineInventory.statusSlot;
-        this.recipeLockSlot = advancedMachineInventory.recipeLockSlot;
-        this.logicInjectInventoryUpdater = advancedMachineInventory::updateMachineRecipeLock;
-        this.digitInjectInventoryUpdater = advancedMachineInventory::updateMachineMaxStack;
-        return advancedMachineInventory;
+        AdvanceMachineInventory advanceMachineInventory = new AdvanceMachineInventory(this);
+        this.moduleSlot = advanceMachineInventory.moduleSlot;
+        this.statusSlot = advanceMachineInventory.statusSlot;
+        this.recipeLockSlot = advanceMachineInventory.recipeLockSlot;
+        this.logicInjectInventoryUpdater = advanceMachineInventory::updateMachineRecipeLock;
+        this.digitInjectInventoryUpdater = advanceMachineInventory::updateMachineMaxStack;
+        return advanceMachineInventory;
     }
 
     @Nonnull
