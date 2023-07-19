@@ -49,7 +49,7 @@ public class SlimefunItemSmallRecipeInventory extends SimpleVirtualInventory {
     private RecipeItemGroup recipeItemGroup;
 
     public SlimefunItemSmallRecipeInventory(@Nonnull Player player, @Nonnull PlayerProfile playerProfile, @Nonnull SlimefunGuideMode slimefunGuideMode, @Nonnull InventoryHistoryService inventoryHistoryService, @Nonnull SlimefunItem slimefunItem, @Nonnull RecipeItemGroup recipeItemGroup, int page) {
-        super(SlimefunItemSmallRecipeInventory.calSize(recipeItemGroup.getItemStack()), ItemStackUtil.getItemName(recipeItemGroup.getItemStack()));
+        super(SlimefunItemSmallRecipeInventory.calSize(slimefunItem), ItemStackUtil.getItemName(recipeItemGroup.getItemStack()));
 
         this.player = player;
         this.playerProfile = playerProfile;
@@ -65,7 +65,7 @@ public class SlimefunItemSmallRecipeInventory extends SimpleVirtualInventory {
     }
 
     public SlimefunItemSmallRecipeInventory(@Nonnull Player player, @Nonnull PlayerProfile playerProfile, @Nonnull SlimefunGuideMode slimefunGuideMode, @Nonnull InventoryHistoryService inventoryHistoryService, @Nonnull SlimefunItem slimefunItem, int page) {
-        super(slimefunItem instanceof RecipeDisplayItem recipeDisplayItem && recipeDisplayItem.getDisplayRecipes().size() > 0 ? 54 : 27, slimefunItem.getItemName());
+        super(SlimefunItemSmallRecipeInventory.calSize(slimefunItem), slimefunItem.getItemName());
 
         this.player = player;
         this.playerProfile = playerProfile;
@@ -154,7 +154,7 @@ public class SlimefunItemSmallRecipeInventory extends SimpleVirtualInventory {
     }
 
     private void setupWorkContent() {
-        if (this.slimefunItem instanceof RecipeDisplayItem recipeDisplayItem) {
+        if (this.slimefunItem instanceof RecipeDisplayItem recipeDisplayItem && !recipeDisplayItem.getDisplayRecipes().isEmpty()) {
             List<ItemStack> displayRecipeItemList = recipeDisplayItem.getDisplayRecipes();
             if (!displayRecipeItemList.isEmpty()) {
                 for (int slot : this.border) {
@@ -168,10 +168,8 @@ public class SlimefunItemSmallRecipeInventory extends SimpleVirtualInventory {
             this.setOnClick(this.previousSlot, inventoryClickEvent -> {
                 inventoryClickEvent.setCancelled(true);
 
-                if (this.recipeItemGroup != null) {
-                    if (this.inventoryHistoryService.canBeAddToLast(this.recipeItemGroup)) {
-                        this.inventoryHistoryService.removeLast(this.player);
-                    }
+                if (this.recipeItemGroup != null && this.inventoryHistoryService.canBeAddToLast(this.recipeItemGroup)) {
+                    this.inventoryHistoryService.removeLast(this.player);
                     this.recipeItemGroup.generateByPage(Math.max(this.page - 1, 1)).open(this.player, this.playerProfile, this.slimefunGuideMode);
                 } else {
                     SlimefunItemSmallRecipeInventory slimefunItemSmallRecipeInventory = this.generateByPage(Math.max(this.page - 1, 1));
@@ -184,10 +182,8 @@ public class SlimefunItemSmallRecipeInventory extends SimpleVirtualInventory {
             this.setOnClick(this.nextSlot, inventoryClickEvent -> {
                 inventoryClickEvent.setCancelled(true);
 
-                if (this.recipeItemGroup != null) {
-                    if (this.inventoryHistoryService.canBeAddToLast(this.recipeItemGroup)) {
-                        this.inventoryHistoryService.removeLast(this.player);
-                    }
+                if (this.recipeItemGroup != null && this.inventoryHistoryService.canBeAddToLast(this.recipeItemGroup)) {
+                    this.inventoryHistoryService.removeLast(this.player);
                     this.recipeItemGroup.generateByPage(Math.min(this.page + 1, (displayRecipes.size() - 1) / this.workContent.length + 1)).open(this.player, this.playerProfile, this.slimefunGuideMode);
                 } else {
                     SlimefunItemSmallRecipeInventory slimefunItemSmallRecipeInventory = this.generateByPage(Math.min(this.page + 1, (displayRecipes.size() - 1) / this.workContent.length + 1));
@@ -225,8 +221,7 @@ public class SlimefunItemSmallRecipeInventory extends SimpleVirtualInventory {
         }
     }
 
-    protected static int calSize(@Nonnull ItemStack itemStack) {
-        SlimefunItem slimefunItem = SlimefunItem.getByItem(itemStack);
+    protected static int calSize(@Nonnull SlimefunItem slimefunItem) {
         if (slimefunItem instanceof RecipeDisplayItem recipeDisplayItem && recipeDisplayItem.getDisplayRecipes().size() > 0) {
             return 54;
         } else {
