@@ -234,6 +234,7 @@ public final class FinalTechItemStacks {
     public static final SlimefunItemStack ENERGY_OUTPUT_TABLE = ConfigUtil.getSlimefunItemStack(FinalTech.getLanguageManager(), "FINALTECH_ENERGY_OUTPUT_TABLE", Material.CHISELED_SANDSTONE, "Energy Output table");
     public static final SlimefunItemStack EQUIVALENT_EXCHANGE_TABLE = ConfigUtil.getSlimefunItemStack(FinalTech.getLanguageManager(), "FINALTECH_EQUIVALENT_EXCHANGE_TABLE", Material.RESPAWN_ANCHOR, "Equivalent Exchange Table");
     public static final SlimefunItemStack COPY_CARD_FACTORY = ConfigUtil.getSlimefunItemStack(FinalTech.getLanguageManager(), "FINALTECH_COPY_CARD_FACTORY", Material.AMETHYST_BLOCK, "Copy Card Factory");
+    public static final SlimefunItemStack PHONY_FACTORY = ConfigUtil.getSlimefunItemStack(FinalTech.getLanguageManager(), "FINALTECH_PHONY_FACTORY", Material.AMETHYST_BLOCK, "Phony Factory");
 
     public static final SlimefunItemStack STORAGE_CARD_MERGE_TABLE = ConfigUtil.getSlimefunItemStack(FinalTech.getLanguageManager(), "FINALTECH_STORAGE_CARD_MERGE_TABLE", Material.STONE, "Storage Card Merge Table");
     public static final SlimefunItemStack STORAGE_CARD_DISTRIBUTION_TABLE = ConfigUtil.getSlimefunItemStack(FinalTech.getLanguageManager(), "FINALTECH_STORAGE_CARD_DISTRIBUTION_TABLE", Material.STONE, "Storage Card Distribution Table");
@@ -340,8 +341,8 @@ public final class FinalTechItemStacks {
     public static final SlimefunItemStack MATRIX_ITEM_DISMANTLE_TABLE = ConfigUtil.getSlimefunItemStack(FinalTech.getLanguageManager(), "FINALTECH_MATRIX_ITEM_DISMANTLE_TABLE", Material.OXIDIZED_CUT_COPPER, "Matrix Item Dismantle Table");
     public static final SlimefunItemStack MATRIX_STORAGE = ConfigUtil.getSlimefunItemStack(FinalTech.getLanguageManager(), "FINALTECH_MATRIX_STORAGE", Material.GRAY_WOOL, "Matrix Storage");
     public static final SlimefunItemStack MATRIX_ACCELERATOR = ConfigUtil.getSlimefunItemStack(FinalTech.getLanguageManager(), "FINALTECH_MATRIX_ACCELERATOR", Material.TARGET, "Matrix Accelerator");
-    public static final SlimefunItemStack MATRIX_COPY_CARD_FACTORY = ConfigUtil.getSlimefunItemStack(FinalTech.getLanguageManager(), "FINALTECH_MATRIX_COPY_CARD_FACTORY", Material.BUDDING_AMETHYST, "Item Deserialize Parser");
     public static final SlimefunItemStack MATRIX_COPY_CARD_DUPLICATOR = ConfigUtil.getSlimefunItemStack(FinalTech.getLanguageManager(), "FINALTECH_MATRIX_COPY_CARD_DUPLICATOR", Material.AMETHYST_BLOCK, "Matrix Item Serialization Constructor");
+    public static final SlimefunItemStack MATRIX_COPY_CARD_FACTORY = ConfigUtil.getSlimefunItemStack(FinalTech.getLanguageManager(), "FINALTECH_MATRIX_COPY_CARD_FACTORY", Material.BUDDING_AMETHYST, "Item Deserialize Parser");
     public static final SlimefunItemStack MATRIX_REACTOR = ConfigUtil.getSlimefunItemStack(FinalTech.getLanguageManager(), "FINALTECH_MATRIX_REACTOR", Material.COAL_BLOCK, "Matrix Reactor");
 
     // Trophy

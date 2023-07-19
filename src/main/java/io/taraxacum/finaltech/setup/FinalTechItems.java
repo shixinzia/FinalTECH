@@ -285,6 +285,7 @@ public final class FinalTechItems {
     public static final EnergyOutputTable ENERGY_OUTPUT_TABLE = new EnergyOutputTable(FinalTechMenus.MENU_FUNCTIONAL_MACHINE, FinalTechItemStacks.ENERGY_OUTPUT_TABLE);
     public static final EquivalentExchangeTable EQUIVALENT_EXCHANGE_TABLE = new EquivalentExchangeTable(FinalTechMenus.MENU_FUNCTIONAL_MACHINE, FinalTechItemStacks.EQUIVALENT_EXCHANGE_TABLE);
     public static final CopyCardFactory COPY_CARD_FACTORY = new CopyCardFactory(FinalTechMenus.MENU_FUNCTIONAL_MACHINE, FinalTechItemStacks.COPY_CARD_FACTORY);
+    public static final PhonyFactory PHONY_FACTORY = new PhonyFactory(FinalTechMenus.MENU_FUNCTIONAL_MACHINE, FinalTechItemStacks.PHONY_FACTORY);
 
     public static final StorageCardMergeTable STORAGE_CARD_MERGE_TABLE = new StorageCardMergeTable(FinalTechMenus.MENU_FUNCTIONAL_MACHINE, FinalTechItemStacks.STORAGE_CARD_MERGE_TABLE);
     public static final StorageCardDistributionTable STORAGE_CARD_DISTRIBUTION_TABLE = new StorageCardDistributionTable(FinalTechMenus.MENU_FUNCTIONAL_MACHINE, FinalTechItemStacks.STORAGE_CARD_DISTRIBUTION_TABLE);
@@ -391,8 +392,8 @@ public final class FinalTechItems {
     public static final MatrixItemDismantleTable MATRIX_ITEM_DISMANTLE_TABLE = new MatrixItemDismantleTable(FinalTechMenus.MENU_DISC, FinalTechItemStacks.MATRIX_ITEM_DISMANTLE_TABLE);
     public static final MatrixStorage MATRIX_STORAGE = new MatrixStorage(FinalTechMenus.MENU_DISC, FinalTechItemStacks.MATRIX_STORAGE);
     public static final MatrixAccelerator MATRIX_ACCELERATOR = new MatrixAccelerator(FinalTechMenus.MENU_DISC, FinalTechItemStacks.MATRIX_ACCELERATOR);
-    public static final MatrixCopyCardFactory MATRIX_COPY_CARD_FACTORY = new MatrixCopyCardFactory(FinalTechMenus.MENU_DISC, FinalTechItemStacks.MATRIX_COPY_CARD_FACTORY);
     public static final CopyCardDuplicator MATRIX_COPY_CARD_DUPLICATOR = new CopyCardDuplicator(FinalTechMenus.MENU_DISC, FinalTechItemStacks.MATRIX_COPY_CARD_DUPLICATOR);
+    public static final MatrixCopyCardFactory MATRIX_COPY_CARD_FACTORY = new MatrixCopyCardFactory(FinalTechMenus.MENU_DISC, FinalTechItemStacks.MATRIX_COPY_CARD_FACTORY);
     public static final MatrixReactor MATRIX_REACTOR = new MatrixReactor(FinalTechMenus.MENU_DISC, FinalTechItemStacks.MATRIX_REACTOR);
 
     // Trophy
