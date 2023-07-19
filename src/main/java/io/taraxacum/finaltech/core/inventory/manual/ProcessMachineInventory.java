@@ -31,7 +31,7 @@ public class ProcessMachineInventory extends AbstractManualMachineInventory impl
             FinalTech.getLanguageString(this.getId(), "error-icon", "name"),
             FinalTech.getLanguageStringArray(this.getId(), "error-icon", "lore"));
 
-    private final ItemStack successIcon = ItemStackUtil.newItemStack(Material.RED_STAINED_GLASS_PANE,
+    private final ItemStack successIcon = ItemStackUtil.newItemStack(Material.GREEN_STAINED_GLASS_PANE,
             FinalTech.getLanguageString(this.getId(), "success-icon", "name"),
             FinalTech.getLanguageStringArray(this.getId(), "success-icon", "lore"));
 
