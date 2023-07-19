@@ -347,22 +347,22 @@ public final class FinalTechItems {
     public static final BasicLogicFactory BASIC_LOGIC_FACTORY = new BasicLogicFactory(FinalTechMenus.MENU_PRODUCTIVE_MACHINE, FinalTechItemStacks.BASIC_LOGIC_FACTORY);
 
     // advanced machine
-    public static final AdvanceComposter ADVANCED_COMPOSTER = new AdvanceComposter(FinalTechMenus.MENU_PRODUCTIVE_MACHINE, FinalTechItemStacks.ADVANCED_COMPOSTER);
-    public static final AdvanceJuicer ADVANCED_JUICER = new AdvanceJuicer(FinalTechMenus.MENU_PRODUCTIVE_MACHINE, FinalTechItemStacks.ADVANCED_JUICER);
-    public static final AdvanceFurnace ADVANCED_FURNACE = new AdvanceFurnace(FinalTechMenus.MENU_PRODUCTIVE_MACHINE, FinalTechItemStacks.ADVANCED_FURNACE);
-    public static final AdvanceGoldPan ADVANCED_GOLD_PAN = new AdvanceGoldPan(FinalTechMenus.MENU_PRODUCTIVE_MACHINE, FinalTechItemStacks.ADVANCED_GOLD_PAN);
-    public static final AdvanceDustWasher ADVANCED_DUST_WASHER = new AdvanceDustWasher(FinalTechMenus.MENU_PRODUCTIVE_MACHINE, FinalTechItemStacks.ADVANCED_DUST_WASHER);
-    public static final AdvanceIngotFactory ADVANCED_INGOT_FACTORY = new AdvanceIngotFactory(FinalTechMenus.MENU_PRODUCTIVE_MACHINE, FinalTechItemStacks.ADVANCED_INGOT_FACTORY);
-    public static final AdvanceCrucible ADVANCED_CRUCIBLE = new AdvanceCrucible(FinalTechMenus.MENU_PRODUCTIVE_MACHINE, FinalTechItemStacks.ADVANCED_CRUCIBLE);
-    public static final AdvanceOreGrinder ADVANCED_ORE_GRINDER = new AdvanceOreGrinder(FinalTechMenus.MENU_PRODUCTIVE_MACHINE, FinalTechItemStacks.ADVANCED_ORE_GRINDER);
-    public static final AdvanceHeatedPressureChamber ADVANCED_HEATED_PRESSURE_CHAMBER = new AdvanceHeatedPressureChamber(FinalTechMenus.MENU_PRODUCTIVE_MACHINE, FinalTechItemStacks.ADVANCED_HEATED_PRESSURE_CHAMBER);
-    public static final AdvanceIngotPulverizer ADVANCED_INGOT_PULVERIZER = new AdvanceIngotPulverizer(FinalTechMenus.MENU_PRODUCTIVE_MACHINE, FinalTechItemStacks.ADVANCED_INGOT_PULVERIZER);
-    public static final AdvanceAutoDrier ADVANCED_AUTO_DRIER = new AdvanceAutoDrier(FinalTechMenus.MENU_PRODUCTIVE_MACHINE, FinalTechItemStacks.ADVANCED_AUTO_DRIER);
-    public static final AdvancePress ADVANCED_PRESS = new AdvancePress(FinalTechMenus.MENU_PRODUCTIVE_MACHINE, FinalTechItemStacks.ADVANCED_PRESS);
-    public static final AdvanceFoodFactory ADVANCED_FOOD_FACTORY = new AdvanceFoodFactory(FinalTechMenus.MENU_PRODUCTIVE_MACHINE, FinalTechItemStacks.ADVANCED_FOOD_FACTORY);
-    public static final AdvanceFreezer ADVANCED_FREEZER = new AdvanceFreezer(FinalTechMenus.MENU_PRODUCTIVE_MACHINE, FinalTechItemStacks.ADVANCED_FREEZER);
-    public static final AdvanceCarbonPress ADVANCED_CARBON_PRESS = new AdvanceCarbonPress(FinalTechMenus.MENU_PRODUCTIVE_MACHINE, FinalTechItemStacks.ADVANCED_CARBON_PRESS);
-    public static final AdvanceSmeltery ADVANCED_SMELTERY = new AdvanceSmeltery(FinalTechMenus.MENU_PRODUCTIVE_MACHINE, FinalTechItemStacks.ADVANCED_SMELTERY);
+    public static final AdvancedComposter ADVANCED_COMPOSTER = new AdvancedComposter(FinalTechMenus.MENU_PRODUCTIVE_MACHINE, FinalTechItemStacks.ADVANCED_COMPOSTER);
+    public static final AdvancedJuicer ADVANCED_JUICER = new AdvancedJuicer(FinalTechMenus.MENU_PRODUCTIVE_MACHINE, FinalTechItemStacks.ADVANCED_JUICER);
+    public static final AdvancedFurnace ADVANCED_FURNACE = new AdvancedFurnace(FinalTechMenus.MENU_PRODUCTIVE_MACHINE, FinalTechItemStacks.ADVANCED_FURNACE);
+    public static final AdvancedGoldPan ADVANCED_GOLD_PAN = new AdvancedGoldPan(FinalTechMenus.MENU_PRODUCTIVE_MACHINE, FinalTechItemStacks.ADVANCED_GOLD_PAN);
+    public static final AdvancedDustWasher ADVANCED_DUST_WASHER = new AdvancedDustWasher(FinalTechMenus.MENU_PRODUCTIVE_MACHINE, FinalTechItemStacks.ADVANCED_DUST_WASHER);
+    public static final AdvancedIngotFactory ADVANCED_INGOT_FACTORY = new AdvancedIngotFactory(FinalTechMenus.MENU_PRODUCTIVE_MACHINE, FinalTechItemStacks.ADVANCED_INGOT_FACTORY);
+    public static final AdvancedCrucible ADVANCED_CRUCIBLE = new AdvancedCrucible(FinalTechMenus.MENU_PRODUCTIVE_MACHINE, FinalTechItemStacks.ADVANCED_CRUCIBLE);
+    public static final AdvancedOreGrinder ADVANCED_ORE_GRINDER = new AdvancedOreGrinder(FinalTechMenus.MENU_PRODUCTIVE_MACHINE, FinalTechItemStacks.ADVANCED_ORE_GRINDER);
+    public static final AdvancedHeatedPressureChamber ADVANCED_HEATED_PRESSURE_CHAMBER = new AdvancedHeatedPressureChamber(FinalTechMenus.MENU_PRODUCTIVE_MACHINE, FinalTechItemStacks.ADVANCED_HEATED_PRESSURE_CHAMBER);
+    public static final AdvancedIngotPulverizer ADVANCED_INGOT_PULVERIZER = new AdvancedIngotPulverizer(FinalTechMenus.MENU_PRODUCTIVE_MACHINE, FinalTechItemStacks.ADVANCED_INGOT_PULVERIZER);
+    public static final AdvancedAutoDrier ADVANCED_AUTO_DRIER = new AdvancedAutoDrier(FinalTechMenus.MENU_PRODUCTIVE_MACHINE, FinalTechItemStacks.ADVANCED_AUTO_DRIER);
+    public static final AdvancedPress ADVANCED_PRESS = new AdvancedPress(FinalTechMenus.MENU_PRODUCTIVE_MACHINE, FinalTechItemStacks.ADVANCED_PRESS);
+    public static final AdvancedFoodFactory ADVANCED_FOOD_FACTORY = new AdvancedFoodFactory(FinalTechMenus.MENU_PRODUCTIVE_MACHINE, FinalTechItemStacks.ADVANCED_FOOD_FACTORY);
+    public static final AdvancedFreezer ADVANCED_FREEZER = new AdvancedFreezer(FinalTechMenus.MENU_PRODUCTIVE_MACHINE, FinalTechItemStacks.ADVANCED_FREEZER);
+    public static final AdvancedCarbonPress ADVANCED_CARBON_PRESS = new AdvancedCarbonPress(FinalTechMenus.MENU_PRODUCTIVE_MACHINE, FinalTechItemStacks.ADVANCED_CARBON_PRESS);
+    public static final AdvancedSmeltery ADVANCED_SMELTERY = new AdvancedSmeltery(FinalTechMenus.MENU_PRODUCTIVE_MACHINE, FinalTechItemStacks.ADVANCED_SMELTERY);
 
     // conversion
     public static final GravelConversion GRAVEL_CONVERSION = new GravelConversion(FinalTechMenus.MENU_PRODUCTIVE_MACHINE, FinalTechItemStacks.GRAVEL_CONVERSION);

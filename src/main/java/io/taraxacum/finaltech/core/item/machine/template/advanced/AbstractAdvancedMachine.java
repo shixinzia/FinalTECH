@@ -9,7 +9,7 @@ import io.taraxacum.finaltech.FinalTech;
 import io.taraxacum.finaltech.core.interfaces.DigitInjectableItem;
 import io.taraxacum.finaltech.core.interfaces.LogicInjectableItem;
 import io.taraxacum.finaltech.core.inventory.AbstractMachineInventory;
-import io.taraxacum.finaltech.core.inventory.limit.lock.AdvanceMachineInventory;
+import io.taraxacum.finaltech.core.inventory.limit.lock.AdvancedMachineInventory;
 import io.taraxacum.finaltech.core.option.MachineMaxStack;
 import io.taraxacum.libs.plugin.dto.LocationData;
 import io.taraxacum.libs.plugin.util.InventoryUtil;
@@ -34,7 +34,7 @@ import java.util.function.BiConsumer;
 /**
  * @author Final_ROOT
  */
-public abstract class AbstractAdvanceMachine extends AbstractMachine implements RecipeItem, DigitInjectableItem, LogicInjectableItem {
+public abstract class AbstractAdvancedMachine extends AbstractMachine implements RecipeItem, DigitInjectableItem, LogicInjectableItem {
     private final String offsetKey = "offset";
     private int moduleSlot;
     private int statusSlot;
@@ -42,14 +42,14 @@ public abstract class AbstractAdvanceMachine extends AbstractMachine implements 
     private BiConsumer<Inventory, LocationData> logicInjectInventoryUpdater;
     private BiConsumer<Inventory, LocationData> digitInjectInventoryUpdater;
 
-    protected AbstractAdvanceMachine(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item) {
+    protected AbstractAdvancedMachine(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item) {
         super(itemGroup, item);
     }
 
     @Nullable
     @Override
     protected AbstractMachineInventory setMachineInventory() {
-        AdvanceMachineInventory advanceMachineInventory = new AdvanceMachineInventory(this);
+        AdvancedMachineInventory advanceMachineInventory = new AdvancedMachineInventory(this);
         this.moduleSlot = advanceMachineInventory.moduleSlot;
         this.statusSlot = advanceMachineInventory.statusSlot;
         this.recipeLockSlot = advanceMachineInventory.recipeLockSlot;

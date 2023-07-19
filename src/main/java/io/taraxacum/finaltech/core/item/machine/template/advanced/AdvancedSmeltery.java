@@ -10,8 +10,8 @@ import javax.annotation.Nonnull;
 /**
  * @author Final_ROOT
  */
-public class AdvanceSmeltery extends AbstractAdvanceMachine {
-    public AdvanceSmeltery(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item) {
+public class AdvancedSmeltery extends AbstractAdvancedMachine {
+    public AdvancedSmeltery(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item) {
         super(itemGroup, item);
     }
 

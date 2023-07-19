@@ -10,14 +10,13 @@ import javax.annotation.Nonnull;
 /**
  * @author Final_ROOT
  */
-public class AdvanceFoodFactory extends AbstractAdvanceMachine {
-    public AdvanceFoodFactory(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item) {
+public class AdvancedComposter extends AbstractAdvancedMachine {
+    public AdvancedComposter(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item) {
         super(itemGroup, item);
     }
 
     @Override
     public void registerDefaultRecipes() {
-        RecipeUtil.registerRecipeBySlimefunId(this, SlimefunItems.FOOD_COMPOSTER.getItemId());
-        RecipeUtil.registerRecipeBySlimefunId(this, SlimefunItems.FOOD_FABRICATOR.getItemId());
+        RecipeUtil.registerRecipeBySlimefunId(this, SlimefunItems.COMPOSTER.getItemId());
     }
 }
