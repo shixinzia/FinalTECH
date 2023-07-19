@@ -7,6 +7,7 @@ import io.taraxacum.finaltech.FinalTech;
 import io.taraxacum.finaltech.core.enums.LogSourceType;
 import io.taraxacum.finaltech.setup.FinalTechItems;
 import io.taraxacum.finaltech.util.ConfigUtil;
+import io.taraxacum.finaltech.util.RecipeUtil;
 import io.taraxacum.finaltech.util.StringItemUtil;
 import io.taraxacum.libs.plugin.util.ItemStackUtil;
 import io.taraxacum.libs.slimefun.dto.ItemValueTableV2;
@@ -85,5 +86,10 @@ public class AnnularCraftTable extends AbstractProcessMachine {
             return true;
         }
         return false;
+    }
+
+    @Override
+    public void registerDefaultRecipes() {
+        RecipeUtil.registerDescriptiveRecipe(FinalTech.getLanguageManager(), this, this.baseValue);
     }
 }

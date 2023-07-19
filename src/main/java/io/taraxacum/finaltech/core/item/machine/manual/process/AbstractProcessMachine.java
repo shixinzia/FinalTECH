@@ -4,9 +4,11 @@ import io.github.thebusybiscuit.slimefun4.api.items.ItemGroup;
 import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItem;
 import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItemStack;
 import io.taraxacum.finaltech.FinalTech;
+import io.taraxacum.finaltech.core.interfaces.RecipeItem;
 import io.taraxacum.finaltech.core.inventory.manual.AbstractManualMachineInventory;
 import io.taraxacum.finaltech.core.inventory.manual.ProcessMachineInventory;
 import io.taraxacum.finaltech.core.item.machine.manual.AbstractManualMachine;
+import io.taraxacum.finaltech.util.RecipeUtil;
 import io.taraxacum.libs.plugin.dto.LocationData;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
@@ -20,7 +22,7 @@ import javax.annotation.Nullable;
 /**
  * @author Final_ROOT
  */
-public abstract class AbstractProcessMachine extends AbstractManualMachine {
+public abstract class AbstractProcessMachine extends AbstractManualMachine implements RecipeItem {
     public AbstractProcessMachine(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item) {
         super(itemGroup, item);
     }
@@ -52,4 +54,9 @@ public abstract class AbstractProcessMachine extends AbstractManualMachine {
      * @return whether successful craft
      */
     public abstract boolean craft(@Nullable ItemStack itemStack1, @Nullable ItemStack itemStack2, @Nonnull Inventory inventory, int outputSlot, @Nonnull Player player, @Nonnull Location location);
+
+    @Override
+    public void registerDefaultRecipes() {
+        RecipeUtil.registerDescriptiveRecipe(FinalTech.getLanguageManager(), this);
+    }
 }
