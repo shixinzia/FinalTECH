@@ -34,7 +34,7 @@ public abstract class AbstractLimitMachineInventory extends AbstractMachineInven
 
     @Override
     protected void initSelf() {
-        this.defaultItemStack.put(this.machineMaxStackSlot, MachineMaxStack.ICON);
+        this.defaultItemStack.put(this.getMachineMaxStackSlot(), MachineMaxStack.ICON);
     }
 
     @Nonnull
