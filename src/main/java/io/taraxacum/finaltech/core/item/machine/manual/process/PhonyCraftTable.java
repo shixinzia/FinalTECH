@@ -4,7 +4,9 @@ import io.github.thebusybiscuit.slimefun4.api.items.ItemGroup;
 import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItemStack;
 import io.taraxacum.finaltech.FinalTech;
 import io.taraxacum.finaltech.core.enums.LogSourceType;
+import io.taraxacum.finaltech.setup.FinalTechItemStacks;
 import io.taraxacum.finaltech.setup.FinalTechItems;
+import io.taraxacum.libs.plugin.util.ItemStackUtil;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
@@ -20,6 +22,10 @@ public class PhonyCraftTable extends AbstractProcessMachine {
 
     @Override
     public boolean canCraft(@Nullable ItemStack itemStack1, @Nullable ItemStack itemStack2) {
+        if (ItemStackUtil.isItemNull(itemStack1) || ItemStackUtil.isItemNull(itemStack2)) {
+            return false;
+        }
+
         if (FinalTechItems.SINGULARITY.verifyItem(itemStack1) && FinalTechItems.SPIROCHETE.verifyItem(itemStack2)) {
             return true;
         } else return FinalTechItems.SPIROCHETE.verifyItem(itemStack1) && FinalTechItems.SINGULARITY.verifyItem(itemStack2);
