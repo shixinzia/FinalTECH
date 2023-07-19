@@ -5,11 +5,9 @@ import io.taraxacum.common.util.JavaUtil;
 import io.taraxacum.common.util.StringNumberUtil;
 import io.taraxacum.finaltech.FinalTech;
 import io.taraxacum.finaltech.core.item.machine.AbstractMachine;
-import io.taraxacum.finaltech.core.item.machine.manual.EquivalentExchangeTable;
 import io.taraxacum.libs.plugin.interfaces.LogicInventory;
 import io.taraxacum.libs.plugin.util.ItemStackUtil;
-import io.taraxacum.libs.slimefun.dto.ItemValueTable;
-import io.taraxacum.libs.slimefun.util.SfItemUtil;
+import io.taraxacum.libs.slimefun.dto.ItemValueTableV2;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.inventory.Inventory;
@@ -110,9 +108,9 @@ public class EquivalentExchangeTableInventory extends AbstractManualMachineInven
             lore.addAll(FinalTech.getLanguageStringList("items", this.getId(), "no-value", "lore"));
         } else {
             lore.addAll(FinalTech.getLanguageManager().replaceStringList(FinalTech.getLanguageStringList("items", this.getId(), "input-value", "lore"),
-                    ItemValueTable.getInstance().getOrCalItemInputValue(itemStack)));
+                    ItemValueTableV2.getInstance().getOrCalItemInputValue(itemStack).toString()));
             lore.addAll(FinalTech.getLanguageManager().replaceStringList(FinalTech.getLanguageStringList("items", this.getId(), "output-value", "lore"),
-                    ItemValueTable.getInstance().getOrCalItemOutputValue(itemStack)));
+                    ItemValueTableV2.getInstance().getOrCalItemOutputValue(itemStack).toString()));
         }
 
         ItemStack iconItem = inventory.getItem(this.parseStatusSlot);
