@@ -14,7 +14,7 @@ import javax.annotation.Nonnull;
 public class EffectCurerInventory extends AbstractClickerInventory {
     private final int[] border = new int[] {0, 1, 2, 3, 4, 5, 6, 7, 8};
 
-    protected EffectCurerInventory(@Nonnull AbstractClickerMachine abstractClickerMachine) {
+    public EffectCurerInventory(@Nonnull AbstractClickerMachine abstractClickerMachine) {
         super(abstractClickerMachine);
     }
 

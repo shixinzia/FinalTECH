@@ -5,6 +5,7 @@ import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItemStack;
 import io.taraxacum.finaltech.FinalTech;
 import io.taraxacum.finaltech.core.interfaces.RecipeItem;
 import io.taraxacum.finaltech.core.inventory.AbstractMachineInventory;
+import io.taraxacum.finaltech.core.inventory.clicker.EffectCurerInventory;
 import io.taraxacum.finaltech.util.RecipeUtil;
 
 import javax.annotation.Nonnull;
@@ -21,7 +22,7 @@ public class EffectCurer extends AbstractClickerMachine implements RecipeItem {
     @Nullable
     @Override
     protected AbstractMachineInventory setMachineInventory() {
-        return null;
+        return new EffectCurerInventory(this);
     }
 
     @Override
