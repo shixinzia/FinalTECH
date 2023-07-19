@@ -186,6 +186,9 @@ public class MainItemGroupInventory extends SimpleVirtualInventory {
         this.getInventory().setItem(this.previousSlot, ChestMenuUtils.getPreviousButton(this.player, page, maxPage));
         this.setOnClick(this.previousSlot, inventoryClickEvent -> {
             inventoryClickEvent.setCancelled(true);
+            if (Math.max(finalPage - 1, 1) == this.page) {
+                return;
+            }
 
             if (this.mainItemGroup != null && this.inventoryHistoryService.canBeAddToLast(this.mainItemGroup)) {
                 this.inventoryHistoryService.removeLast(this.player);
@@ -200,6 +203,9 @@ public class MainItemGroupInventory extends SimpleVirtualInventory {
         this.getInventory().setItem(this.nextSlot, ChestMenuUtils.getNextButton(this.player, page, maxPage));
         this.setOnClick(this.nextSlot, inventoryClickEvent -> {
             inventoryClickEvent.setCancelled(true);
+            if (Math.min(finalPage + 1, maxPage) == this.page) {
+                return;
+            }
 
             if (this.mainItemGroup != null && this.inventoryHistoryService.canBeAddToLast(this.mainItemGroup)) {
                 this.inventoryHistoryService.removeLast(this.player);
@@ -257,5 +263,6 @@ public class MainItemGroupInventory extends SimpleVirtualInventory {
 
     public void drawBackAsBorder() {
         this.getInventory().setItem(this.backSlot, Icon.BORDER_ICON);
+        this.setOnClick(this.backSlot, CANCEL_CLICK_CONSUMER);
     }
 }
