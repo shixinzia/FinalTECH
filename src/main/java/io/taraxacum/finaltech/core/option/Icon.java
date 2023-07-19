@@ -145,7 +145,8 @@ public class Icon {
                         slimefunItem.getId(),
                         slimefunItem.getResearch() != null ? slimefunItem.getResearch().getName(player) : FinalTech.getLanguageString("option", "ICON", "wiki-icon", "no-research"),
                         slimefunItem.getAddon().getName(),
-                        ItemValueTableV2.getInstance().getOrCalItemInputValue(slimefunItem).toString()));
+                        ItemValueTableV2.getInstance().getOrCalItemInputValue(slimefunItem).toString(),
+                        ItemValueTableV2.getInstance().getOrCalItemOutputValue(slimefunItem).toString()));
 
         if (slimefunItem instanceof EnergyNetComponent) {
             String energyLore = FinalTech.getLanguageString("option", "ICON", "wiki-icon", ((EnergyNetComponent) slimefunItem).getEnergyComponentType().name());
