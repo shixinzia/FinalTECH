@@ -5,8 +5,10 @@ import io.github.thebusybiscuit.slimefun4.api.items.ItemGroup;
 import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItemStack;
 import io.github.thebusybiscuit.slimefun4.libraries.dough.protection.Interaction;
 import io.taraxacum.finaltech.FinalTech;
+import io.taraxacum.finaltech.core.interfaces.RecipeItem;
 import io.taraxacum.finaltech.setup.FinalTechItems;
 import io.taraxacum.finaltech.util.PermissionUtil;
+import io.taraxacum.finaltech.util.RecipeUtil;
 import io.taraxacum.libs.slimefun.service.SlimefunLocationDataService;
 import org.bukkit.block.Block;
 
@@ -16,7 +18,7 @@ import java.util.Optional;
 /**
  * @author Final_ROOT
  */
-public class SteppingStonePlacer extends UsableSlimefunItem {
+public class SteppingStonePlacer extends UsableSlimefunItem implements RecipeItem {
     public SteppingStonePlacer(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item) {
         super(itemGroup, item);
     }
@@ -34,5 +36,10 @@ public class SteppingStonePlacer extends UsableSlimefunItem {
                 slimefunLocationDataService.getOrCreateEmptyLocationData(block.getLocation(), FinalTechItems.STEPPING_STONE.getId());
             }
         }
+    }
+
+    @Override
+    public void registerDefaultRecipes() {
+        RecipeUtil.registerDescriptiveRecipe(FinalTech.getLanguageManager(), this);
     }
 }
