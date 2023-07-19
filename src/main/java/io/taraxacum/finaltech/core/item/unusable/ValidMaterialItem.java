@@ -7,6 +7,7 @@ import io.taraxacum.finaltech.FinalTech;
 import io.taraxacum.finaltech.core.interfaces.RecipeItem;
 import io.taraxacum.libs.plugin.dto.ItemMetaBuilder;
 import io.taraxacum.libs.plugin.dto.ItemStackBuilder;
+import io.taraxacum.libs.plugin.util.ItemStackUtil;
 import io.taraxacum.libs.slimefun.interfaces.SimpleValidItem;
 import org.bukkit.NamespacedKey;
 import org.bukkit.inventory.ItemStack;
