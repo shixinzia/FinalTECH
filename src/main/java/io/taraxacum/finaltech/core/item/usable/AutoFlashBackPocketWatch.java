@@ -4,7 +4,9 @@ import io.github.thebusybiscuit.slimefun4.api.events.PlayerRightClickEvent;
 import io.github.thebusybiscuit.slimefun4.api.items.ItemGroup;
 import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItemStack;
 import io.taraxacum.finaltech.FinalTech;
+import io.taraxacum.finaltech.core.interfaces.RecipeItem;
 import io.taraxacum.finaltech.util.ConfigUtil;
+import io.taraxacum.finaltech.util.RecipeUtil;
 import org.bukkit.Location;
 import org.bukkit.Particle;
 import org.bukkit.World;
@@ -19,7 +21,7 @@ import java.util.Map;
 /**
  * @author Final_ROOT
  */
-public class AutoFlashBackPocketWatch extends UsableSlimefunItem {
+public class AutoFlashBackPocketWatch extends UsableSlimefunItem implements RecipeItem {
     private final Map<Player, Location> playerLocationMap = new HashMap<>();
     // 200 tick = 10 s
     private final int time = ConfigUtil.getOrDefaultItemSetting(200, this, "time");
@@ -59,5 +61,10 @@ public class AutoFlashBackPocketWatch extends UsableSlimefunItem {
             }
             player.teleport(location);
         }, this.time);
+    }
+
+    @Override
+    public void registerDefaultRecipes() {
+        RecipeUtil.registerDescriptiveRecipe(FinalTech.getLanguageManager(), this, String.valueOf(this.time / 20));
     }
 }
