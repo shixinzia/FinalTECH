@@ -45,10 +45,12 @@ public class ItemPhonyOperationV2 implements MachineOperation {
                         String.valueOf(this.singularityDifficulty),
                         String.valueOf(this.itemTotalAmount),
                         String.valueOf(this.differentValueSum),
-                        String.valueOf(this.spirocheteDifficulty)));
+                        String.valueOf(this.spirocheteDifficulty),
+                        String.valueOf(this.itemValueSum * this.differentValueSet.size()),
+                        String.valueOf(this.itemTotalAmount * this.differentValueSum)));
     }
 
-    public int addItem(@Nullable ItemStack itemStack) {
+    public int addItem(@Nonnull ItemStack itemStack) {
         if (!FinalTechItems.COPY_CARD.verifyItem(itemStack)) {
             return 0;
         }
