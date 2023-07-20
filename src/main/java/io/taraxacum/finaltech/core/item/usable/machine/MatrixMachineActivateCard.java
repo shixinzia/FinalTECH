@@ -2,14 +2,12 @@ package io.taraxacum.finaltech.core.item.usable.machine;
 
 import io.github.thebusybiscuit.slimefun4.api.items.ItemGroup;
 import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItemStack;
-import io.github.thebusybiscuit.slimefun4.api.recipes.RecipeType;
 import io.taraxacum.finaltech.FinalTech;
 import io.taraxacum.finaltech.core.interfaces.RecipeItem;
 import io.taraxacum.finaltech.util.ConfigUtil;
 import io.taraxacum.finaltech.util.RecipeUtil;
 import org.bukkit.GameMode;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.util.Vector;
@@ -23,8 +21,8 @@ public class MatrixMachineActivateCard extends AbstractMachineActivateCard imple
     private final int times = ConfigUtil.getOrDefaultItemSetting(10800, this, "times");
     private final double energy = ConfigUtil.getOrDefaultItemSetting(Integer.MAX_VALUE / 2 + 0.5, this, "energy");
 
-    public MatrixMachineActivateCard(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
-        super(itemGroup, item, recipeType, recipe);
+    public MatrixMachineActivateCard(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item) {
+        super(itemGroup, item);
     }
 
     @Override

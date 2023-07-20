@@ -3,7 +3,9 @@ package io.taraxacum.finaltech.core.inventory.limit.lock;
 import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItem;
 import io.taraxacum.finaltech.FinalTech;
 import io.taraxacum.finaltech.core.inventory.limit.AbstractLimitMachineInventory;
+import io.taraxacum.finaltech.core.option.MachineMaxStack;
 import io.taraxacum.finaltech.core.option.MachineRecipeLock;
+import io.taraxacum.libs.plugin.dto.LocationData;
 import io.taraxacum.libs.plugin.util.ItemStackUtil;
 import org.bukkit.Location;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -30,6 +32,7 @@ public abstract class AbstractLockMachineInventory extends AbstractLimitMachineI
     @Override
     protected void initSelf() {
         super.initSelf();
+        this.defaultItemStack.put(this.getRecipeLockSlot(), MachineRecipeLock.ICON);
     }
 
     @Override
@@ -46,5 +49,14 @@ public abstract class AbstractLockMachineInventory extends AbstractLimitMachineI
 
     public int getRecipeLockSlot() {
         return this.recipeLockSlot;
+    }
+
+    public void updateMachineRecipeLock(@Nonnull Inventory inventory, @Nonnull LocationData locationData) {
+        MachineRecipeLock.OPTION.checkOrSetDefault(FinalTech.getLocationDataService(), locationData);
+        String recipeLock = MachineRecipeLock.OPTION.getOrDefaultValue(FinalTech.getLocationDataService(), locationData);
+        ItemStack itemStack = inventory.getItem(this.getRecipeLockSlot());
+        if (!ItemStackUtil.isItemNull(itemStack)) {
+            MachineRecipeLock.OPTION.updateLore(itemStack, recipeLock, this.slimefunItem);
+        }
     }
 }

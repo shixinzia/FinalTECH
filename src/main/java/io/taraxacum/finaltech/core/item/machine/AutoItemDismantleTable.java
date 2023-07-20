@@ -37,8 +37,8 @@ public class AutoItemDismantleTable extends AbstractMachine implements RecipeIte
     private final Set<String> notAllowedId = new HashSet<>(ConfigUtil.getItemStringList(this, "not-allowed-id"));
     private final Set<String> allowedId = new HashSet<>(ConfigUtil.getItemStringList(this, "allowed-id"));
 
-    public AutoItemDismantleTable(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
-        super(itemGroup, item, recipeType, recipe);
+    public AutoItemDismantleTable(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item) {
+        super(itemGroup, item);
     }
 
     @Nullable

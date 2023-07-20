@@ -2,9 +2,7 @@ package io.taraxacum.finaltech.core.item.machine.range.point.face;
 
 import io.github.thebusybiscuit.slimefun4.api.items.ItemGroup;
 import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItemStack;
-import io.github.thebusybiscuit.slimefun4.api.recipes.RecipeType;
 import io.taraxacum.finaltech.util.ConfigUtil;
-import org.bukkit.inventory.ItemStack;
 
 import javax.annotation.Nonnull;
 import java.util.HashSet;
@@ -18,8 +16,8 @@ public class OperationAccelerator extends AbstractOperationAccelerator {
     private final int capacity = ConfigUtil.getOrDefaultItemSetting(20000000, this, "capacity");
     private final int efficiency = ConfigUtil.getOrDefaultItemSetting(1, this, "efficiency");
 
-    public OperationAccelerator(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
-        super(itemGroup, item, recipeType, recipe);
+    public OperationAccelerator(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item) {
+        super(itemGroup, item);
     }
 
     @Override

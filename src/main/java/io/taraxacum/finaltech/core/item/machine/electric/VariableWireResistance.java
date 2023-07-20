@@ -3,17 +3,19 @@ package io.taraxacum.finaltech.core.item.machine.electric;
 import io.github.thebusybiscuit.slimefun4.api.items.ItemGroup;
 import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItem;
 import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItemStack;
-import io.github.thebusybiscuit.slimefun4.api.recipes.RecipeType;
 import io.github.thebusybiscuit.slimefun4.core.networks.energy.EnergyNetComponentType;
 import io.github.thebusybiscuit.slimefun4.implementation.Slimefun;
 import io.taraxacum.finaltech.FinalTech;
-import io.taraxacum.finaltech.core.interfaces.RecipeItem;
 import io.taraxacum.finaltech.core.interfaces.MenuUpdater;
+import io.taraxacum.finaltech.core.interfaces.RecipeItem;
 import io.taraxacum.finaltech.core.inventory.AbstractMachineInventory;
 import io.taraxacum.finaltech.core.inventory.unit.StatusInventory;
 import io.taraxacum.finaltech.setup.FinalTechItemStacks;
 import io.taraxacum.finaltech.setup.FinalTechItems;
-import io.taraxacum.finaltech.util.*;
+import io.taraxacum.finaltech.util.BlockTickerUtil;
+import io.taraxacum.finaltech.util.ConfigUtil;
+import io.taraxacum.finaltech.util.ConstantTableUtil;
+import io.taraxacum.finaltech.util.RecipeUtil;
 import io.taraxacum.libs.plugin.dto.LocationData;
 import io.taraxacum.libs.slimefun.service.SlimefunLocationDataService;
 import io.taraxacum.libs.slimefun.util.EnergyUtil;
@@ -21,7 +23,6 @@ import io.taraxacum.libs.slimefun.util.LocationDataUtil;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.inventory.Inventory;
-import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import javax.annotation.Nonnull;
@@ -35,8 +36,8 @@ public class VariableWireResistance extends AbstractElectricMachine implements R
     private final String capacityString = String.valueOf(this.capacity);
     private int statusSlot;
 
-    public VariableWireResistance(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item, @Nonnull RecipeType recipeType, @Nonnull ItemStack[] recipe) {
-        super(itemGroup, item, recipeType, recipe);
+    public VariableWireResistance(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item) {
+        super(itemGroup, item);
     }
 
     @Nullable

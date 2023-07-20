@@ -27,6 +27,7 @@ public class RandomAccessorInventory extends AbstractClickerInventory {
         super(abstractClickerMachine);
     }
 
+    @Nonnull
     @Override
     protected int[] getBorder() {
         return this.border;
@@ -43,18 +44,20 @@ public class RandomAccessorInventory extends AbstractClickerInventory {
 
         Block block = location.getBlock();
         Block targetBlock;
-        if(FinalTech.getLocationDataService() instanceof SlimefunLocationDataService slimefunLocationDataService) {
-            for(int i : JavaUtil.generateRandomInts(this.availableBlockFaces.length)) {
+        if (FinalTech.getLocationDataService() instanceof SlimefunLocationDataService slimefunLocationDataService) {
+            for (int i : JavaUtil.generateRandomInts(this.availableBlockFaces.length)) {
                 BlockFace blockFace = this.availableBlockFaces[i];
                 targetBlock = block.getRelative(blockFace);
-                BlockMenu targetBlockMenu = slimefunLocationDataService.getBlockMenu(targetBlock.getLocation());
-                if (targetBlockMenu != null && targetBlockMenu.canOpen(targetBlock, player)) {
-                    JavaPlugin javaPlugin = this.slimefunItem.getAddon().getJavaPlugin();
-                    Block finalTargetBlock = targetBlock;
-                    javaPlugin.getServer().getScheduler().runTaskAsynchronously(javaPlugin, () -> ParticleUtil.drawCubeByBlock(javaPlugin, Particle.WAX_OFF, 0, finalTargetBlock));
-                    javaPlugin.getServer().getScheduler().runTaskAsynchronously(javaPlugin, () -> ParticleUtil.drawLineByDistance(javaPlugin, Particle.WAX_OFF, 0, 0.25, LocationUtil.getCenterLocation(block), LocationUtil.getCenterLocation(finalTargetBlock)));
-                    targetBlockMenu.open(player);
-                    return;
+                if (targetBlock.getChunk().isLoaded()) {
+                    BlockMenu targetBlockMenu = slimefunLocationDataService.getBlockMenu(targetBlock.getLocation());
+                    if (targetBlockMenu != null && targetBlockMenu.canOpen(targetBlock, player)) {
+                        JavaPlugin javaPlugin = this.slimefunItem.getAddon().getJavaPlugin();
+                        Block finalTargetBlock = targetBlock;
+                        javaPlugin.getServer().getScheduler().runTaskAsynchronously(javaPlugin, () -> ParticleUtil.drawCubeByBlock(javaPlugin, Particle.WAX_OFF, 0, finalTargetBlock));
+                        javaPlugin.getServer().getScheduler().runTaskAsynchronously(javaPlugin, () -> ParticleUtil.drawLineByDistance(javaPlugin, Particle.WAX_OFF, 0, 0.25, LocationUtil.getCenterLocation(block), LocationUtil.getCenterLocation(finalTargetBlock)));
+                        targetBlockMenu.open(player);
+                        return;
+                    }
                 }
             }
         }

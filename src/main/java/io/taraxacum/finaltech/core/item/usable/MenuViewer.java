@@ -3,7 +3,6 @@ package io.taraxacum.finaltech.core.item.usable;
 import io.github.thebusybiscuit.slimefun4.api.events.PlayerRightClickEvent;
 import io.github.thebusybiscuit.slimefun4.api.items.ItemGroup;
 import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItemStack;
-import io.github.thebusybiscuit.slimefun4.api.recipes.RecipeType;
 import io.github.thebusybiscuit.slimefun4.libraries.dough.items.CustomItemStack;
 import io.github.thebusybiscuit.slimefun4.utils.ChestMenuUtils;
 import io.taraxacum.finaltech.FinalTech;
@@ -37,8 +36,8 @@ public class MenuViewer extends UsableSlimefunItem implements RecipeItem {
     private final ItemStack OUTPUT_ICON = new CustomItemStack(Material.ORANGE_STAINED_GLASS_PANE, FinalTech.getLanguageString("items", this.getId(), "output-icon", "name"));
     private final ItemStack INPUT_AND_OUTPUT_ICON = new CustomItemStack(Material.PURPLE_STAINED_GLASS_PANE, FinalTech.getLanguageString("items", this.getId(), "in-and-out-icon", "name"));
 
-    public MenuViewer(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
-        super(itemGroup, item, recipeType, recipe);
+    public MenuViewer(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item) {
+        super(itemGroup, item);
     }
 
     @Override

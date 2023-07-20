@@ -3,22 +3,21 @@ package io.taraxacum.finaltech.core.item.machine.cargo.storage;
 import io.github.thebusybiscuit.slimefun4.api.items.ItemGroup;
 import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItem;
 import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItemStack;
-import io.github.thebusybiscuit.slimefun4.api.recipes.RecipeType;
 import io.taraxacum.common.util.JavaUtil;
 import io.taraxacum.finaltech.FinalTech;
 import io.taraxacum.finaltech.core.dto.StringItemCardCache;
+import io.taraxacum.finaltech.core.interfaces.RecipeItem;
 import io.taraxacum.finaltech.core.inventory.AbstractMachineInventory;
 import io.taraxacum.finaltech.core.inventory.simple.StorageInteractPortInventory;
+import io.taraxacum.finaltech.core.item.machine.cargo.AbstractCargo;
 import io.taraxacum.finaltech.setup.FinalTechItems;
+import io.taraxacum.finaltech.util.ConfigUtil;
+import io.taraxacum.finaltech.util.RecipeUtil;
+import io.taraxacum.finaltech.util.StringItemUtil;
 import io.taraxacum.libs.plugin.dto.ItemWrapper;
 import io.taraxacum.libs.plugin.dto.LocationData;
 import io.taraxacum.libs.plugin.util.InventoryUtil;
 import io.taraxacum.libs.plugin.util.ItemStackUtil;
-import io.taraxacum.finaltech.util.StringItemUtil;
-import io.taraxacum.finaltech.core.interfaces.RecipeItem;
-import io.taraxacum.finaltech.core.item.machine.cargo.AbstractCargo;
-import io.taraxacum.finaltech.util.ConfigUtil;
-import io.taraxacum.finaltech.util.RecipeUtil;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.BlockState;
@@ -37,8 +36,8 @@ import javax.annotation.Nullable;
 public class StorageInteractPort extends AbstractCargo implements RecipeItem {
     private final int searchLimit = ConfigUtil.getOrDefaultItemSetting(3, this, "search-limit");
 
-    public StorageInteractPort(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
-        super(itemGroup, item, recipeType, recipe);
+    public StorageInteractPort(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item) {
+        super(itemGroup, item);
     }
 
     @Nullable

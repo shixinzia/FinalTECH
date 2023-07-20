@@ -6,31 +6,35 @@ import io.taraxacum.finaltech.FinalTech;
 import io.taraxacum.finaltech.setup.FinalTechItems;
 import io.taraxacum.libs.plugin.util.ItemStackUtil;
 import io.taraxacum.finaltech.util.ConstantTableUtil;
+import io.taraxacum.libs.slimefun.dto.ItemValueTableV2;
 import org.bukkit.inventory.ItemStack;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * @author Final_ROOT
  */
+@Deprecated
 public class ItemPhonyOperation implements ItemSerializationConstructorOperation {
-    private int itemTypeCount;
-    private int itemAmountCount;
-    private final int itemTypeDifficulty;
-    private final int itemAmountDifficulty;
+    private long singularityDifficulty;
+    private long spirocheteDifficulty;
+    private long itemTotalAmount;
+    private long itemValueSum;
+    private long differentValueSum;
+    private final Set<ItemValueTableV2.Value> differentValueSet = new HashSet<>();
     private final ItemStack showItem;
-    private final List<ItemStackWrapper> itemTypeList = new ArrayList<>(ConstantTableUtil.ITEM_SPIROCHETE_AMOUNT);
 
-    protected ItemPhonyOperation(@Nonnull ItemStack item) {
-        this.itemTypeCount = 1;
-        this.itemAmountCount = item.getAmount();
-        this.itemTypeDifficulty = ConstantTableUtil.ITEM_SPIROCHETE_AMOUNT;
-        this.itemAmountDifficulty = ConstantTableUtil.ITEM_SINGULARITY_AMOUNT;
-        this.showItem = new CustomItemStack(FinalTechItems.ITEM_PHONY.getItem().getType(), FinalTech.getLanguageString("items", FinalTechItems.ITEM_SERIALIZATION_CONSTRUCTOR.getId(), "phony", "name"));
-        this.itemTypeList.add(ItemStackWrapper.wrap(item));
+    protected ItemPhonyOperation(@Nonnull ItemStack itemStack) {
+        this.singularityDifficulty = ConstantTableUtil.ITEM_SPIROCHETE_AMOUNT;
+        this.spirocheteDifficulty = ConstantTableUtil.ITEM_SINGULARITY_AMOUNT;
+        this.showItem = ItemStackUtil.newItemStack(FinalTechItems.ITEM_PHONY.getItem().getType(),
+                FinalTech.getLanguageString("items", FinalTechItems.ITEM_SERIALIZATION_CONSTRUCTOR.getId(), "phony", "name"));
+        this.addItem(itemStack);
     }
 
     @Override
@@ -46,11 +50,14 @@ public class ItemPhonyOperation implements ItemSerializationConstructorOperation
 
     @Override
     public void updateShowItem() {
-        ItemStackUtil.setLore(this.showItem, FinalTech.getLanguageManager().replaceStringArray(FinalTech.getLanguageStringArray("items", FinalTechItems.ITEM_SERIALIZATION_CONSTRUCTOR.getId(), "phony", "lore"),
-            String.valueOf(this.itemAmountCount),
-            String.valueOf(this.itemAmountDifficulty),
-            String.valueOf(this.itemTypeCount),
-            String.valueOf(this.itemTypeDifficulty)));
+        ItemStackUtil.setLore(this.showItem,
+                FinalTech.getLanguageManager().replaceStringArray(FinalTech.getLanguageStringArray("items", FinalTechItems.ITEM_SERIALIZATION_CONSTRUCTOR.getId(), "phony", "lore"),
+                        String.valueOf(this.itemValueSum),
+                        String.valueOf(this.differentValueSet.size()),
+                        String.valueOf(this.singularityDifficulty),
+                        String.valueOf(this.itemTotalAmount),
+                        String.valueOf(this.differentValueSum),
+                        String.valueOf(this.spirocheteDifficulty)));
     }
 
     @Override
@@ -59,43 +66,32 @@ public class ItemPhonyOperation implements ItemSerializationConstructorOperation
             return 0;
         }
 
-        if (this.itemTypeCount <= this.itemTypeDifficulty) {
-            boolean newType = true;
-            ItemStackWrapper itemWrapper = ItemStackWrapper.wrap(itemStack);
-            for (ItemStackWrapper itemTypeWrapper : this.itemTypeList) {
-                if (ItemStackUtil.isItemSimilar(itemWrapper, itemTypeWrapper)) {
-                    newType = false;
-                    break;
-                }
-            }
-            if (newType) {
-                this.itemTypeCount++;
-                this.itemTypeList.add(itemWrapper);
-            }
+        ItemValueTableV2.Value value = ItemValueTableV2.getInstance().getOrCalItemInputValue(itemStack);
+        this.itemValueSum += Long.parseLong(value.getRealNumber());
+        this.itemTotalAmount += 1;
+        if (!this.differentValueSet.contains(value)) {
+            this.differentValueSet.add(value);
+            this.differentValueSum += Long.parseLong(value.getRealNumber());
         }
-        int amount = Math.min(itemStack.getAmount(), this.itemAmountDifficulty - this.itemAmountCount);
-        this.itemAmountCount += amount;
 
-        itemStack.setAmount(itemStack.getAmount() - amount);
-
-        return amount;
+        return 1;
     }
 
     @Override
     public boolean isFinished() {
-        return this.itemAmountCount >= this.itemAmountDifficulty || this.itemTypeCount >= this.itemTypeDifficulty;
+        return this.itemValueSum * this.differentValueSet.size() >= this.singularityDifficulty || this.itemTotalAmount * this.differentValueSum >= this.spirocheteDifficulty;
     }
 
     @Nonnull
     @Override
     public ItemStack getResult() {
-        if (this.itemAmountCount >= this.itemAmountDifficulty && this.itemTypeCount >= this.itemTypeDifficulty) {
+        if (this.itemValueSum * this.differentValueSet.size() >= this.singularityDifficulty && this.itemTotalAmount * this.differentValueSum >= this.spirocheteDifficulty) {
             return FinalTechItems.ITEM_PHONY.getValidItem();
         }
-        if (this.itemAmountCount >= this.itemAmountDifficulty) {
+        if (this.itemValueSum * this.differentValueSet.size() >= this.singularityDifficulty) {
             return FinalTechItems.SINGULARITY.getValidItem();
         }
-        if (this.itemTypeCount >= this.itemTypeDifficulty) {
+        if (this.itemTotalAmount * this.differentValueSum >= this.spirocheteDifficulty) {
             return FinalTechItems.SPIROCHETE.getValidItem();
         }
         return ItemStackUtil.AIR;

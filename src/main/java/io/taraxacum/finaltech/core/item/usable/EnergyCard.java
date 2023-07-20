@@ -36,8 +36,8 @@ public class EnergyCard extends UsableSlimefunItem implements RecipeItem {
     private final Set<String> notAllowedId = new HashSet<>(ConfigUtil.getItemStringList(this, "not-allowed-id"));
     private final String energy;
 
-    public EnergyCard(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe, String energy) {
-        super(itemGroup, item, recipeType, recipe);
+    public EnergyCard(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item, @Nonnull RecipeType recipeType, @Nonnull String energy) {
+        super(itemGroup, item, recipeType, new ItemStack[0]);
         if(ENERGY_CARD_MAP.containsKey(energy)) {
             throw new IllegalArgumentException("duplicated energy while registering " + this.getId());
         }

@@ -59,9 +59,9 @@ public class TextUtil {
         List<Color> colorList = new ArrayList<>();
         double r = 1;
         while (1 / r >= Math.random() && r * r <= string.length()) {
-            int red = (int) ((Math.random() * 8 + 8) * 15 + Math.random() * 12 + 4);
-            int green = (int) ((Math.random() * 8 + 8) * 15 + Math.random() * 12 + 4);
-            int blue = (int) ((Math.random() * 8 + 8) * 15 + Math.random() * 12 + 4);
+            int red = (int) ((Math.random() * 6 + 4) * 15 + Math.random() * 16);
+            int green = (int) ((Math.random() * 6 + 4) * 15 + Math.random() * 16);
+            int blue = (int) ((Math.random() * 6 + 4) * 15 + Math.random() * 16);
             colorList.add(Color.fromRGB(red, green, blue));
             r++;
         }
@@ -74,9 +74,9 @@ public class TextUtil {
         double r = 1;
         Random random = new Random(string.hashCode() / 2 + seed / 2);
         while (1 / r >= random.nextDouble() && r * r <= string.length()) {
-            int red = (int) ((random.nextDouble() * 8 + 8) * 15 + random.nextDouble() * 12 + 4);
-            int green = (int) ((random.nextDouble() * 8 + 8) * 15 + random.nextDouble() * 12 + 4);
-            int blue = (int) ((random.nextDouble() * 8 + 8) * 15 + random.nextDouble() * 12 + 4);
+            int red = (int) ((random.nextDouble() * 6 + 4) * 15 + random.nextDouble() * 16);
+            int green = (int) ((random.nextDouble() * 6 + 4) * 15 + random.nextDouble() * 16);
+            int blue = (int) ((random.nextDouble() * 6 + 4) * 15 + random.nextDouble() * 16);
             colorList.add(Color.fromRGB(red, green, blue));
             r++;
         }

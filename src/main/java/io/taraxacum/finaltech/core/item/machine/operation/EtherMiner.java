@@ -3,7 +3,6 @@ package io.taraxacum.finaltech.core.item.machine.operation;
 import io.github.thebusybiscuit.slimefun4.api.items.ItemGroup;
 import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItem;
 import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItemStack;
-import io.github.thebusybiscuit.slimefun4.api.recipes.RecipeType;
 import io.github.thebusybiscuit.slimefun4.core.handlers.BlockBreakHandler;
 import io.github.thebusybiscuit.slimefun4.implementation.Slimefun;
 import io.taraxacum.common.util.MathUtil;
@@ -45,8 +44,8 @@ public class EtherMiner extends AbstractOperationMachine implements RecipeItem, 
     private final double random = ConfigUtil.getOrDefaultItemSetting(0.1, this, "random");
     private int statusSlot;
 
-    public EtherMiner(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
-        super(itemGroup, item, recipeType, recipe);
+    public EtherMiner(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item) {
+        super(itemGroup, item);
     }
 
     @Nullable

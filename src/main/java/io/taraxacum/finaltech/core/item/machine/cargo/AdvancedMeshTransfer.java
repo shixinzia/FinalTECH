@@ -3,12 +3,12 @@ package io.taraxacum.finaltech.core.item.machine.cargo;
 import io.github.thebusybiscuit.slimefun4.api.items.ItemGroup;
 import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItem;
 import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItemStack;
-import io.github.thebusybiscuit.slimefun4.api.recipes.RecipeType;
 import io.github.thebusybiscuit.slimefun4.core.handlers.BlockBreakHandler;
 import io.github.thebusybiscuit.slimefun4.core.handlers.BlockPlaceHandler;
 import io.github.thebusybiscuit.slimefun4.implementation.Slimefun;
 import io.taraxacum.finaltech.FinalTech;
 import io.taraxacum.finaltech.core.dto.SimpleCargoDTO;
+import io.taraxacum.finaltech.core.interfaces.LogicInjectableItem;
 import io.taraxacum.finaltech.core.inventory.AbstractMachineInventory;
 import io.taraxacum.finaltech.core.inventory.cargo.AdvancedMeshTransferInventory;
 import io.taraxacum.finaltech.core.option.*;
@@ -24,24 +24,25 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.inventory.Inventory;
-import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.function.BiConsumer;
 
 /**
  * @author Final_ROOT
  */
-public class AdvancedMeshTransfer extends AbstractCargo implements RecipeItem {
+public class AdvancedMeshTransfer extends AbstractCargo implements RecipeItem, LogicInjectableItem {
     private final double particleDistance = 0.25;
     private final int particleInterval = 2;
     private int[] itemMatch;
+    private BiConsumer<Inventory, LocationData> logicInjectInventoryUpdater;
 
-    public AdvancedMeshTransfer(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
-        super(itemGroup, item, recipeType, recipe);
+    public AdvancedMeshTransfer(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item) {
+        super(itemGroup, item);
     }
 
     @Nullable
@@ -49,6 +50,7 @@ public class AdvancedMeshTransfer extends AbstractCargo implements RecipeItem {
     protected AbstractMachineInventory setMachineInventory() {
         AdvancedMeshTransferInventory advancedMeshTransferInventory = new AdvancedMeshTransferInventory(this);
         this.itemMatch = advancedMeshTransferInventory.itemMatchSlot;
+        this.logicInjectInventoryUpdater = advancedMeshTransferInventory::updateCargoFilter;
         return advancedMeshTransferInventory;
     }
 
@@ -438,5 +440,19 @@ public class AdvancedMeshTransfer extends AbstractCargo implements RecipeItem {
     @Override
     public void registerDefaultRecipes() {
         RecipeUtil.registerDescriptiveRecipe(FinalTech.getLanguageManager(), this);
+    }
+
+    @Override
+    public void injectLogic(@Nonnull LocationData locationData, boolean logic) {
+        if (logic) {
+            CargoFilter.OPTION.setOrClearValue(FinalTech.getLocationDataService(), locationData, CargoFilter.VALUE_BLACK);
+        } else {
+            CargoFilter.OPTION.setOrClearValue(FinalTech.getLocationDataService(), locationData, CargoFilter.VALUE_WHITE);
+        }
+
+        Inventory inventory = FinalTech.getLocationDataService().getInventory(locationData);
+        if (inventory != null) {
+            this.logicInjectInventoryUpdater.accept(inventory, locationData);
+        }
     }
 }

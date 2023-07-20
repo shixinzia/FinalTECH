@@ -42,10 +42,13 @@ public abstract class AbstractMachineInventory implements InventoryTemplate {
         return this.slimefunItem.getItemName();
     }
 
+    @Nonnull
     protected abstract int[] getBorder();
 
+    @Nonnull
     protected abstract int[] getInputBorder();
 
+    @Nonnull
     protected abstract int[] getOutputBorder();
 
     @Nonnull

@@ -266,7 +266,7 @@ public class ItemValueTableV2 {
         RecipeType recipeType = slimefunItem.getRecipeType();
         if (RecipeType.NULL.equals(recipeType) || recipeList.isEmpty()) {
             value = this.addValue(value, this.baseSpecialOutputValue);
-        } else if (slimefunItem instanceof MultiBlockMachine || RecipeType.MULTIBLOCK.equals(recipeType)) {
+        } else if (slimefunItem instanceof MultiBlockMachine || RecipeType.MULTIBLOCK.equals(recipeType) || recipeType.getMachine() instanceof MultiBlockMachine) {
             value = this.addValue(value, this.baseSimpleOutputValue);
         } else if (slimefunItem.equals(recipeType.getMachine())) {
             value = this.addValue(value, value);
@@ -351,10 +351,12 @@ public class ItemValueTableV2 {
             this.imaginaryNumber = StringNumberUtil.ZERO;
         }
 
+        @Nonnull
         public String getRealNumber() {
             return realNumber;
         }
 
+        @Nonnull
         public String getImaginaryNumber() {
             return imaginaryNumber;
         }

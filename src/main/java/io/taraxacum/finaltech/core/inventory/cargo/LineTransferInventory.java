@@ -5,6 +5,7 @@ import io.taraxacum.common.util.JavaUtil;
 import io.taraxacum.finaltech.FinalTech;
 import io.taraxacum.finaltech.core.inventory.AbstractMachineInventory;
 import io.taraxacum.finaltech.core.option.*;
+import io.taraxacum.libs.plugin.dto.LocationData;
 import io.taraxacum.libs.plugin.interfaces.LogicInventory;
 import org.bukkit.Location;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -37,16 +38,19 @@ public class LineTransferInventory extends AbstractMachineInventory implements L
         super(slimefunItem);
     }
 
+    @Nonnull
     @Override
     protected int[] getBorder() {
         return this.border;
     }
 
+    @Nonnull
     @Override
     protected int[] getInputBorder() {
         return this.inputBorder;
     }
 
+    @Nonnull
     @Override
     protected int[] getOutputBorder() {
         return this.outputBorder;
@@ -114,5 +118,9 @@ public class LineTransferInventory extends AbstractMachineInventory implements L
 
         CargoMode.OPTION.checkAndUpdateIcon(inventory, this.cargoModeSlot, FinalTech.getLocationDataService(), location);
         CargoFilter.OPTION.checkAndUpdateIcon(inventory, this.cargoFilterSlot, FinalTech.getLocationDataService(), location);
+    }
+
+    public void updateCargoFilter(@Nonnull Inventory inventory, @Nonnull LocationData locationData) {
+        CargoFilter.OPTION.checkAndUpdateIcon(inventory, this.cargoFilterSlot, FinalTech.getLocationDataService(), locationData);
     }
 }

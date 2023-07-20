@@ -51,8 +51,8 @@ public class EquivalentConcept extends AbstractPointMachine implements RecipeIte
 
     private final ItemWrapper templateValidItem;
 
-    public EquivalentConcept(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
-        super(itemGroup, item, recipeType, recipe);
+    public EquivalentConcept(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item, @Nonnull RecipeType recipeType) {
+        super(itemGroup, item, recipeType, new ItemStack[0]);
 
         ItemStack validItem = new ItemStack(this.getItem());
         SfItemUtil.setSpecialItemKey(validItem);

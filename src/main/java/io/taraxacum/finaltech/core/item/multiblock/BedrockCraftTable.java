@@ -17,6 +17,7 @@ import io.taraxacum.libs.slimefun.dto.BasicCraft;
 import io.taraxacum.libs.slimefun.dto.RecipeTypeRegistry;
 import io.taraxacum.libs.slimefun.interfaces.SimpleValidItem;
 import io.taraxacum.libs.slimefun.interfaces.ValidItem;
+import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
@@ -36,8 +37,10 @@ import java.util.List;
  * @author Final_ROOT
  */
 public class BedrockCraftTable extends AbstractMultiBlockItem implements RecipeItem {
-    public BedrockCraftTable(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item, @Nonnull ItemStack[] recipe) {
-        super(itemGroup, item, recipe, BlockFace.SELF);
+    private static final ItemStack[] RECIPE = new ItemStack[] {null, new ItemStack(Material.DISPENSER), null, null, new ItemStack(Material.LODESTONE), null, null, new ItemStack(Material.BEDROCK), null};
+
+    public BedrockCraftTable(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item) {
+        super(itemGroup, item, RECIPE, BlockFace.SELF);
     }
 
     @Override

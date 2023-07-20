@@ -34,6 +34,7 @@ import java.util.function.Consumer;
 /**
  * @author Final_ROOT
  */
+@Deprecated
 public class CardOperationPortInventory extends AbstractManualMachineInventory implements LogicInventory {
     private final int[] border = new int[] {3, 4, 5, 12, 14, 21, 22, 23, 27, 28, 29, 33, 34, 35, 36, 37, 38, 42, 43, 44, 45, 46, 47, 51, 52, 53};
     private final int[] inputBorder = new int[] {0, 1, 2, 6, 7, 8, 9, 11, 15, 17, 18, 19, 20, 24, 25, 26};
@@ -689,16 +690,19 @@ public class CardOperationPortInventory extends AbstractManualMachineInventory i
         });
     }
 
+    @Nonnull
     @Override
     protected int[] getBorder() {
         return this.border;
     }
 
+    @Nonnull
     @Override
     protected int[] getInputBorder() {
         return this.inputBorder;
     }
 
+    @Nonnull
     @Override
     protected int[] getOutputBorder() {
         return this.outputBorder;

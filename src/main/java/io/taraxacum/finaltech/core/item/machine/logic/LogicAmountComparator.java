@@ -2,7 +2,6 @@ package io.taraxacum.finaltech.core.item.machine.logic;
 
 import io.github.thebusybiscuit.slimefun4.api.items.ItemGroup;
 import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItemStack;
-import io.github.thebusybiscuit.slimefun4.api.recipes.RecipeType;
 import io.taraxacum.finaltech.FinalTech;
 import io.taraxacum.finaltech.core.interfaces.RecipeItem;
 import io.taraxacum.finaltech.setup.FinalTechItemStacks;
@@ -17,8 +16,8 @@ import javax.annotation.Nullable;
  * @author Final_ROOT
  */
 public class LogicAmountComparator extends AbstractLogicComparator implements RecipeItem {
-    public LogicAmountComparator(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item, @Nonnull RecipeType recipeType, @Nonnull ItemStack[] recipe) {
-        super(itemGroup, item, recipeType, recipe);
+    public LogicAmountComparator(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item) {
+        super(itemGroup, item);
     }
 
     @Override

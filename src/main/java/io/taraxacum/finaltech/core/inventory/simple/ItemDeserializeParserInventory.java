@@ -21,16 +21,19 @@ public class ItemDeserializeParserInventory extends AbstractOrdinaryMachineInven
         super(abstractMachine);
     }
 
+    @Nonnull
     @Override
     protected int[] getBorder() {
         return this.border;
     }
 
+    @Nonnull
     @Override
     protected int[] getInputBorder() {
         return this.inputBorder;
     }
 
+    @Nonnull
     @Override
     protected int[] getOutputBorder() {
         return this.outputBorder;

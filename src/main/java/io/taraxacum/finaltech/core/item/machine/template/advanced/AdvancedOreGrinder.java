@@ -2,17 +2,17 @@ package io.taraxacum.finaltech.core.item.machine.template.advanced;
 
 import io.github.thebusybiscuit.slimefun4.api.items.ItemGroup;
 import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItemStack;
-import io.github.thebusybiscuit.slimefun4.api.recipes.RecipeType;
 import io.github.thebusybiscuit.slimefun4.implementation.SlimefunItems;
 import io.taraxacum.finaltech.util.RecipeUtil;
-import org.bukkit.inventory.ItemStack;
+
+import javax.annotation.Nonnull;
 
 /**
  * @author Final_ROOT
  */
-public class AdvancedOreGrinder extends AbstractAdvanceMachine {
-    public AdvancedOreGrinder(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
-        super(itemGroup, item, recipeType, recipe);
+public class AdvancedOreGrinder extends AbstractAdvancedMachine {
+    public AdvancedOreGrinder(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item) {
+        super(itemGroup, item);
     }
 
     @Override

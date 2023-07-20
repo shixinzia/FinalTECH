@@ -3,7 +3,6 @@ package io.taraxacum.finaltech.core.item.machine.range;
 import io.github.thebusybiscuit.slimefun4.api.items.ItemGroup;
 import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItem;
 import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItemStack;
-import io.github.thebusybiscuit.slimefun4.api.recipes.RecipeType;
 import io.github.thebusybiscuit.slimefun4.core.handlers.BlockBreakHandler;
 import io.github.thebusybiscuit.slimefun4.core.handlers.BlockPlaceHandler;
 import io.taraxacum.finaltech.FinalTech;
@@ -43,8 +42,8 @@ public class ConfigurationPaster extends AbstractMachine implements RecipeItem, 
     private final int range = ConfigUtil.getOrDefaultItemSetting(16, this, "range");
     private int digitSlot;
 
-    public ConfigurationPaster(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item, @Nonnull RecipeType recipeType, @Nonnull ItemStack[] recipe) {
-        super(itemGroup, item, recipeType, recipe);
+    public ConfigurationPaster(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item) {
+        super(itemGroup, item);
     }
 
     @Nullable

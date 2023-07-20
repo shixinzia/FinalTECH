@@ -3,7 +3,6 @@ package io.taraxacum.finaltech.core.item.machine;
 import io.github.thebusybiscuit.slimefun4.api.items.ItemGroup;
 import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItem;
 import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItemStack;
-import io.github.thebusybiscuit.slimefun4.api.recipes.RecipeType;
 import io.github.thebusybiscuit.slimefun4.core.handlers.BlockBreakHandler;
 import io.github.thebusybiscuit.slimefun4.core.handlers.BlockPlaceHandler;
 import io.taraxacum.common.util.StringNumberUtil;
@@ -29,8 +28,8 @@ import javax.annotation.Nullable;
  * @author Final_ROOT
  */
 public class EnergyInputTable extends AbstractMachine implements RecipeItem {
-    public EnergyInputTable(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item, @Nonnull RecipeType recipeType, @Nonnull ItemStack[] recipe) {
-        super(itemGroup, item, recipeType, recipe);
+    public EnergyInputTable(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item) {
+        super(itemGroup, item);
     }
 
     @Nullable

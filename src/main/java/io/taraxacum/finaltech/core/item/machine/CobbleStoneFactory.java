@@ -3,18 +3,17 @@ package io.taraxacum.finaltech.core.item.machine;
 import io.github.thebusybiscuit.slimefun4.api.items.ItemGroup;
 import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItem;
 import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItemStack;
-import io.github.thebusybiscuit.slimefun4.api.recipes.RecipeType;
 import io.github.thebusybiscuit.slimefun4.core.handlers.BlockBreakHandler;
 import io.github.thebusybiscuit.slimefun4.core.handlers.BlockPlaceHandler;
 import io.taraxacum.finaltech.FinalTech;
+import io.taraxacum.finaltech.core.interfaces.RecipeItem;
 import io.taraxacum.finaltech.core.inventory.AbstractMachineInventory;
 import io.taraxacum.finaltech.core.inventory.unit.NormalStorageUnitInventory;
+import io.taraxacum.finaltech.util.ConstantTableUtil;
+import io.taraxacum.finaltech.util.MachineUtil;
 import io.taraxacum.libs.plugin.dto.ItemWrapper;
-import io.taraxacum.finaltech.core.interfaces.RecipeItem;
 import io.taraxacum.libs.plugin.dto.LocationData;
 import io.taraxacum.libs.plugin.util.ItemStackUtil;
-import io.taraxacum.finaltech.util.MachineUtil;
-import io.taraxacum.finaltech.util.ConstantTableUtil;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.inventory.Inventory;
@@ -29,8 +28,8 @@ import javax.annotation.Nullable;
 public class CobbleStoneFactory extends AbstractMachine implements RecipeItem {
     private final ItemWrapper cobbleStone = new ItemWrapper(new ItemStack(Material.COBBLESTONE));
 
-    public CobbleStoneFactory(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item, @Nonnull RecipeType recipeType, @Nonnull ItemStack[] recipe) {
-        super(itemGroup, item, recipeType, recipe);
+    public CobbleStoneFactory(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item) {
+        super(itemGroup, item);
     }
 
     @Nullable

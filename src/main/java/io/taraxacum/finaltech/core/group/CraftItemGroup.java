@@ -1,91 +1,43 @@
 package io.taraxacum.finaltech.core.group;
 
-import io.github.thebusybiscuit.slimefun4.api.events.PlayerPreResearchEvent;
 import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItem;
 import io.github.thebusybiscuit.slimefun4.api.items.groups.FlexItemGroup;
 import io.github.thebusybiscuit.slimefun4.api.player.PlayerProfile;
-import io.github.thebusybiscuit.slimefun4.api.researches.Research;
-import io.github.thebusybiscuit.slimefun4.core.guide.GuideHistory;
-import io.github.thebusybiscuit.slimefun4.core.guide.SlimefunGuide;
 import io.github.thebusybiscuit.slimefun4.core.guide.SlimefunGuideMode;
-import io.github.thebusybiscuit.slimefun4.implementation.Slimefun;
-import io.github.thebusybiscuit.slimefun4.utils.ChestMenuUtils;
-import io.taraxacum.common.util.JavaUtil;
 import io.taraxacum.finaltech.FinalTech;
-import io.taraxacum.finaltech.core.interfaces.SpecialResearch;
+import io.taraxacum.finaltech.core.inventory.common.CraftItemGroupInventory;
 import io.taraxacum.finaltech.util.MachineUtil;
-import io.taraxacum.libs.plugin.dto.SimpleVirtualInventory;
-import io.taraxacum.libs.plugin.interfaces.VirtualInventory;
+import io.taraxacum.libs.plugin.service.InventoryHistoryService;
 import io.taraxacum.libs.plugin.util.ItemStackUtil;
 import io.taraxacum.libs.slimefun.dto.SlimefunCraftRegistry;
-import io.taraxacum.libs.slimefun.util.GuideUtil;
-import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
-import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.plugin.java.JavaPlugin;
 
 import javax.annotation.Nonnull;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import javax.annotation.Nullable;
 
 /**
+ * Yeah it need to be updated.
  * @author Final_ROOT
  */
 public class CraftItemGroup extends FlexItemGroup {
-    private static final JavaPlugin JAVA_PLUGIN = FinalTech.getInstance();
-
-    private final int backSlot = 1;
-    private final int previousSlot = 3;
-    private final int nextSlot = 5;
-    private final int iconSlot = 7;
-    private final int[] border = new int[] {0, 2, 4, 6, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17};
-    private final int[] mainContentSlot = new int[] {
-            18, 19, 20, 21, 22, 23, 24, 25, 26,
-            27, 28, 29, 30, 31, 32, 33, 34, 35,
-            36, 37, 38, 39, 40, 41, 42, 43, 44,
-            45, 46, 47, 48, 49, 50, 51, 52, 53};
-
-
-    private final Map<SlimefunItem, CraftItemGroup> itemMap = new LinkedHashMap<>();
-
+    private final InventoryHistoryService inventoryHistoryService;
+    private final ItemStack itemStack;
     private final int page;
-    private Map<Integer, CraftItemGroup> pageMap = new LinkedHashMap<>();
-    private final SlimefunItem slimefunItem;
-    private final List<SlimefunItem> slimefunItemList;
 
-    protected CraftItemGroup(NamespacedKey key, SlimefunItem slimefunItem) {
-        super(key, MachineUtil.cloneAsDescriptiveItem(slimefunItem));
-        this.page = 1;
-        this.slimefunItem = slimefunItem;
-        this.slimefunItemList = new ArrayList<>();
-
-        List<SlimefunItem> sfItemList = SlimefunCraftRegistry.getInstance().getCraftSlimefunItemList(slimefunItem);
-        for(SlimefunItem sfItem : sfItemList) {
-            if(!sfItem.isDisabled() && !sfItem.isHidden()) {
-                this.slimefunItemList.add(sfItem);
-            }
-        }
-
-        this.pageMap.put(1, this);
-        this.itemMap.put(slimefunItem, this);
+    protected CraftItemGroup(@Nonnull NamespacedKey key, @Nonnull SlimefunItem slimefunItem, @Nonnull InventoryHistoryService inventoryHistoryService, int page) {
+        super(key, MachineUtil.cloneAsDescriptiveItem(slimefunItem.getItem()));
+        this.inventoryHistoryService = inventoryHistoryService;
+        this.itemStack = slimefunItem.getItem();
+        this.page = page;
     }
 
-    protected CraftItemGroup(NamespacedKey key, SlimefunItem slimefunItem, int page) {
-        super(key, MachineUtil.cloneAsDescriptiveItem(slimefunItem));
+    protected CraftItemGroup(@Nonnull NamespacedKey key, @Nonnull ItemStack itemStack, @Nonnull InventoryHistoryService inventoryHistoryService, int page) {
+        super(key, MachineUtil.cloneAsDescriptiveItem(itemStack));
+        this.inventoryHistoryService = inventoryHistoryService;
+        this.itemStack = itemStack;
         this.page = page;
-        this.slimefunItem = slimefunItem;
-        this.slimefunItemList = new ArrayList<>();
-
-        List<SlimefunItem> sfItemList = SlimefunCraftRegistry.getInstance().getCraftSlimefunItemList(slimefunItem);
-        for(SlimefunItem sfItem : sfItemList) {
-            if(!sfItem.isDisabled() && !sfItem.isHidden()) {
-                this.slimefunItemList.add(sfItem);
-            }
-        }
     }
 
     @Override
@@ -94,138 +46,43 @@ public class CraftItemGroup extends FlexItemGroup {
     }
 
     @Override
-    public void open(Player player, PlayerProfile playerProfile, SlimefunGuideMode slimefunGuideMode) {
-        playerProfile.getGuideHistory().add(this, this.page);
-        this.generateMenu(player, playerProfile, slimefunGuideMode).open(player);
-    }
-
-    public void refresh(@Nonnull Player player, @Nonnull PlayerProfile playerProfile, @Nonnull SlimefunGuideMode slimefunGuideMode) {
-        GuideUtil.removeLastEntry(playerProfile.getGuideHistory());
-        this.open(player, playerProfile, slimefunGuideMode);
+    public void open(@Nonnull Player player, @Nonnull PlayerProfile playerProfile, @Nonnull SlimefunGuideMode slimefunGuideMode) {
+        this.inventoryHistoryService.tryAddToLast(player, this);
+        new CraftItemGroupInventory(player, playerProfile, slimefunGuideMode, this.inventoryHistoryService, this, this.page).open(player);
     }
 
     @Nonnull
-    private VirtualInventory generateMenu(@Nonnull Player player, @Nonnull PlayerProfile playerProfile, @Nonnull SlimefunGuideMode slimefunGuideMode) {
-        int size = 54;
-        SimpleVirtualInventory virtualInventory = new SimpleVirtualInventory(size, this.slimefunItem.getItemName());
-        virtualInventory.setAllowClickPlayerInventory(false);
-
-        for (int slot : JavaUtil.generateInts(size)) {
-            virtualInventory.setOnClick(slot, virtualInventory.CANCEL_CLICK_CONSUMER);
-        }
-
-        virtualInventory.setOnOpen(inventoryOpenEvent -> player.playSound(player.getLocation(), Sound.ITEM_BOOK_PAGE_TURN, 1, 1));
-
-        virtualInventory.getInventory().setItem(this.backSlot, ChestMenuUtils.getBackButton(player));
-        virtualInventory.setOnClick(this.backSlot, inventoryClickEvent -> {
-            inventoryClickEvent.setCancelled(true);
-
-            GuideHistory guideHistory = playerProfile.getGuideHistory();
-            if (inventoryClickEvent.getClick().isShiftClick()) {
-                SlimefunGuide.openMainMenu(playerProfile, slimefunGuideMode, guideHistory.getMainMenuPage());
-            } else {
-                guideHistory.goBack(Slimefun.getRegistry().getSlimefunGuide(SlimefunGuideMode.SURVIVAL_MODE));
-            }
-        });
-
-        virtualInventory.getInventory().setItem(this.previousSlot, ChestMenuUtils.getPreviousButton(player, this.page, (this.slimefunItemList.size() - 1) / this.mainContentSlot.length + 1));
-        virtualInventory.setOnClick(this.previousSlot, inventoryClickEvent -> {
-            inventoryClickEvent.setCancelled(true);
-
-            GuideUtil.removeLastEntry(playerProfile.getGuideHistory());
-            CraftItemGroup craftItemGroup = this.getByPage(Math.max(this.page - 1, 1));
-            craftItemGroup.open(player, playerProfile, slimefunGuideMode);
-        });
-
-        virtualInventory.getInventory().setItem(this.nextSlot, ChestMenuUtils.getNextButton(player, this.page, (this.slimefunItemList.size() - 1) / this.mainContentSlot.length + 1));
-        virtualInventory.setOnClick(this.nextSlot, inventoryClickEvent -> {
-            inventoryClickEvent.setCancelled(true);
-
-            GuideUtil.removeLastEntry(playerProfile.getGuideHistory());
-            CraftItemGroup craftItemGroup = this.getByPage(Math.min(this.page + 1, (this.slimefunItemList.size() - 1) / this.mainContentSlot.length + 1));
-            craftItemGroup.open(player, playerProfile, slimefunGuideMode);
-        });
-
-        virtualInventory.getInventory().setItem(this.iconSlot, ItemStackUtil.cloneWithoutNBT(super.item));
-        for (int slot : this.border) {
-            virtualInventory.getInventory().setItem(slot, ChestMenuUtils.getBackground());
-        }
-
-        for (int i = 0; i < this.mainContentSlot.length; i++) {
-            int index = i + this.page * this.mainContentSlot.length - this.mainContentSlot.length;
-            if (index < this.slimefunItemList.size()) {
-                SlimefunItem slimefunItem = this.slimefunItemList.get(index);
-                Research research = slimefunItem.getResearch();
-                if (playerProfile.hasUnlocked(research)) {
-                    ItemStack itemStack = MachineUtil.cloneAsDescriptiveItem(slimefunItem);
-                    ItemStackUtil.addLoreToFirst(itemStack, "§7" + slimefunItem.getId());
-                    virtualInventory.getInventory().setItem(this.mainContentSlot[i], itemStack);
-                    virtualInventory.setOnClick(this.mainContentSlot[i], inventoryClickEvent -> {
-                        inventoryClickEvent.setCancelled(true);
-
-                        RecipeItemGroup recipeItemGroup = RecipeItemGroup.getByItemStack(player, playerProfile, slimefunGuideMode, slimefunItem.getItem());
-                        if (recipeItemGroup != null) {
-                            Bukkit.getScheduler().runTask(JAVA_PLUGIN, () -> recipeItemGroup.open(player, playerProfile, slimefunGuideMode));
-                        }
-                    });
-                } else {
-                    ItemStack icon = ItemStackUtil.cloneItem(ChestMenuUtils.getNotResearchedItem());
-                    List<String> stringList = new ArrayList<>();
-                    stringList.add("§7" + research.getName(player));
-                    stringList.add("§4§l" + Slimefun.getLocalization().getMessage(player, "guide.locked"));
-                    stringList.add("§a> Click to unlock");
-                    if(research instanceof SpecialResearch specialResearch) {
-                        stringList.addAll(List.of(specialResearch.getShowText(player)));
-                    } else {
-                        stringList.add("");
-                        stringList.add("§7Cost: §b" + research.getCost() + " Level(s)");
-                    }
-                    ItemStackUtil.setLore(icon, stringList);
-                    virtualInventory.getInventory().setItem(this.mainContentSlot[i], icon);
-                    virtualInventory.setOnClick(this.mainContentSlot[i], inventoryClickEvent -> {
-                        inventoryClickEvent.setCancelled(true);
-
-                        PlayerPreResearchEvent event = new PlayerPreResearchEvent(player, research, slimefunItem);
-                        Bukkit.getPluginManager().callEvent(event);
-
-                        if (!event.isCancelled() && !playerProfile.hasUnlocked(research)) {
-                            if (research.canUnlock(player)) {
-                                Slimefun.getRegistry().getSlimefunGuide(SlimefunGuideMode.SURVIVAL_MODE).unlockItem(player, slimefunItem, player1 -> this.refresh(player, playerProfile, slimefunGuideMode));
-                            } else {
-                                this.refresh(player, playerProfile, slimefunGuideMode);
-                                Slimefun.getLocalization().sendMessage(player, "messages.not-enough-xp", true);
-                            }
-                        } else {
-                            GuideUtil.removeLastEntry(playerProfile.getGuideHistory());
-                            this.open(player, playerProfile, slimefunGuideMode);
-                        }
-                    });
-                }
-            }
-        }
-
-        return virtualInventory;
+    public ItemStack getItemStack() {
+        return this.itemStack;
     }
 
     @Nonnull
-    private CraftItemGroup getByPage(int page) {
-        if (this.pageMap.containsKey(page)) {
-            return this.pageMap.get(page);
+    public CraftItemGroup generateByPage(int page) {
+        // TODO remove finaltech
+        return new CraftItemGroup(new NamespacedKey(FinalTech.getInstance(), this.key.getKey() + "_" + page), this.itemStack, this.inventoryHistoryService, page);
+    }
+
+    @Nonnull
+    public static CraftItemGroup getBySlimefunItem(@Nonnull SlimefunItem slimefunItem, @Nonnull InventoryHistoryService inventoryHistoryService) {
+        return new CraftItemGroup(new NamespacedKey(FinalTech.getInstance(), "FINALTECH_CRAFT_ITEM_GROUP_" + slimefunItem.getId().hashCode()), slimefunItem, inventoryHistoryService, 1);
+    }
+
+    @Nullable
+    public static CraftItemGroup getByItemStack(@Nonnull ItemStack itemStack, @Nonnull InventoryHistoryService inventoryHistoryService) {
+        String id = null;
+        if (ItemStackUtil.isRawMaterial(itemStack)) {
+            id = SlimefunCraftRegistry.getInstance().generateIdByMaterial(itemStack.getType());
         } else {
-            synchronized (this.pageMap.get(1)) {
-                if (this.pageMap.containsKey(page)) {
-                    return this.pageMap.get(page);
-                }
-                CraftItemGroup craftItemGroup = new CraftItemGroup(new NamespacedKey(JAVA_PLUGIN, this.getKey().getKey() + "_" + page), this.slimefunItem, page);
-                craftItemGroup.pageMap = this.pageMap;
-                this.pageMap.put(page, craftItemGroup);
-                return craftItemGroup;
+            SlimefunItem slimefunItem = SlimefunItem.getByItem(itemStack);
+            if (slimefunItem != null) {
+                id = slimefunItem.getId();
             }
         }
-    }
 
-    @Nonnull
-    public static CraftItemGroup getBySlimefunItem(@Nonnull SlimefunItem slimefunItem) {
-        return new CraftItemGroup(new NamespacedKey(JAVA_PLUGIN, "FINALTECH_" + slimefunItem.getId().hashCode()), slimefunItem);
+        if (id == null) {
+            return null;
+        }
+
+        return new CraftItemGroup(new NamespacedKey(FinalTech.getInstance(), "FINALTECH_CRAFT_ITEM_GROUP_" + id.hashCode()), itemStack, inventoryHistoryService, 1);
     }
 }

@@ -76,7 +76,7 @@ public class ManualCraftMachineInventory extends AbstractManualMachineInventory 
 
     @Override
     public int getSize() {
-        return 0;
+        return 54;
     }
 
     @Override
@@ -106,16 +106,19 @@ public class ManualCraftMachineInventory extends AbstractManualMachineInventory 
 
     }
 
+    @Nonnull
     @Override
     protected int[] getBorder() {
         return border;
     }
 
+    @Nonnull
     @Override
     protected int[] getInputBorder() {
         return inputBorder;
     }
 
+    @Nonnull
     @Override
     protected int[] getOutputBorder() {
         return outputBorder;

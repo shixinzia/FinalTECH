@@ -3,24 +3,23 @@ package io.taraxacum.finaltech.core.item.machine.range.point.face;
 import io.github.thebusybiscuit.slimefun4.api.items.ItemGroup;
 import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItem;
 import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItemStack;
-import io.github.thebusybiscuit.slimefun4.api.recipes.RecipeType;
 import io.github.thebusybiscuit.slimefun4.core.handlers.BlockBreakHandler;
 import io.github.thebusybiscuit.slimefun4.core.handlers.BlockPlaceHandler;
 import io.taraxacum.finaltech.FinalTech;
 import io.taraxacum.finaltech.core.interfaces.LocationMachine;
+import io.taraxacum.finaltech.core.interfaces.RecipeItem;
 import io.taraxacum.finaltech.core.inventory.AbstractMachineInventory;
 import io.taraxacum.finaltech.core.inventory.cargo.AdvancedAutoCraftInventory;
-import io.taraxacum.finaltech.util.*;
-import io.taraxacum.libs.plugin.dto.LocationData;
-import io.taraxacum.libs.plugin.util.InventoryUtil;
-import io.taraxacum.libs.slimefun.dto.AdvancedCraft;
-import io.taraxacum.libs.plugin.dto.AdvancedMachineRecipe;
 import io.taraxacum.finaltech.core.option.Icon;
-import io.taraxacum.finaltech.core.interfaces.RecipeItem;
-import io.taraxacum.libs.plugin.dto.InvWithSlots;
-import io.taraxacum.libs.plugin.util.ItemStackUtil;
 import io.taraxacum.finaltech.core.option.SlotSearchOrder;
 import io.taraxacum.finaltech.core.option.SlotSearchSize;
+import io.taraxacum.finaltech.util.*;
+import io.taraxacum.libs.plugin.dto.AdvancedMachineRecipe;
+import io.taraxacum.libs.plugin.dto.InvWithSlots;
+import io.taraxacum.libs.plugin.dto.LocationData;
+import io.taraxacum.libs.plugin.util.InventoryUtil;
+import io.taraxacum.libs.plugin.util.ItemStackUtil;
+import io.taraxacum.libs.slimefun.dto.AdvancedCraft;
 import io.taraxacum.libs.slimefun.util.LocationDataUtil;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
@@ -40,8 +39,8 @@ public class AdvancedAutoCraft extends AbstractFaceMachine implements RecipeItem
     private final Set<String> notAllowedId = new HashSet<>(ConfigUtil.getItemStringList(this, "not-allowed-id"));
     private AdvancedAutoCraftInventory advancedAutoCraftInventory;
 
-    public AdvancedAutoCraft(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
-        super(itemGroup, item, recipeType, recipe);
+    public AdvancedAutoCraft(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item) {
+        super(itemGroup, item);
     }
 
     @Nullable

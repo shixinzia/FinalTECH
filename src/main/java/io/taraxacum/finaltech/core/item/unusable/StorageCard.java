@@ -2,14 +2,13 @@ package io.taraxacum.finaltech.core.item.unusable;
 
 import io.github.thebusybiscuit.slimefun4.api.items.ItemGroup;
 import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItemStack;
-import io.github.thebusybiscuit.slimefun4.api.recipes.RecipeType;
 import io.taraxacum.finaltech.FinalTech;
 import io.taraxacum.finaltech.core.interfaces.RecipeItem;
 import io.taraxacum.finaltech.setup.FinalTechItemStacks;
-import io.taraxacum.libs.plugin.util.ItemStackUtil;
-import io.taraxacum.finaltech.util.StringItemUtil;
-import io.taraxacum.libs.plugin.util.TextUtil;
 import io.taraxacum.finaltech.util.RecipeUtil;
+import io.taraxacum.finaltech.util.StringItemUtil;
+import io.taraxacum.libs.plugin.util.ItemStackUtil;
+import io.taraxacum.libs.plugin.util.TextUtil;
 import io.taraxacum.libs.slimefun.interfaces.ValidItem;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -31,8 +30,8 @@ public class StorageCard extends UnusableSlimefunItem implements RecipeItem, Val
     private final String itemLoreWithoutColor = "⌫⌧⌧⌧⌧⌧⌧⌧⌧⌧⌧⌧⌧⌧⌧⌧⌧⌧⌧⌧⌧⌦";
     private final String itemLore = TextUtil.colorRandomString(this.itemLoreWithoutColor);
 
-    public StorageCard(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
-        super(itemGroup, item, recipeType, recipe);
+    public StorageCard(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item) {
+        super(itemGroup, item);
         ItemStackUtil.addLoreToFirst(item, this.itemLore);
     }
 

@@ -4,6 +4,9 @@ import org.bukkit.entity.Player;
 
 import javax.annotation.Nonnull;
 
+/**
+ * @author Final_ROOT
+ */
 public interface InventoryHistoryService {
 
     void openLast(@Nonnull Player player);

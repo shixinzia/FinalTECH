@@ -3,17 +3,12 @@ package io.taraxacum.finaltech.core.item.usable;
 import io.github.thebusybiscuit.slimefun4.api.events.PlayerRightClickEvent;
 import io.github.thebusybiscuit.slimefun4.api.items.ItemGroup;
 import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItemStack;
-import io.github.thebusybiscuit.slimefun4.api.recipes.RecipeType;
 import io.github.thebusybiscuit.slimefun4.libraries.dough.protection.Interaction;
 import io.taraxacum.finaltech.FinalTech;
-import io.taraxacum.finaltech.util.ConfigUtil;
+import io.taraxacum.finaltech.core.interfaces.RecipeItem;
+import io.taraxacum.finaltech.util.*;
 import io.taraxacum.libs.plugin.dto.LocationData;
 import io.taraxacum.libs.plugin.util.ParticleUtil;
-import io.taraxacum.finaltech.util.PlayerUtil;
-import io.taraxacum.finaltech.core.interfaces.RecipeItem;
-import io.taraxacum.finaltech.util.PermissionUtil;
-import io.taraxacum.finaltech.util.RecipeUtil;
-import io.taraxacum.finaltech.util.LocationUtil;
 import io.taraxacum.libs.slimefun.dto.SlimefunLocationData;
 import io.taraxacum.libs.slimefun.service.SlimefunLocationDataService;
 import io.taraxacum.libs.slimefun.util.LocationDataUtil;
@@ -36,8 +31,8 @@ import java.util.Set;
 public class LocationRecorder extends UsableSlimefunItem implements RecipeItem {
     private final Set<String> notAllowedId = new HashSet<>(ConfigUtil.getItemStringList(this, "not-allowed-id"));
 
-    public LocationRecorder(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
-        super(itemGroup, item, recipeType, recipe);
+    public LocationRecorder(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item) {
+        super(itemGroup, item);
     }
 
     @Override

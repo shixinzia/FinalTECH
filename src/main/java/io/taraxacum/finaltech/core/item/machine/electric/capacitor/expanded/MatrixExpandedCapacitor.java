@@ -3,15 +3,14 @@ package io.taraxacum.finaltech.core.item.machine.electric.capacitor.expanded;
 import io.github.thebusybiscuit.slimefun4.api.items.ItemGroup;
 import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItem;
 import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItemStack;
-import io.github.thebusybiscuit.slimefun4.api.recipes.RecipeType;
+import io.taraxacum.common.util.StringNumberUtil;
 import io.taraxacum.finaltech.FinalTech;
 import io.taraxacum.finaltech.core.inventory.AbstractMachineInventory;
 import io.taraxacum.finaltech.core.inventory.unit.StatusL2Inventory;
 import io.taraxacum.finaltech.setup.FinalTechItems;
+import io.taraxacum.finaltech.util.ConfigUtil;
 import io.taraxacum.libs.plugin.dto.LocationData;
 import io.taraxacum.libs.plugin.util.ItemStackUtil;
-import io.taraxacum.common.util.StringNumberUtil;
-import io.taraxacum.finaltech.util.ConfigUtil;
 import org.bukkit.block.Block;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
@@ -26,8 +25,8 @@ public class MatrixExpandedCapacitor extends AbstractExpandedElectricCapacitor {
     private final int capacity = ConfigUtil.getOrDefaultItemSetting(2000000000, this, "capacity");
     private final int stack = ConfigUtil.getOrDefaultItemSetting(2000000000, this, "max-stack");
 
-    public MatrixExpandedCapacitor(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
-        super(itemGroup, item, recipeType, recipe);
+    public MatrixExpandedCapacitor(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item) {
+        super(itemGroup, item);
     }
 
     @Nullable

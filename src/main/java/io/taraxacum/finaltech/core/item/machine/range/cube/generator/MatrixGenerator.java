@@ -3,21 +3,22 @@ package io.taraxacum.finaltech.core.item.machine.range.cube.generator;
 import io.github.thebusybiscuit.slimefun4.api.items.ItemGroup;
 import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItem;
 import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItemStack;
-import io.github.thebusybiscuit.slimefun4.api.recipes.RecipeType;
 import io.github.thebusybiscuit.slimefun4.core.attributes.EnergyNetComponent;
 import io.github.thebusybiscuit.slimefun4.core.networks.energy.EnergyNetComponentType;
 import io.taraxacum.common.util.JavaUtil;
 import io.taraxacum.finaltech.FinalTech;
 import io.taraxacum.finaltech.core.option.RouteShow;
 import io.taraxacum.finaltech.setup.FinalTechItems;
-import io.taraxacum.finaltech.util.*;
+import io.taraxacum.finaltech.util.BlockTickerUtil;
+import io.taraxacum.finaltech.util.ConfigUtil;
+import io.taraxacum.finaltech.util.ConstantTableUtil;
+import io.taraxacum.finaltech.util.RecipeUtil;
 import io.taraxacum.libs.plugin.dto.LocationData;
 import io.taraxacum.libs.plugin.util.ItemStackUtil;
-import io.taraxacum.finaltech.util.BlockTickerUtil;
 import io.taraxacum.libs.plugin.util.ParticleUtil;
 import io.taraxacum.libs.slimefun.util.EnergyUtil;
 import io.taraxacum.libs.slimefun.util.LocationDataUtil;
-import org.bukkit.*;
+import org.bukkit.Particle;
 import org.bukkit.block.Block;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
@@ -32,8 +33,8 @@ public class MatrixGenerator extends AbstractCubeElectricGenerator {
     private final int energy = ConfigUtil.getOrDefaultItemSetting(1, this, "energy");
     private final int range = ConfigUtil.getOrDefaultItemSetting(10, this, "range");
 
-    public MatrixGenerator(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
-        super(itemGroup, item, recipeType, recipe);
+    public MatrixGenerator(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item) {
+        super(itemGroup, item);
     }
 
     @Override

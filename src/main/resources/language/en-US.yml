@@ -1,5 +1,5 @@
 FinalTech: 'FinalTECH'
-helper:
+option:
   ICON:
     consumer:
       name: '{color:normal}Consumer'
@@ -43,6 +43,13 @@ helper:
       name: '{color:normal}Status'
     error:
       name: '{color:normal}Error'
+    descriptive-item:
+      minecraft: '§9minecraft'
+      default: '§9{1}'
+      Slimefun: '§9Slimefun'
+    main-icon:
+      name: "FinalTech"
+      lore: "Test"
   CARGO_ORDER:
     positive:
       name: '{color:normal}Cargo Order {color:conceal}- {color:random}Positive'
@@ -165,6 +172,30 @@ helper:
       name: '{color:normal}Slot Search Order {color:conceal}- {color:random}Random'
       lore:
         - '{color:normal}Randomly use the result of {color:stress}slot search size'
+  SLOT_SEARCH_LINE:
+    l1:
+      name: '{color:normal}Slot Search Line {color:conceal}- {color:random}1'
+    l2:
+      name: '{color:normal}Slot Search Line {color:conceal}- {color:random}2'
+    l3:
+      name: '{color:normal}Slot Search Line {color:conceal}- {color:random}3'
+    'null':
+      lore:
+        - '{color:stress}Null'
+        - '{color:normal}Do nothing for this side'
+    input:
+      lore:
+        - '{color:stress}Input'
+        - '{color:normal}Do input for this side'
+    output:
+      lore:
+        - '{color:stress}Output'
+        - '{color:normal}Do output for this side'
+    input-and-output:
+      lore:
+        - '{color:stress}Input And Output'
+        - '{color:normal}Do input for this side'
+        - '{color:normal}Do output for this side'
   BLOCK_SEARCH_MODE:
     zero:
       name: '{color:normal}Block Search Mode {color:conceal}- {color:random}Zero'
@@ -256,7 +287,7 @@ helper:
       lore:
         - '{color:normal}Recipe Lock is disabled'
         - '{color:action}[Left-click] {color:normal}Enable or reset {color:stress}Recipe Lock'
-        - '{color:action}[Right-click] {color:normal}Disable {color:stress}Recipe Lock'
+        - '{color:action}[Right-Click] {color:normal}Disable {color:stress}Recipe Lock'
     input:
       title:
         - '{color:stress}Inputs:'
@@ -271,7 +302,7 @@ helper:
       lore:
         - '{color:normal}Recipe Lock is disabled'
         - '{color:action}[Left-click] {color:normal}Enable or reset {color:stress}Recipe Lock'
-        - '{color:action}[Right-click] {color:normal}Disable {color:stress}Recipe Lock'
+        - '{color:action}[Right-Click] {color:normal}Disable {color:stress}Recipe Lock'
     lock-off:
       lore:
         - '{color:normal}Make the machine work to lock one recipe'
@@ -289,6 +320,15 @@ helper:
       name: '{color:normal}Force Close {color:conceal}- {color:random}True'
       lore:
         - '{color:normal}Close menu if not work'
+  ENABLE:
+    'false':
+      name: '{color:normal}Enable {color:conceal}- {color:random}False'
+      lore:
+        - '{color:normal}not enabled'
+    'true':
+      name: '{color:normal}Enable {color:conceal}- {color:random}True'
+      lore:
+        - '{color:normal}enabled'
 categories:
   FINALTECH_ITEM_GROUP:
     name: '{color:random}FINAL TECH'
@@ -298,10 +338,10 @@ categories:
     name: '{color:random}Material'
   FINALTECH_SUB_MENU_LOGIC_ITEM:
     name: '{color:random}Logic Item'
-  FINALTECH_SUB_MENU_CONSUMABLE:
-    name: '{color:random}Consumable'
   FINALTECH_SUB_MENU_TOOL:
     name: '{color:random}Tool'
+  FINALTECH_SUB_MENU_CONSUMABLE:
+    name: '{color:random}Consumable'
   FINALTECH_SUB_MENU_WEAPON:
     name: '{color:random}Weapon'
   FINALTECH_MAIN_MENU_ELECTRICITY_SYSTEM:
@@ -357,6 +397,129 @@ categories:
   FINALTECH_SUB_MENU_DEPRECATED:
     name: '{color:random}Deprecated'
 items:
+  FINALTECH_GEARWHEEL:
+    name: '{color:prandom}Gearwheel'
+    info:
+      1:
+        name: '{color:initiative}Additional Crafting'
+        lore:
+          - '{color:normal}Can be crafted in vanilla crafting table'
+        output: 'CRAFTING_TABLE'
+  FINALTECH_BIT:
+    name: '{color:prandom}Bit'
+  FINALTECH_META:
+    name: '{color:prandom}Meta'
+  FINALTECH_UNORDERED_DUST:
+    name: '{color:prandom}Unordered Dust'
+  FINALTECH_ORDERED_DUST:
+    name: '{color:prandom}Ordered Dust'
+  FINALTECH_ETHER:
+    name: '{color:prandom}Ether'
+    info:
+      1:
+        name: '{color:initiative}Production method'
+        lore:
+          - '{color:normal}This is a GEO resource'
+          - '{color:normal}It should be mined by {id:FINALTECH_ETHER_MINER}'
+        output: 'FINALTECH_ETHER_MINER'
+  FINALTECH_BUG:
+    name: '{color:prandom}Bug'
+    info:
+      1:
+        name: '{color:initiative}Production method'
+        lore:
+          - '{color:normal}Can be obtained in {id:FINALTECH_EQUIVALENT_EXCHANGE_TABLE}'
+        output: 'FINALTECH_EQUIVALENT_EXCHANGE_TABLE'
+  FINALTECH_ENTROPY:
+    name: '{color:prandom}Entropy'
+    info:
+      1:
+        name: '{color:initiative}Production method'
+        lore:
+          - '{color:normal}Can be obtained in {id:FINALTECH_ENTROPY_CONSTRUCTOR}'
+        output: 'FINALTECH_ENTROPY_CONSTRUCTOR'
+  FINALTECH_COPY_CARD:
+    name: '{color:prandom}Copy Card'
+    info:
+      1:
+        name: '{color:initiative}Production method'
+        lore:
+          - '{color:normal}Can be crafted in {id:FINALTECH_COPY_CARD_FACTORY} {color:normal}(Only for Slimefun items)'
+          - '{color:normal}Can be crafted in {id:FINALTECH_MATRIX_COPY_CARD_FACTORY} {color:normal}(Support all items)'
+        output: 'FINALTECH_COPY_CARD_FACTORY'
+      2:
+        name: '{color:passive}Mechanism'
+        lore:
+          - '{color:normal}Slowly generate specified item in {id:FINALTECH_COPY_CARD_DUPLICATOR}'
+        output: 'FINALTECH_COPY_CARD_DUPLICATOR'
+    status:
+      lore:
+        - '{color:normal}Item name: {color:number}{1}'
+        - '{color:normal}Item amount: {color:number}{2}'
+  FINALTECH_ANNULAR:
+    name: '{color:prandom}Annular'
+    info:
+      1:
+        name: '{color:initiative}Production method'
+        lore:
+          - '{color:normal}Can be crafted in {id:ANNULAR_CRAFT_TABLE}'
+        output: 'ANNULAR_CRAFT_TABLE'
+  FINALTECH_SINGULARITY:
+    name: '{color:prandom}Singularity'
+    info:
+      1:
+        name: '{color:initiative}Production method'
+        lore:
+          - '{color:normal}Can be crafted in {id:FINALTECH_PHONY_FACTORY}'
+          - '{color:normal}Can be crafted in {id:FINALTECH_MATRIX_PHONY_FACTORY}'
+        output: 'FINALTECH_PHONY_FACTORY'
+  FINALTECH_SPIROCHETE:
+    name: '{color:prandom}Spirochete'
+    info:
+      1:
+        name: '{color:initiative}Production method'
+        lore:
+          - '{color:normal}Can be crafted in {id:FINALTECH_PHONY_FACTORY}'
+          - '{color:normal}Can be crafted in {id:FINALTECH_MATRIX_PHONY_FACTORY}'
+        output: 'FINALTECH_PHONY_FACTORY'
+  FINALTECH_SHELL:
+    name: '{color:prandom}Shell'
+    info:
+      1:
+        name: '{color:positive}Usage'
+        lore:
+          - '{color:normal}Can be used to copy one {id:FINALTECH_COPY_CARD} {color:normal}in {id:FINALTECH_COPY_CARD_DUPLICATION_TABLE}'
+        output: 'FINALTECH_COPY_CARD_DUPLICATION_TABLE'
+  FINALTECH_PHONY:
+    name: '{color:prandom}Phony'
+    info:
+      1:
+        name: '{color:initiative}Production method'
+        lore:
+          - '{color:normal}Can be crafted in {id:FINALTECH_PHONY_FACTORY}'
+          - '{color:normal}Can be crafted in {id:FINALTECH_MATRIX_PHONY_FACTORY}'
+        output: 'FINALTECH_PHONY_FACTORY'
+      2:
+        name: '{color:initiative}Production method'
+        lore:
+          - '{color:normal}Can be crafted in {id:FINALTECH_PHONY_CRAFT_TABLE}'
+        output: 'FINALTECH_PHONY_CRAFT_TABLE'
+  FINALTECH_JUSTIFIABILITY:
+    name: '{color:prandom}Justifiability'
+    info:
+      1:
+        name: '{color:initiative}Production method'
+        lore:
+          - '{color:normal}Can be obtained by using {id:FINALTECH_ENTROPY_SEED}'
+        output: 'FINALTECH_ENTROPY_SEED'
+  FINALTECH_EQUIVALENT_CONCEPT:
+    name: '{color:prandom}Equivalent Concept'
+    info:
+      1:
+        name: '{color:initiative}Production method'
+        lore:
+          - '{color:normal}Can be obtained by using {id:FINALTECH_ENTROPY_SEED}'
+        output: 'FINALTECH_ENTROPY_SEED'
   FINALTECH_WATER_CARD:
     name: '{color:prandom}Water Card'
     info:
@@ -384,112 +547,7 @@ items:
       1:
         name: '{color:positive}Usage'
         lore:
-          - '{color:normal}Can be used to replace fline and steel in some machine'
-  FINALTECH_GEARWHEEL:
-    name: '{color:prandom}Gearwheel'
-    info:
-      1:
-        name: '{color:initiative}Additional Crafting'
-        lore:
-          - '{color:normal}Can be crafted in vanilla crafting table'
-        output: 'CRAFTING_TABLE'
-  FINALTECH_UNORDERED_DUST:
-    name: '{color:prandom}Unordered Dust'
-  FINALTECH_ORDERED_DUST:
-    name: '{color:prandom}Ordered Dust'
-  FINALTECH_BUG:
-    name: '{color:prandom}Bug'
-    info:
-      1:
-        name: '{color:initiative}Production method'
-        lore:
-          - '{color:normal}Can be obtained in {id:FINALTECH_EQUIVALENT_EXCHANGE_TABLE}'
-        output: 'FINALTECH_EQUIVALENT_EXCHANGE_TABLE'
-  FINALTECH_ENTROPY:
-    name: '{color:prandom}Entropy'
-    info:
-      1:
-        name: '{color:initiative}Production method'
-        lore:
-          - '{color:normal}Can be obtained in {id:FINALTECH_ENTROPY_CONSTRUCTOR}'
-        output: 'FINALTECH_ENTROPY_CONSTRUCTOR'
-      2:
-        name: '{color:initiative}Production method'
-        lore:
-          - '{color:normal}Can be obtained in {id:FINALTECH_BASIC_LOGIC_FACTORY}'
-        output: 'FINALTECH_BASIC_LOGIC_FACTORY'
-  FINALTECH_ETHER:
-    name: '{color:prandom}Ether'
-    info:
-      1:
-        name: '{color:initiative}Production method'
-        lore:
-          - '{color:normal}This is a GEO resource'
-          - '{color:normal}It should be mined by {id:FINALTECH_ETHER_MINER}'
-        output: 'FINALTECH_ETHER_MINER'
-  FINALTECH_BOX:
-    name: '{color:prandom}Box'
-    info:
-      1:
-        name: '{color:initiative}Obtaining method'
-        lore:
-          - '{color:normal}Will be generated while:'
-          - '{color:normal}Player get dead'
-          - '{color:normal}The death place is 64 blocks above world max height'
-    message: '{color:normal}You forget something :D'
-  FINALTECH_SHINE:
-    name: '{color:prandom}Shine'
-    info:
-      1:
-        name: '{color:initiative}Obtaining method'
-        lore:
-          - '{color:normal}Can be obtained while:'
-          - '{color:normal}Player is damaged'
-          - '{color:normal}Player is 64 blocks below world minimum height'
-          - '{color:normal}Player carries {id:FINALTECH_BOX}'
-      2:
-        name: '{color:negative}Void Curse'
-        lore:
-          - '{color:normal}While obtaining {id:FINALTECH_SHINE}'
-          - '{color:normal}Player will be cursed by void for a short time'
-      3:
-        name: '{color:negative}Notice'
-        lore:
-          - '{color:normal}While carrying {id:FINALTECH_SHINE} {color:normal}or {id:FINALTECH_BOX}'
-          - '{color:normal}The void damage player get will be enlarged greatly'
-      4:
-        name: '{color:negative}Notice'
-        lore:
-          - '{color:normal}While carrying {id:FINALTECH_BOX}'
-          - '{color:normal}if player is in low place or cursed by void'
-          - '{color:negative}Player will lose all his items after death!!!'
-    message: '{color:normal}You forget something :D'
-  FINALTECH_COPY_CARD:
-    name: '{color:prandom}Copy Card'
-    info:
-      1:
-        name: '{color:initiative}Production method'
-        lore:
-          - '{color:normal}Can be crafted in {id:FINALTECH_ITEM_SERIALIZATION_CONSTRUCTOR} {color:normal}(Only for Slimefun items)'
-          - '{color:normal}Can be crafted in {id:FINALTECH_MATRIX_ITEM_SERIALIZATION_CONSTRUCTOR} {color:normal}(Support all items)'
-        output: 'FINALTECH_ITEM_SERIALIZATION_CONSTRUCTOR'
-      2:
-        name: '{color:passive}Mechanism'
-        lore:
-          - '{color:normal}Slowly generate specified item in {id:FINALTECH_ITEM_DESERIALIZE_PARSER}'
-        output: 'FINALTECH_ITEM_DESERIALIZE_PARSER'
-    status:
-      lore:
-        - '{color:normal}Item name: {color:number}{1}'
-        - '{color:normal}Item amount: {color:number}{2}'
-  FINALTECH_ANNULAR:
-    name: '{color:prandom}Annular'
-    info:
-      1:
-        name: '{color:initiative}Production method'
-        lore:
-          - '{color:normal}Can be crafted in {id:FINALTECH_CARD_OPERATION_TABLE}'
-        output: 'FINALTECH_CARD_OPERATION_TABLE'
+          - '{color:normal}Can be used to replace flint and steel in some machine'
   FINALTECH_QUANTITY_MODULE:
     name: '{color:prandom}Quantity Module'
     info:
@@ -526,62 +584,6 @@ items:
         name: '{color:passive}Mechanism'
         lore:
           - '{color:normal}Efficiency: {color:number}n * {1} + nd{2} {color:conceal}(n = item amount)'
-  FINALTECH_SINGULARITY:
-    name: '{color:prandom}Singularity'
-    info:
-      1:
-        name: '{color:initiative}Production method'
-        lore:
-          - '{color:normal}Can be crafted in {id:FINALTECH_ITEM_SERIALIZATION_CONSTRUCTOR}'
-          - '{color:normal}Can be crafted in {id:FINALTECH_MATRIX_ITEM_SERIALIZATION_CONSTRUCTOR}'
-        output: 'FINALTECH_ITEM_SERIALIZATION_CONSTRUCTOR'
-  FINALTECH_SPIROCHETE:
-    name: '{color:prandom}Spirochete'
-    info:
-      1:
-        name: '{color:initiative}Production method'
-        lore:
-          - '{color:normal}Can be crafted in {id:FINALTECH_ITEM_SERIALIZATION_CONSTRUCTOR}'
-          - '{color:normal}Can be crafted in {id:FINALTECH_MATRIX_ITEM_SERIALIZATION_CONSTRUCTOR}'
-        output: 'FINALTECH_ITEM_SERIALIZATION_CONSTRUCTOR'
-  FINALTECH_SHELL:
-    name: '{color:prandom}Shell'
-    info:
-      1:
-        name: '{color:positive}Usage'
-        lore:
-          - '{color:normal}Can be used to copy one {id:FINALTECH_COPY_CARD} {color:normal}in {id:FINALTECH_CARD_OPERATION_TABLE}'
-        output: 'FINALTECH_CARD_OPERATION_TABLE'
-  FINALTECH_PHONY:
-    name: '{color:prandom}Phony'
-    info:
-      1:
-        name: '{color:initiative}Production method'
-        lore:
-          - '{color:normal}Can be crafted in {id:FINALTECH_ITEM_SERIALIZATION_CONSTRUCTOR}'
-          - '{color:normal}Can be crafted in {id:FINALTECH_MATRIX_ITEM_SERIALIZATION_CONSTRUCTOR}'
-        output: 'FINALTECH_ITEM_SERIALIZATION_CONSTRUCTOR'
-      2:
-        name: '{color:initiative}Production method'
-        lore:
-          - '{color:normal}Can be crafted in {id:FINALTECH_CARD_OPERATION_TABLE}'
-        output: 'FINALTECH_CARD_OPERATION_TABLE'
-  FINALTECH_JUSTIFIABILITY:
-    name: '{color:prandom}Justifiability'
-    info:
-      1:
-        name: '{color:initiative}Production method'
-        lore:
-          - '{color:normal}Can be obtained by using {id:FINALTECH_ENTROPY_SEED}'
-        output: 'FINALTECH_ENTROPY_SEED'
-  FINALTECH_EQUIVALENT_CONCEPT:
-    name: '{color:prandom}Equivalent Concept'
-    info:
-      1:
-        name: '{color:initiative}Production method'
-        lore:
-          - '{color:normal}Can be obtained by using {id:FINALTECH_ENTROPY_SEED}'
-        output: 'FINALTECH_ENTROPY_SEED'
   FINALTECH_LOGIC_FALSE:
     name: '{color:prandom}Logic {color:conceal}- {color:number}FALSE'
     info:
@@ -956,6 +958,218 @@ items:
         lore:
           - '{color:normal}Can be crafted in {id:FINALTECH_DIGITAL_EXTRACTION}'
         output: 'FINALTECH_DIGITAL_EXTRACTION'
+  FINALTECH_MENU_VIEWER:
+    name: '{color:prandom}Menu Viewer'
+    info:
+      1:
+        name: '{color:positive}Usage'
+        lore:
+          - '{color:normal}To see how machine interact with others'
+    void-icon:
+      name: '{color:normal}Non-interactive'
+    input-icon:
+      name: '{color:normal}Input-slot'
+    output-icon:
+      name: '{color:normal}Output-slot'
+    in-and-out-icon:
+      name: '{color:normal}Input and Output slot'
+  FINALTECH_ROUTE_VIEWER:
+    name: '{color:prandom}Route Viewer'
+    info:
+      1:
+        name: '{color:positive}Usage'
+        lore:
+          - '{color:action}[Right-Click] {color:normal}Toggle route display for some machines'
+  FINALTECH_LOCATION_RECORDER:
+    name: '{color:prandom}Location Recorder'
+    info:
+      1:
+        name: '{color:positive}Usage'
+        lore:
+          - '{color:action}[Right-Click] {color:normal}Open the machine in the specified location if existed'
+          - '{color:action}[Shift + Right-Click] {color:normal}Record and mark the location you are looking at'
+      2:
+        name: '{color:passive}Mechanism'
+        lore:
+          - '{color:normal}Can be used in {id:FINALTECH_LOCATION_TRANSFER}'
+        output: 'FINALTECH_LOCATION_TRANSFER'
+  FINALTECH_MACHINE_CONFIGURATOR:
+    name: '{color:prandom}Machine Configurator'
+    info:
+      1:
+        name: '{color:positive}Mechanism'
+        lore:
+          - '{color:action}[Right-Click] {color:normal}Paste config to th machine you are looking at'
+          - '{color:action}[Shift + Right-Click] {color:normal}Copy the machine config you are looking at'
+      2:
+        name: '{color:positive}Mechanism'
+        lore:
+          - '{color:normal}Machines in same group can share their config'
+          - ''
+          - '{color:conceal}For example, you can copy the config of {id:CARGO_NODE_OUTPUT_ADVANCED}'
+          - '{color:conceal}Then paste it to {id:CARGO_NODE_INPUT}'
+  FINALTECH_PORTABLE_ENERGY_STORAGE:
+    name: '{color:prandom}Portable Energy Storage'
+    info:
+      1:
+        name: '{color:positive}Usage'
+        lore:
+          - '{color:action}[Right-Click] {color:normal}Insert the energy to a machine'
+          - '{color:action}[Shift + Right-Click] {color:normal}Withdraw all the energy of a machine'
+      2:
+        name: '{color:positive}Mechanism'
+        lore:
+          - '{color:normal}Can be used in {id:FINALTECH_ENERGY_TABLE}'
+        output: 'FINALTECH_ENERGY_TABLE'
+      3:
+        name: '{color:positive}Mechanism'
+        lore:
+          - '{color:normal}Can be used to craft energy card'
+        output: 'FINALTECH_ENERGY_CARD_K'
+    status:
+      lore:
+        - '{color:normal}Stored Energy: {color:number}{1} J'
+  FINALTECH_POTION_EFFECT_COMPRESSOR:
+    name: '{color:prandom}Potion Effect Compressor'
+    info:
+      1:
+        name: '{color:positive}Usage'
+        lore:
+          - '{color:normal}Level up your potion effect'
+  FINALTECH_POTION_EFFECT_DILATOR:
+    name: '{color:prandom}Potion Effect Dilator'
+    info:
+      1:
+        name: '{color:positive}Usage'
+        lore:
+          - '{color:normal}Enlarge your potion effect duration'
+  FINALTECH_POTION_EFFECT_PURIFIER:
+    name: '{color:prandom}Potion Effect Purifier'
+    info:
+      1:
+        name: '{color:positive}Usage'
+        lore:
+          - '{color:action}[Right-Click] {color:normal}Clear your potion effect'
+          - "{color:action}[Shift + Right-Click] {color:normal}Clear around lives' potion effect"
+          - "    {color:normal}Horizontal Range: {color:number}{1}"
+          - "    {color:normal}Vertical Range: {color:number}{2}"
+  FINALTECH_GRAVITY_REVERSAL_RUNE:
+    name: '{color:prandom}Gravity Reversal Rune'
+    info:
+      1:
+        name: '{color:positive}Usage'
+        lore:
+          - '{color:action}[Right-Click] {color:normal}Reverse your vertical speed'
+  FINALTECH_STAFF_ELEMENTAL_LINE:
+    name: '&6Elemental Staff &7- &f&oLine'
+    info:
+      1:
+        name: '{color:positive}Usage'
+        lore:
+          - '{color:normal}Makes you teleport to the place you are looking at'
+          - '{color:action}[Right-Click] {color:normal}teleport to {color:number}{1} blocks {color:normal}away'
+          - '{color:action}[Shift + Right-Click] {color:normal}teleport to {color:number}{2} blocks {color:normal}away'
+  FINALTECH_STEPPING_STONE:
+    name: '{color:prandom}Stepping Stone'
+    info:
+      1:
+        name: '{color:positive}Mechanism'
+        lore:
+          - '{color:normal}This item will do nothing after being placed'
+          - '{color:normal}And it will not drop anything after being break'
+          - '{color:normal}It can be placed by using {id:FINALTECH_STEPPING_STONE_PLACER}'
+        output: 'FINALTECH_STEPPING_STONE_PLACER'
+  FINALTECH_STEPPING_STONE_PLACER:
+    name: '{color:prandom}Stepping Stone Placer'
+    info:
+      1:
+        name: '{color:positive}Usage'
+        lore:
+          - '{color:action}[Right-Click] {color:normal}place a {id:FINALTECH_STEPPING_STONE}'
+        output: 'FINALTECH_STEPPING_STONE'
+  FINALTECH_AUTO_FLASH_BACK_POCKET_WATCH:
+    name: '{color:prandom}Auto Flash Back Pocket Watch'
+    info:
+      1:
+        name: '{color:positive}Usage'
+        lore:
+          - '{color:action}[Right-Click] {color:normal}mark the place you are, and teleport you back after {color:number}{1} seconds'
+  FINALTECH_ENERGY_CARD_K:
+    name: '{color:prandom}Energy Card {color:conceal}- {color:positive}1K'
+    info:
+      1:
+        name: '{color:positive}Usage'
+        lore:
+          - '{color:normal}Charge machine for {color:number}{1} J'
+      2:
+        name: '{color:positive}Mechanism'
+        lore:
+          - '{color:normal}Support expanded capacitor'
+        output: 'FINALTECH_SMALL_EXPANDED_CAPACITOR'
+  FINALTECH_ENERGY_CARD_M:
+    name: '{color:prandom}Energy Card {color:conceal}- {color:positive}1M'
+    info:
+      1:
+        name: '{color:positive}Usage'
+        lore:
+          - '{color:normal}Charge machine for {color:number}{1} J'
+      2:
+        name: '{color:positive}Mechanism'
+        lore:
+          - '{color:normal}Support expanded capacitor'
+        output: 'FINALTECH_SMALL_EXPANDED_CAPACITOR'
+  FINALTECH_ENERGY_CARD_B:
+    name: '{color:prandom}Energy Card {color:conceal}- {color:positive}1B'
+    info:
+      1:
+        name: '{color:positive}Usage'
+        lore:
+          - '{color:normal}Charge machine for {color:number}{1} J'
+      2:
+        name: '{color:positive}Mechanism'
+        lore:
+          - '{color:normal}Support expanded capacitor'
+        output: 'FINALTECH_SMALL_EXPANDED_CAPACITOR'
+  FINALTECH_ENERGY_CARD_T:
+    name: '{color:prandom}Energy Card {color:conceal}- {color:positive}1T'
+    info:
+      1:
+        name: '{color:positive}Usage'
+        lore:
+          - '{color:normal}Charge machine for {color:number}{1} J'
+      2:
+        name: '{color:positive}Mechanism'
+        lore:
+          - '{color:normal}Support expanded capacitor'
+        output: 'FINALTECH_SMALL_EXPANDED_CAPACITOR'
+  FINALTECH_ENERGY_CARD_Q:
+    name: '{color:prandom}Energy Card {color:conceal}- {color:positive}1Q'
+    info:
+      1:
+        name: '{color:positive}Usage'
+        lore:
+          - '{color:normal}Charge machine for {color:number}{1} J'
+      2:
+        name: '{color:positive}Mechanism'
+        lore:
+          - '{color:normal}Support expanded capacitor'
+        output: 'FINALTECH_SMALL_EXPANDED_CAPACITOR'
+  FINALTECH_ENERGIZED_OPERATION_ACCELERATE_CARD:
+    name: '{color:prandom}Energized Operation Accelerate Card'
+    info:
+      1:
+        name: '{color:positive}Usage'
+        lore:
+          - '{color:normal}Accelerate the operation of the machine'
+          - '{color:normal}Amount: Half of the current progress'
+  FINALTECH_OVERLOADED_OPERATION_ACCELERATE_CARD:
+    name: '{color:prandom}Overloaded Operation Accelerate Card'
+    info:
+      1:
+        name: '{color:positive}Usage'
+        lore:
+          - '{color:normal}Accelerate the operation of the machine'
+          - '{color:normal}Amount: Half of the remaining progress'
   FINALTECH_MACHINE_CHARGE_CARD_L1:
     name: '{color:prandom}Machine Charge Card {color:conceal}- {color:number}L1'
     info:
@@ -1052,66 +1266,6 @@ items:
         name: '{color:negative}Limit'
         lore:
           - '{color:normal}Cost {color:number}1 exp level {color:normal}and {color:number}10% hp {color:normal}every use'
-  FINALTECH_ENERGY_CARD_K:
-    name: '{color:prandom}Energy Card {color:conceal}- {color:positive}1K'
-    info:
-      1:
-        name: '{color:positive}Usage'
-        lore:
-          - '{color:normal}Charge machine for {color:number}{1} J'
-      2:
-        name: '{color:positive}Mechanism'
-        lore:
-          - '{color:normal}Support expanded capacitor'
-        output: 'FINALTECH_SMALL_EXPANDED_CAPACITOR'
-  FINALTECH_ENERGY_CARD_M:
-    name: '{color:prandom}Energy Card {color:conceal}- {color:positive}1M'
-    info:
-      1:
-        name: '{color:positive}Usage'
-        lore:
-          - '{color:normal}Charge machine for {color:number}{1} J'
-      2:
-        name: '{color:positive}Mechanism'
-        lore:
-          - '{color:normal}Support expanded capacitor'
-        output: 'FINALTECH_SMALL_EXPANDED_CAPACITOR'
-  FINALTECH_ENERGY_CARD_B:
-    name: '{color:prandom}Energy Card {color:conceal}- {color:positive}1B'
-    info:
-      1:
-        name: '{color:positive}Usage'
-        lore:
-          - '{color:normal}Charge machine for {color:number}{1} J'
-      2:
-        name: '{color:positive}Mechanism'
-        lore:
-          - '{color:normal}Support expanded capacitor'
-        output: 'FINALTECH_SMALL_EXPANDED_CAPACITOR'
-  FINALTECH_ENERGY_CARD_T:
-    name: '{color:prandom}Energy Card {color:conceal}- {color:positive}1T'
-    info:
-      1:
-        name: '{color:positive}Usage'
-        lore:
-          - '{color:normal}Charge machine for {color:number}{1} J'
-      2:
-        name: '{color:positive}Mechanism'
-        lore:
-          - '{color:normal}Support expanded capacitor'
-        output: 'FINALTECH_SMALL_EXPANDED_CAPACITOR'
-  FINALTECH_ENERGY_CARD_Q:
-    name: '{color:prandom}Energy Card {color:conceal}- {color:positive}1Q'
-    info:
-      1:
-        name: '{color:positive}Usage'
-        lore:
-          - '{color:normal}Charge machine for {color:number}{1} J'
-      2:
-        name: '{color:positive}Mechanism'
-        lore:
-          - '{color:normal}Support expanded capacitor'
-        output: 'FINALTECH_SMALL_EXPANDED_CAPACITOR'
   FINALTECH_MAGIC_HYPNOTIC:
     name: '{color:prandom}Magic Hypnotic'
     info:
@@ -1126,117 +1280,6 @@ items:
         name: '{color:positive}Usage'
         lore:
           - '{color:normal}Unlock a research randomly'
-  FINALTECH_STAFF_ELEMENTAL_LINE:
-    name: '&6Elemental Staff &7- &f&oLine'
-    info:
-      1:
-        name: '{color:positive}Usage'
-        lore:
-          - '{color:normal}Makes you teleport to the place you are looking at'
-          - '{color:action}[Right-Click] {color:normal}teleport to {color:number}{1} blocks {color:normal}away'
-          - '{color:action}[Shift + Right-Click] {color:normal}teleport to {color:number}{2} blocks {color:normal}away'
-  FINALTECH_POTION_EFFECT_COMPRESSOR:
-    name: '{color:prandom}Potion Effect Compressor'
-    info:
-      1:
-        name: '{color:positive}Usage'
-        lore:
-          - '{color:normal}Level up your potion effect'
-  FINALTECH_POTION_EFFECT_DILATOR:
-    name: '{color:prandom}Potion Effect Dilator'
-    info:
-      1:
-        name: '{color:positive}Usage'
-        lore:
-          - '{color:normal}Enlarge your potion effect duration'
-  FINALTECH_POTION_EFFECT_PURIFIER:
-    name: '{color:prandom}Potion Effect Purifier'
-    info:
-      1:
-        name: '{color:positive}Usage'
-        lore:
-          - '{color:action}[Right-Click] {color:normal}Clear your potion effect'
-          - "{color:action}[Shift + Right-Click] {color:normal}Clear around lives' potion effect"
-          - "    {color:normal}Horizontal Range: {color:number}{1}"
-          - "    {color:normal}Vertical Range: {color:number}{2}"
-  FINALTECH_GRAVITY_REVERSAL_RUNE:
-    name: '{color:prandom}Gravity Reversal Rune'
-    info:
-      1:
-        name: '{color:positive}Usage'
-        lore:
-          - '{color:action}[Right-Click] {color:normal}Reverse your vertical speed'
-  FINALTECH_MENU_VIEWER:
-    name: '{color:prandom}Menu Viewer'
-    info:
-      1:
-        name: '{color:positive}Usage'
-        lore:
-          - '{color:normal}To see how machine interact with others'
-    void-icon:
-      name: '{color:normal}Non-interactive'
-    input-icon:
-      name: '{color:normal}Input-slot'
-    output-icon:
-      name: '{color:normal}Output-slot'
-    in-and-out-icon:
-      name: '{color:normal}Input and Output slot'
-  FINALTECH_ROUTE_VIEWER:
-    name: '{color:prandom}Route Viewer'
-    info:
-      1:
-        name: '{color:positive}Usage'
-        lore:
-          - '{color:action}[Right-click] {color:normal}Toggle route display for some machines'
-  FINALTECH_LOCATION_RECORDER:
-    name: '{color:prandom}Location Recorder'
-    info:
-      1:
-        name: '{color:positive}Usage'
-        lore:
-          - '{color:action}[Right-click] {color:normal}Open the machine in the specified location if existed'
-          - '{color:action}[Shift + Right-click] {color:normal}Record and mark the location you are looking at'
-      2:
-        name: '{color:passive}Mechanism'
-        lore:
-          - '{color:normal}Can be used in {id:FINALTECH_LOCATION_TRANSFER}'
-        output: 'FINALTECH_LOCATION_TRANSFER'
-  FINALTECH_MACHINE_CONFIGURATOR:
-    name: '{color:prandom}Machine Configurator'
-    info:
-      1:
-        name: '{color:positive}Mechanism'
-        lore:
-          - '{color:action}[Right-click] {color:normal}Paste config to th machine you are looking at'
-          - '{color:action}[Shift + Right-click] {color:normal}Copy the machine config you are looking at'
-      2:
-        name: '{color:positive}Mechanism'
-        lore:
-          - '{color:normal}Machines in same group can share their config'
-          - ''
-          - '{color:conceal}For example, you can copy the config of {id:CARGO_NODE_OUTPUT_ADVANCED}'
-          - '{color:conceal}Then paste it to {id:CARGO_NODE_INPUT}'
-  FINALTECH_PORTABLE_ENERGY_STORAGE:
-    name: '{color:prandom}Portable Energy Storage'
-    info:
-      1:
-        name: '{color:positive}Usage'
-        lore:
-          - '{color:action}[Right-click] {color:normal}Insert the energy to a machine'
-          - '{color:action}[Shift + Right-click] {color:normal}Withdraw all the energy of a machine'
-      2:
-        name: '{color:positive}Mechanism'
-        lore:
-          - '{color:normal}Can be used in {id:FINALTECH_ENERGY_TABLE}'
-        output: 'FINALTECH_ENERGY_TABLE'
-      3:
-        name: '{color:positive}Mechanism'
-        lore:
-          - '{color:normal}Can be used to craft energy card'
-        output: 'FINALTECH_ENERGY_CARD_K'
-    status:
-      lore:
-        - '{color:normal}Stored Energy: {color:number}{1} J'
   FINALTECH_SUPER_SHOVEL:
     name: '{color:prandom}Super Shovel'
     info:
@@ -1675,8 +1718,23 @@ items:
       lore:
         - '{color:normal}Affected Machine: {color:number}{1}'
         - '{color:normal}Transfer Energy: {color:number}{2} J'
-  FINALTECH_NORMAL_CONSUMABLE_ELECTRICITY_SHOOT_PILE:
-    name: '{color:prandom}Normal Electricity Shoot Pile {color:conceal}- {color:positive}Consumable'
+  FINALTECH_NORMAL_TRIGGERABLE_ELECTRICITY_SHOOT_PILE:
+    name: '{color:prandom}Normal Electricity Shoot Pile {color:conceal}- {color:positive}Triggerable'
+    info:
+      1:
+        name: '{color:passive}Mechanism'
+        lore:
+          - '{color:normal}Transfer energy stored in the capacitor or generator behind it'
+          - '{color:normal}To the machine it is pointing at'
+          - ''
+          - '{color:normal}It will charge only one machine at same time'
+        output: 'FINALTECH_DIGITAL_ZERO'
+    status:
+      lore:
+        - '{color:normal}Stored Energy: {color:number}{1} J'
+        - '{color:normal}Transfer Energy: {color:number}{2} J'
+  FINALTECH_NORMAL_CONTROLLABLE_ELECTRICITY_SHOOT_PILE:
+    name: '{color:prandom}Normal Electricity Shoot Pile {color:conceal}- {color:positive}Controllable'
     info:
       1:
         name: '{color:passive}Mechanism'
@@ -1700,7 +1758,6 @@ items:
           - '{color:normal}To the machine it is pointing at'
           - ''
           - '{color:normal}It will charge only one machine at same time'
-        output: 'FINALTECH_DIGITAL_ZERO'
     status:
       lore:
         - '{color:normal}Stored Energy: {color:number}{1} J'
@@ -2010,6 +2067,132 @@ items:
         lore:
           - '{color:normal}Can storage item by using {id:FINALTECH_STORAGE_INTERACT_PORT}'
         output: 'FINALTECH_STORAGE_INTERACT_PORT'
+  FINALTECH_BASIC_STORAGE:
+    name: '{color:prandom}Basic Storage'
+    info:
+      1:
+        name: '{color:passive}Mechanism'
+        lore:
+          - '{color:normal}Can store {color:number}{2} {color:normal}kinds of items.'
+          - '{color:normal}Can store {color:number}{1} items per kind.'
+    status:
+      name: '{color:passive}Status'
+      lore:
+        - '{color:action}[Click {color:conceal}(empty hand){color:action}] {color:normal}Insert all items above.'
+        - '{color:action}[Click {color:conceal}(hold {id:FINALTECH_STORAGE_CARD}{color:conceal}){color:action}] {color:normal}Insert all items from it.'
+    show-item:
+      lore:
+        - '{color:conceal}Amount: {1}'
+  FINALTECH_ADVANCED_STORAGE:
+    name: '{color:prandom}Advanced Storage'
+    info:
+      1:
+        name: '{color:passive}Mechanism'
+        lore:
+          - '{color:normal}Can store {color:number}{2} {color:normal}kinds of items.'
+          - '{color:normal}Can store {color:number}{1} items per kind.'
+    status:
+      name: '{color:passive}Status'
+      lore:
+        - '{color:action}[Click {color:conceal}(empty hand){color:action}] {color:normal}Insert all items above.'
+        - '{color:action}[Click {color:conceal}(hold {id:FINALTECH_STORAGE_CARD}{color:conceal}){color:action}] {color:normal}Insert all items from it.'
+    show-item:
+      lore:
+        - '{color:conceal}Amount: {1}'
+  FINALTECH_ENERGIZED_STORAGE:
+    name: '{color:prandom}Energized Storage'
+    info:
+      1:
+        name: '{color:passive}Mechanism'
+        lore:
+          - '{color:normal}Can store {color:number}{2} {color:normal}kinds of items.'
+    status:
+      name: '{color:passive}Status'
+      lore:
+        - '{color:action}[Click {color:conceal}(empty hand){color:action}] {color:normal}Insert all items above.'
+        - '{color:action}[Click {color:conceal}(hold {id:FINALTECH_STORAGE_CARD}{color:conceal}){color:action}] {color:normal}Insert all items from it.'
+    show-item:
+      lore:
+        - '{color:conceal}Amount: {1}'
+  FINALTECH_OVERLOADED_STORAGE:
+    name: '{color:prandom}Overloaded Storage'
+    info:
+      1:
+        name: '{color:passive}Mechanism'
+        lore:
+          - '{color:normal}Can store {color:number}{1} items per kind.'
+    status:
+      name: '{color:passive}Status'
+      lore:
+        - '{color:action}[Click {color:conceal}(empty hand){color:action}] {color:normal}Insert all items above.'
+        - '{color:action}[Click {color:conceal}(hold {id:FINALTECH_STORAGE_CARD}{color:conceal}){color:action}] {color:normal}Insert all items from it.'
+    show-item:
+      lore:
+        - '{color:conceal}Amount: {1}'
+  FINALTECH_STORAGE_BALANCER:
+    name: '{color:prandom}Storage Balancer'
+    info:
+      1:
+        name: '{color:passive}Mechanism'
+        lore:
+          - '{color:normal}Evenly distribute items between {id:FINALTECH_BASIC_STORAGE}.'
+        output: 'FINALTECH_BASIC_STORAGE'
+  FINALTECH_STORAGE_IMPORTER:
+    name: '{color:prandom}Storage Importer'
+    info:
+      1:
+        name: '{color:passive}Mechanism'
+        lore:
+          - '{color:normal}Can import items to {id:FINALTECH_BASIC_STORAGE}.'
+        output: 'FINALTECH_BASIC_STORAGE'
+      2:
+        name: '{color:passive}Mechanism'
+        lore:
+          - '{color:normal}Use {id:FINALTECH_LOCATION_RECORDER} {color:normal}to specify location'
+        output: 'FINALTECH_LOCATION_RECORDER'
+    location-icon:
+      name: '{color:passive}Location'
+      lore:
+        - '{color:negative}Unspecified.'
+        - '{color:conceal}Hold {id:FINALTECH_LOCATION_RECORDER} {color:normal}and click me'
+      success-lore:
+        - '{color:positive} X: {1}'
+        - '{color:positive} Y: {2}'
+        - '{color:positive} Z: {3}'
+    item-icon:
+      name: '{color:passive}Item'
+      lore:
+        - '{color:negative}Unspecified.'
+      success-lore:
+        - '{color:positive} Item name: {1}'
+  FINALTECH_STORAGE_EXPORTER:
+    name: '{color:prandom}Storage Exporter'
+    info:
+      1:
+        name: '{color:passive}Mechanism'
+        lore:
+          - '{color:normal}Can export items from {id:FINALTECH_BASIC_STORAGE}.'
+        output: 'FINALTECH_BASIC_STORAGE'
+      2:
+        name: '{color:passive}Mechanism'
+        lore:
+          - '{color:normal}Use {id:FINALTECH_LOCATION_RECORDER} {color:normal}to specify location'
+        output: 'FINALTECH_LOCATION_RECORDER'
+    location-icon:
+      name: '{color:passive}Location'
+      lore:
+        - '{color:negative}Unspecified.'
+        - '{color:conceal}Hold {id:FINALTECH_LOCATION_RECORDER} {color:normal}and click me'
+      success-lore:
+        - '{color:positive} X: {1}'
+        - '{color:positive} Y: {2}'
+        - '{color:positive} Z: {3}'
+    item-icon:
+      name: '{color:passive}Item'
+      lore:
+        - '{color:negative}Unspecified.'
+      success-lore:
+        - '{color:positive} Item name: {1}'
   FINALTECH_REMOTE_ACCESSOR:
     name: '{color:prandom}Remote Accessor'
     info:
@@ -2018,8 +2201,8 @@ items:
         lore:
           - '{color:normal}Right click it to open slimefun machine it is looking at'
           - '{color:normal}Range: {color:number}{1}'
-  FINALTECH_CONSUMABLE_REMOTE_ACCESSOR:
-    name: '{color:prandom}Remote Accessor {color:conceal}- {color:positive}Consumable'
+  FINALTECH_TRIGGERABLE_REMOTE_ACCESSOR:
+    name: '{color:prandom}Remote Accessor {color:conceal}- {color:positive}Triggerable'
     info:
       1:
         name: '{color:passive}Mechanism'
@@ -2027,8 +2210,8 @@ items:
           - '{color:normal}Right click it to config it by using digital items'
           - '{color:normal}Right click it to open slimefun machine it is looking at'
         output: 'FINALTECH_DIGITAL_ZERO'
-  FINALTECH_CONFIGURABLE_REMOTE_ACCESSOR:
-    name: '{color:prandom}Remote Accessor {color:conceal}- {color:positive}Configurable'
+  FINALTECH_CONTROLLABLE_REMOTE_ACCESSOR:
+    name: '{color:prandom}Remote Accessor {color:conceal}- {color:positive}Controllable'
     info:
       1:
         name: '{color:passive}Mechanism'
@@ -2036,8 +2219,8 @@ items:
           - '{color:normal}Right click it to config it by using digital items'
           - '{color:normal}Right click it to open slimefun machine it is looking at'
         output: 'FINALTECH_DIGITAL_ZERO'
-  FINALTECH_EXPANDED_CONSUMABLE_REMOTE_ACCESSOR:
-    name: '{color:prandom}Expanded Remote Accessor {color:conceal}- {color:positive}Consumable'
+  FINALTECH_EXPANDED_TRIGGERABLE_REMOTE_ACCESSOR:
+    name: '{color:prandom}Expanded Remote Accessor {color:conceal}- {color:positive}Triggerable'
     info:
       1:
         name: '{color:passive}Mechanism'
@@ -2045,8 +2228,8 @@ items:
           - '{color:normal}Right click it to config it by using digital items'
           - '{color:normal}Right click it to open slimefun machine it is looking at'
         output: 'FINALTECH_DIGITAL_ZERO'
-  FINALTECH_EXPANDED_CONFIGURABLE_REMOTE_ACCESSOR:
-    name: '{color:prandom}Expanded Remote Accessor {color:conceal}- {color:positive}Configurable'
+  FINALTECH_EXPANDED_CONTROLLABLE_REMOTE_ACCESSOR:
+    name: '{color:prandom}Expanded Remote Accessor {color:conceal}- {color:positive}Controllable'
     info:
       1:
         name: '{color:passive}Mechanism'
@@ -2082,8 +2265,8 @@ items:
         lore:
           - '{color:normal}Right click it to teleport to the target place'
           - '{color:normal}Range: {color:number}{1}'
-  FINALTECH_CONSUMABLE_TRANSPORTER:
-    name: '{color:prandom}Transporter {color:conceal}- {color:positive}Consumable'
+  FINALTECH_TRIGGERABLE_TRANSPORTER:
+    name: '{color:prandom}Transporter {color:conceal}- {color:positive}Triggerable'
     info:
       1:
         name: '{color:passive}Mechanism'
@@ -2091,8 +2274,8 @@ items:
           - '{color:normal}Right click it to config it by using digital items'
           - '{color:normal}Right click it to teleport to the target place'
         output: 'FINALTECH_DIGITAL_ZERO'
-  FINALTECH_CONFIGURABLE_TRANSPORTER:
-    name: '{color:prandom}Transporter {color:conceal}- {color:positive}Configurable'
+  FINALTECH_CONTROLLABLE_TRANSPORTER:
+    name: '{color:prandom}Transporter {color:conceal}- {color:positive}Controllable'
     info:
       1:
         name: '{color:passive}Mechanism'
@@ -2100,8 +2283,8 @@ items:
           - '{color:normal}Right click it to config it by using digital items'
           - '{color:normal}Right click it to teleport to the target place'
         output: 'FINALTECH_DIGITAL_ZERO'
-  FINALTECH_EXPANDED_CONSUMABLE_TRANSPORTER:
-    name: '{color:prandom}Expanded Transporter {color:conceal}- {color:positive}Consumable'
+  FINALTECH_EXPANDED_TRIGGERABLE_TRANSPORTER:
+    name: '{color:prandom}Expanded Transporter {color:conceal}- {color:positive}Triggerable'
     info:
       1:
         name: '{color:passive}Mechanism'
@@ -2109,8 +2292,8 @@ items:
           - '{color:normal}Right click it to config it by using digital items'
           - '{color:normal}Right click it to teleport to the target place'
         output: 'FINALTECH_DIGITAL_ZERO'
-  FINALTECH_EXPANDED_CONFIGURABLE_TRANSPORTER:
-    name: '{color:prandom}Expanded Transporter {color:conceal}- {color:positive}Configurable'
+  FINALTECH_EXPANDED_CONTROLLABLE_TRANSPORTER:
+    name: '{color:prandom}Expanded Transporter {color:conceal}- {color:positive}Controllable'
     info:
       1:
         name: '{color:passive}Mechanism'
@@ -2227,6 +2410,22 @@ items:
         name: '{color:passive}Mechanism'
         lore:
           - '{color:normal}Add two digit item to get one new digit item'
+  FINALTECH_LOGIC_INJECTOR:
+    name: '{color:prandom}Logic Injector'
+    info:
+      1:
+        name: '{color:passive}Mechanism'
+        lore:
+          - '{color:normal}Change how machine work'
+        output: '{id:FINALTECH_LOGIC_FALSE}'
+  FINALTECH_DIGIT_INJECTOR:
+    name: '{color:prandom}Digit Injector'
+    info:
+      1:
+        name: '{color:passive}Mechanism'
+        lore:
+          - '{color:normal}Change how machine work'
+        output: '{id:FINALTECH_DIGITAL_ZERO}'
   FINALTECH_BASIC_FRAME_MACHINE:
     name: '{color:prandom}Basic Frame Machine'
     info:
@@ -2354,8 +2553,8 @@ items:
           - "{color:normal}And the machine in it's bottom will be clicked by around player"
           - "{color:normal}Digit to range rate: {color:number}{1}"
         output: 'FINALTECH_DIGITAL_ONE'
-  FINALTECH_CONSUMABLE_SIMULATE_CLICK_MACHINE:
-    name: '{color:prandom}Simulate Click Machine {color:conceal}- {color:positive}Consumable'
+  FINALTECH_TRIGGERABLE_SIMULATE_CLICK_MACHINE:
+    name: '{color:prandom}Simulate Click Machine {color:conceal}- {color:positive}Triggerable'
     info:
       1:
         name: '{color:passive}Mechanism'
@@ -2364,8 +2563,52 @@ items:
           - "{color:normal}Then the machine in it's bottom will be clicked by around player"
           - "{color:normal}Digit to range rate: {color:number}{1}"
         output: 'FINALTECH_DIGITAL_ONE'
-  FINALTECH_ORDERED_DUST_FACTORY_DIRT:
-    name: '{color:prandom}Ordered Dust Factory'
+  FINALTECH_RESEARCH_TABLE:
+    name: '{color:prandom}Research Table'
+    info:
+      1:
+        name: '{color:stress}Introduction'
+        lore:
+          - '{color:action}[Right-Click] {color:normal}Get the secret of the world'
+  FINALTECH_BEDROCK_CRAFT_TABLE:
+    name: '{color:prandom}Bedrock Craft table'
+    info:
+      1:
+        name: '{color:stress}Introduction'
+        lore:
+          - '{color:normal}Put item orderly to craft'
+  FINALTECH_MATRIX_CRAFTING_TABLE:
+    name: '{color:prandom}Matrix Crafting Table'
+    info:
+      1:
+        name: '{color:stress}Introduction'
+        lore:
+          - '{color:normal}Put item orderly to craft'
+    parse-icon:
+      name: '{color:negative}Invalid'
+    show-icon:
+      lore:
+        - '{color:normal}Match Amount: {color:number}{1}'
+  FINALTECH_INFO_FACTORY:
+    name: '{color:prandom}Info Factory'
+    info:
+      1:
+        name: '{color:stress}Introduction'
+        lore:
+          - '{color:normal}Can produce {id:FINALTECH_BIT} {color:normal}or {id:FINALTECH_META}'
+        output: 'FINALTECH_BIT'
+      2:
+        name: '{color:stress}Mechanism'
+        lore:
+          - '{color:normal}While all the slots have item on.'
+          - '{color:normal}Calc a = the number of different amount the item in each slot.'
+          - '{color:normal}Calc b = the number of different type the item in each slot.'
+          - '{color:normal}If a > b, produce {id:FINALTECH_BIT}'
+          - '{color:normal}If a < b, produce {id:FINALTECH_META}'
+          - '{color:normal}If a = b, produce {id:FINALTECH_BIT} {color:normal}and {id:FINALTECH_META}'
+        output: 'FINALTECH_META'
+  FINALTECH_DUST_FACTORY:
+    name: '{color:prandom}Dust Factory'
     info:
       1:
         name: '{color:stress}Introduction'
@@ -2392,241 +2635,6 @@ items:
       lore:
         - '{color:normal}Amount: {color:number}{1} {color:conceal}/ {color:number}{3}'
         - '{color:normal}Type: {color:number}{2} {color:conceal}/ {color:number}{4}'
-  FINALTECH_ORDERED_DUST_FACTORY_STONE:
-    name: '{color:prandom}Ordered Dust Factory'
-    info:
-      1:
-        name: '{color:stress}Introduction'
-        lore:
-          - '{color:normal}Input items to get {id:FINALTECH_UNORDERED_DUST} {color:normal}or {id:FINALTECH_ORDERED_DUST}'
-      2:
-        name: '{color:passive}Mechanism'
-        lore:
-          - '{color:normal}While all slots have item'
-          - '{color:normal}Every slot is with different item amount'
-          - '{color:normal}Will make it more probability to generate {id:FINALTECH_UNORDERED_DUST}'
-        output: 'FINALTECH_UNORDERED_DUST'
-      3:
-        name: '{color:passive}Mechanism'
-        lore:
-          - '{color:normal}While all slots have same item'
-          - '{color:normal}Every slot is with different item amount'
-          - '{color:normal}Then it will generate one {id:FINALTECH_ORDERED_DUST}'
-        output: 'FINALTECH_ORDERED_DUST'
-      4:
-        name: '{color:negative}Limit'
-        lore:
-          - '{color:normal}It will sleep for a while after generating an item'
-  FINALTECH_BEDROCK_CRAFT_TABLE:
-    name: '{color:prandom}Bedrock Craft table'
-    info:
-      1:
-        name: '{color:stress}Introduction'
-        lore:
-          - '{color:normal}Put item orderly to craft'
-  FINALTECH_MATRIX_CRAFTING_TABLE:
-    name: '{color:prandom}Matrix Crafting Table'
-    info:
-      1:
-        name: '{color:stress}Introduction'
-        lore:
-          - '{color:normal}Put item orderly to craft'
-    parse-icon:
-      name: '{color:negative}Invalid'
-    show-icon:
-      lore:
-        - '{color:normal}Match Amount: {color:number}{1}'
-  FINALTECH_ITEM_DISMANTLE_TABLE:
-    name: '{color:prandom}Item Dismantle Table'
-    info:
-      1:
-        name: '{color:stress}Introduction'
-        lore:
-          - '{color:normal}Restore item to its raw materials'
-    status-icon:
-      lore:
-        - '{color:normal}Charge: {color:number}{1} {color:conceal}/ {color:number}{2}'
-  FINALTECH_AUTO_ITEM_DISMANTLE_TABLE:
-    name: '{color:prandom}Auto Item Dismantle Table'
-    info:
-      1:
-        name: '{color:stress}Introduction'
-        lore:
-          - '{color:normal}Restore item to its raw materials'
-  FINALTECH_EQUIVALENT_EXCHANGE_TABLE:
-    name: '{color:prandom}Equivalent Exchange Table'
-    info:
-      1:
-        name: '{color:passive}Mechanism'
-        lore:
-          - '{color:normal}Input items to convert them to value'
-          - '{color:normal}Input {id:FINALTECH_UNORDERED_DUST} {color:normal}to consume value and get random item'
-        output: 'FINALTECH_UNORDERED_DUST'
-      2:
-        name: '{color:passive}Mechanism'
-        lore:
-          - '{color:normal}{id:FINALTECH_BUG} {color:normal}may be randomly generated'
-          - '{color:normal}and all stored value will be cleared at the same time'
-        output: 'FINALTECH_BUG'
-    parse-border-icon:
-      name: ' '
-    parse-result-icon:
-      name: '{color:action}Parse Result'
-    status-icon:
-      name: '{color:passive}Status'
-    no-value:
-      lore:
-        - '{color:negative}Invalid or unsupported item'
-    stored-value:
-      lore:
-        - '{color:normal}Stored Value: {color:number}{1}'
-    input-value:
-      lore:
-        - '{color:normal}Value to input: {color:number}{1}'
-    output-value:
-      lore:
-        - '{color:normal}Value to output: {color:number}{1}'
-  FINALTECH_ITEM_SERIALIZATION_CONSTRUCTOR:
-    name: '{color:prandom}Item Serialization Constructor'
-    info:
-      1:
-        name: '{color:passive}Mechanism'
-        lore:
-          - '{color:normal}Use at least {color:number}{1} {color:normal}same items to craft one {id:FINALTECH_COPY_CARD} {color:normal}of specified item'
-        output: 'FINALTECH_COPY_CARD'
-      2:
-        name: '{color:passive}Mechanism'
-        lore:
-          - '{color:normal}Use {color:number}{2} {color:normal}any type of {id:FINALTECH_COPY_CARD} {color:normal}to craft a {id:FINALTECH_SINGULARITY}'
-        output: 'FINALTECH_SINGULARITY'
-      3:
-        name: '{color:passive}Mechanism'
-        lore:
-          - '{color:normal}Use {color:number}{3} {color:normal}different type of {id:FINALTECH_COPY_CARD} {color:normal}to craft a {id:FINALTECH_SPIROCHETE}'
-        output: 'FINALTECH_SPIROCHETE'
-      4:
-        name: '{color:passive}Mechanism'
-        lore:
-          - '{color:normal}Produce a {id:FINALTECH_PHONY} {color:normal}instead while it can craft {id:FINALTECH_SINGULARITY} {color:normal}and {id:FINALTECH_SPIROCHETE} {color:normal}at same time'
-        output: 'FINALTECH_PHONY'
-      5:
-        name: '{color:passive}Mechanism'
-        lore:
-          - '{color:normal}While making {id:FINALTECH_COPY_CARD}'
-          - '{color:normal}{id:FINALTECH_PHONY} {color:normal}can be used to replace any item'
-      6:
-        name: '{color:negative}Limit'
-        lore:
-          - '{color:normal}Only items from Slimefun will be supported to make {id:FINALTECH_COPY_CARD}'
-    null-icon:
-      name: '{color:negative}Not Work'
-      lore:
-        - '{color:normal}Input something to make me work'
-    copy-card:
-      name: '{color:normal}Status'
-      lore:
-        - '{color:normal}Item Name: {color:number}{1}'
-        - '{color:normal}Item Amount: {color:number}{2}{color:normal}/{color:number}{3}'
-        - '{color:normal}Rate: {color:number}{4}'
-    phony:
-      name: '{color:normal}Status'
-      lore:
-        - '{color:normal}Copy Card Amount: {color:number}{1}{color:normal}/{color:number}{2}'
-        - '{color:normal}Copy Card Type: {color:number}{3}{color:normal}/{color:number}{4}'
-  FINALTECH_ITEM_DESERIALIZE_PARSER:
-    name: '{color:prandom}Item Deserialize Parser'
-    info:
-      1:
-        name: '{color:passive}Mechanism'
-        lore:
-          - '{color:normal}Put in {id:FINALTECH_COPY_CARD}'
-          - '{color:normal}Then it will slowly generate the specified item'
-        output: 'FINALTECH_COPY_CARD'
-  FINALTECH_CARD_OPERATION_TABLE:
-    name: '{color:prandom}Card Operation Table'
-    entropy:
-      info-icon:
-        name: '{color:passive}Entropy'
-        lore:
-          - '{color:normal}Use {id:FINALTECH_ENTROPY} {color:normal}to replace item in {id:FINALTECH_STORAGE_CARD} {color:normal}or {id:FINALTECH_COPY_CARD}'
-        output: 'FINALTECH_ENTROPY'
-    craft-infinity-storage-card:
-      info-icon:
-        name: '{color:passive}Craft Infinity Storage Card'
-        lore:
-          - '{color:normal}Use {id:FINALTECH_PHONY} {color:normal}and {id:FINALTECH_COPY_CARD} {color:normal}to craft one {id:FINALTECH_STORAGE_CARD} {color:normal}with infinity amount'
-        output: 'FINALTECH_STORAGE_CARD'
-    distribute-storage-card:
-      info-icon:
-        name: '{color:passive}Distribute Storage Card'
-        lore:
-          - '{color:normal}Distribute item in one {id:FINALTECH_STORAGE_CARD} {color:normal}to another empty {id:FINALTECH_STORAGE_CARD}'
-        output: 'FINALTECH_STORAGE_CARD'
-    merge-storage-card:
-      info-icon:
-        name: '{color:passive}Merge Storage Card'
-        lore:
-          - '{color:normal}Merge two {id:FINALTECH_STORAGE_CARD} {color:normal}into one'
-        output: 'FINALTECH_STORAGE_CARD'
-    copy-copy-card:
-      info-icon:
-        name: '{color:passive}Copy Copy Card'
-        lore:
-          - '{color:normal}Cost {id:FINALTECH_SHELL} {color:normal}to copy one {id:FINALTECH_COPY_CARD}'
-        output: 'FINALTECH_COPY_CARD'
-    craft-item-phony:
-      info-icon:
-        name: '{color:passive}Craft Item Phony'
-        lore:
-          - '{color:normal}Use {id:FINALTECH_SINGULARITY} {color:normal}and {id:FINALTECH_SPIROCHETE} {color:normal}to craft one {id:FINALTECH_PHONY}'
-        output: 'FINALTECH_PHONY'
-    craft-item-shell:
-      info-icon:
-        name: '{color:passive}Craft Item Shell'
-        lore:
-          - '{color:normal}Use {id:FINALTECH_SINGULARITY} {color:normal}or {id:FINALTECH_SPIROCHETE} {color:normal}to craft one {id:FINALTECH_SHELL}'
-        output: 'FINALTECH_SHELL'
-    craft-annular:
-      info-icon:
-        name: '{color:passive}Craft Annular'
-        lore:
-          - '{color:normal}Use {id:FINALTECH_COPY_CARD} {color:normal}to craft one {id:FINALTECH_ANNULAR}'
-        output: 'FINALTECH_ANNULAR'
-    status:
-      name: '{color:negative}No Matched'
-      lore:
-        - '{color:normal}Please input correct thing.'
-  FINALTECH_ADVANCED_AUTO_CRAFT_FRAME:
-    name: '{color:prandom}Advanced Auto Craft Frame'
-    info:
-      1:
-        name: '{color:passive}Mechanism'
-        lore:
-          - '{color:normal}Parse how slimefun item is crafted'
-    parse-icon:
-      name: '{color:stress}Parse'
-      lore:
-        - '{color:action}[click] {color:normal}to parse item'
-    wiki-icon:
-      name: '{color:stress}Wiki'
-      lore:
-        - '{color:normal}↓ Put item here'
-        - '{color:normal}↙ Click and parse it'
-        - '{color:normal}↑↑ Put machine item in top two lines to parse item more steps'
-        - '    {color:normal}Available machine item can be found in slimefun guide.'
-        - '{color:normal}↑ Put quantity module to speed up'
-        - '{color:negative}The machine can not work at all'
-    parse-failed-icon:
-      name: '{color:negative}Parse Failed'
-      lore:
-        - '{color:normal}Please try to parse different item'
-    parse-extend-icon:
-      name: '{color:positive}Parse Success'
-      lore:
-        - '{color:action}[click] {color:normal}to get more information'
-    parse-success-icon:
-      name: '{color:positive}Parse Success'
-    parse-amount: '{color:conceal}Amount : {1}'
   FINALTECH_ETHER_MINER:
     name: '{color:prandom}Ether Miner'
     info:
@@ -2686,6 +2694,382 @@ items:
         lore:
           - '{color:normal}Output energy will be replaced by energy card'
         output: 'FINALTECH_ENERGY_CARD_K'
+  FINALTECH_EQUIVALENT_EXCHANGE_TABLE:
+    name: '{color:prandom}Equivalent Exchange Table'
+    info:
+      1:
+        name: '{color:passive}Mechanism'
+        lore:
+          - '{color:normal}Input items to convert them to value'
+          - '{color:normal}Input {id:FINALTECH_UNORDERED_DUST} {color:normal}to consume value and get random item'
+        output: 'FINALTECH_UNORDERED_DUST'
+      2:
+        name: '{color:passive}Mechanism'
+        lore:
+          - '{color:normal}{id:FINALTECH_BUG} {color:normal}may be randomly generated'
+          - '{color:normal}and all stored value will be cleared at the same time'
+        output: 'FINALTECH_BUG'
+    parse-border-icon:
+      name: ' '
+    parse-result-icon:
+      name: '{color:action}Parse Result'
+    status-icon:
+      name: '{color:passive}Status'
+    no-value:
+      lore:
+        - '{color:negative}Invalid or unsupported item'
+    stored-value:
+      lore:
+        - '{color:normal}Stored Value: {color:number}{1}'
+    input-value:
+      lore:
+        - '{color:normal}Value to input: {color:number}{1}'
+    output-value:
+      lore:
+        - '{color:normal}Value to output: {color:number}{1}'
+  FINALTECH_COPY_CARD_FACTORY:
+    name: '{color:prandom}Copy Card Factory'
+    info:
+      1:
+        name: '{color:passive}Mechanism'
+        lore:
+          - '{color:normal}Use at least {color:number}{1} {color:normal}same items to craft one {id:FINALTECH_COPY_CARD} {color:normal}of specified item'
+        output: 'FINALTECH_COPY_CARD'
+      2:
+        name: '{color:passive}Mechanism'
+        lore:
+          - '{color:normal}While making {id:FINALTECH_COPY_CARD}'
+          - '{color:normal}{id:FINALTECH_PHONY} {color:normal}can be used to replace any item'
+      3:
+        name: '{color:negative}Limit'
+        lore:
+          - '{color:normal}Only items from Slimefun will be supported to make {id:FINALTECH_COPY_CARD}'
+    null-icon:
+      name: '{color:negative}Not Work'
+      lore:
+        - '{color:normal}Input something to make me work'
+    copy-card:
+      name: '{color:normal}Status'
+      lore:
+        - '{color:normal}Item Name: {color:number}{1}'
+        - '{color:normal}Item Amount: {color:number}{2} {color:normal}/ {color:number}{3}'
+        - '{color:normal}Rate: {color:number}{4}'
+  FINALTECH_PHONY_FACTORY:
+    name: '{color:prandom}Phony Factory'
+    info:
+      1:
+        name: '{color:passive}Introduction'
+        lore:
+          - '{color:normal}Use {id:FINALTECH_COPY_CARD} {color:normal}to craft {id:FINALTECH_SINGULARITY} {color:normal}or {id:FINALTECH_SPIROCHETE}'
+        output: 'FINALTECH_SINGULARITY'
+      2:
+        name: '{color:passive}Mechanism'
+        lore:
+          - '{color:normal}It will consume {id:FINALTECH_COPY_CARD} {color:normal}and read the content of it.'
+          - '{color:normal}Calc a = the total value of the content'
+          - '{color:normal}Calc b = number of the different value of the content'
+          - '{color:normal}Calc c = content amount in total'
+          - '{color:normal}Calc d = sum of the different value of the content'
+          - ''
+          - '{color:normal}While a * b >= {color:number}{1}{color:normal}, it will produce {id:FINALTECH_SINGULARITY}'
+          - '{color:normal}While c * d >= {color:number}{1}{color:normal}, it will produce {id:FINALTECH_SPIROCHETE}'
+        output: 'FINALTECH_SPIROCHETE'
+      3:
+        name: '{color:passive}Mechanism'
+        lore:
+          - '{color:normal}Produce a {id:FINALTECH_PHONY} {color:normal}instead while it can craft {id:FINALTECH_SINGULARITY} {color:normal}and {id:FINALTECH_SPIROCHETE} {color:normal}at same time'
+        output: 'FINALTECH_PHONY'
+    null-icon:
+      name: '{color:negative}Not Work'
+      lore:
+        - '{color:normal}Input something to make me work'
+    phony:
+      name: '{color:normal}Status'
+      lore:
+        - '{color:normal}Item value sum: {color:number}{1}'
+        - '{color:normal}Number of different value: {color:number}{2}'
+        - '{color:normal}Item amount sum: {color:number}{4}'
+        - '{color:normal}Sum of different value: {color:number}{5}'
+        - ''
+        - '{color:normal}Progress of {id:FINALTECH_SINGULARITY}{color:normal}: {color:number}{7} {color:normal}/ {color:number}{3}'
+        - '{color:normal}Progress of {id:FINALTECH_SPIROCHETE}{color:normal}: {color:number}{8} {color:normal}/ {color:number}{4}'
+  FINALTECH_STORAGE_CARD_MERGE_TABLE:
+    name: '{color:prandom}Storage Card Merge Table'
+    info:
+      1:
+        name: '{color:passive}Mechanism'
+        lore:
+          - '{color:normal}Merge two {id:FINALTECH_STORAGE_CARD} {color:normal}into one'
+        output: 'FINALTECH_STORAGE_CARD'
+    error-icon:
+      name: '{color:negative}No Matched'
+      lore:
+        - '{color:normal}Please input correct thing.'
+    success-icon:
+      name: '{color:positive}Matched'
+      lore:
+        - '{color:normal}Click me to craft.'
+  FINALTECH_STORAGE_CARD_DISTRIBUTION_TABLE:
+    name: '{color:prandom}Storage Card Distribution Table'
+    info:
+      1:
+        name: '{color:passive}Mechanism'
+        lore:
+          - '{color:normal}Distribute item in one {id:FINALTECH_STORAGE_CARD} {color:normal}to another empty {id:FINALTECH_STORAGE_CARD}'
+        output: 'FINALTECH_STORAGE_CARD'
+    error-icon:
+      name: '{color:negative}No Matched'
+      lore:
+        - '{color:normal}Please input correct thing.'
+    success-icon:
+      name: '{color:positive}Matched'
+      lore:
+        - '{color:normal}Click me to craft.'
+  FINALTECH_ENTROPY_CRAFT_TABLE:
+    name: '{color:prandom}Entropy Craft Table'
+    info:
+      1:
+        name: '{color:passive}Mechanism'
+        lore:
+          - '{color:normal}Use {id:FINALTECH_ENTROPY} {color:normal}to replace item in {id:FINALTECH_STORAGE_CARD} {color:normal}or {id:FINALTECH_COPY_CARD}'
+        output: 'FINALTECH_ENTROPY'
+    error-icon:
+      name: '{color:negative}No Matched'
+      lore:
+        - '{color:normal}Please input correct thing.'
+    success-icon:
+      name: '{color:positive}Matched'
+      lore:
+        - '{color:normal}Click me to craft.'
+  FINALTECH_ANNULAR_CRAFT_TABLE:
+    name: '{color:prandom}Annular Craft Table'
+    info:
+      1:
+        name: '{color:passive}Mechanism'
+        lore:
+          - '{color:normal}Use {id:FINALTECH_COPY_CARD} {color:normal}to craft one {id:FINALTECH_ANNULAR}'
+          - '{color:negative}The multiplication of the item amount and the content value should be more than {color:number}{1}'
+        output: 'FINALTECH_ANNULAR'
+    error-icon:
+      name: '{color:negative}No Matched'
+      lore:
+        - '{color:normal}Please input correct thing.'
+    success-icon:
+      name: '{color:positive}Matched'
+      lore:
+        - '{color:normal}Click me to craft.'
+  FINALTECH_SHELL_CRAFT_TABLE:
+    name: '{color:prandom}Shell Craft Table'
+    info:
+      1:
+        name: '{color:passive}Mechanism'
+        lore:
+          - '{color:normal}Use {id:FINALTECH_SINGULARITY} {color:normal}or {id:FINALTECH_SPIROCHETE} {color:normal}to craft one {id:FINALTECH_SHELL}'
+        output: 'FINALTECH_SHELL'
+    error-icon:
+      name: '{color:negative}No Matched'
+      lore:
+        - '{color:normal}Please input correct thing.'
+    success-icon:
+      name: '{color:positive}Matched'
+      lore:
+        - '{color:normal}Click me to craft.'
+  FINALTECH_COPY_CARD_DUPLICATION_TABLE:
+    name: '{color:prandom}Copy Card Duplication Table'
+    info:
+      1:
+        name: '{color:passive}Mechanism'
+        lore:
+          - '{color:normal}Cost {id:FINALTECH_SHELL} {color:normal}to copy one {id:FINALTECH_COPY_CARD}'
+        output: 'FINALTECH_COPY_CARD'
+    error-icon:
+      name: '{color:negative}No Matched'
+      lore:
+        - '{color:normal}Please input correct thing.'
+    success-icon:
+      name: '{color:positive}Matched'
+      lore:
+        - '{color:normal}Click me to craft.'
+  FINALTECH_PHONY_CRAFT_TABLE:
+    name: '{color:prandom}Phony Craft Table'
+    info:
+      1:
+        name: '{color:passive}Mechanism'
+        lore:
+          - '{color:normal}Use {id:FINALTECH_SINGULARITY} {color:normal}and {id:FINALTECH_SPIROCHETE} {color:normal}to craft one {id:FINALTECH_PHONY}'
+        output: 'FINALTECH_PHONY'
+    error-icon:
+      name: '{color:negative}No Matched'
+      lore:
+        - '{color:normal}Please input correct thing.'
+    success-icon:
+      name: '{color:positive}Matched'
+      lore:
+        - '{color:normal}Click me to craft.'
+  FINALTECH_INFINITY_STORAGE_CARD_CRAFT_TABLE:
+    name: '{color:prandom}Infinity Storage Card Craft Table'
+    info:
+      1:
+        name: '{color:passive}Mechanism'
+        lore:
+          - '{color:normal}Use {id:FINALTECH_PHONY} {color:normal}and {id:FINALTECH_COPY_CARD} {color:normal}to craft one {id:FINALTECH_STORAGE_CARD} {color:normal}with infinity amount'
+        output: 'FINALTECH_STORAGE_CARD'
+    error-icon:
+      name: '{color:negative}No Matched'
+      lore:
+        - '{color:normal}Please input correct thing.'
+    success-icon:
+      name: '{color:positive}Matched'
+      lore:
+        - '{color:normal}Click me to craft.'
+  FINALTECH_ITEM_DISMANTLE_TABLE:
+    name: '{color:prandom}Item Dismantle Table'
+    info:
+      1:
+        name: '{color:stress}Introduction'
+        lore:
+          - '{color:normal}Restore item to its raw materials'
+    status-icon:
+      lore:
+        - '{color:normal}Charge: {color:number}{1} {color:conceal}/ {color:number}{2}'
+  FINALTECH_AUTO_ITEM_DISMANTLE_TABLE:
+    name: '{color:prandom}Auto Item Dismantle Table'
+    info:
+      1:
+        name: '{color:stress}Introduction'
+        lore:
+          - '{color:normal}Restore item to its raw materials'
+  FINALTECH_COPY_CARD_DUPLICATOR:
+    name: '{color:prandom}Copy Card Duplicator'
+    info:
+      1:
+        name: '{color:passive}Mechanism'
+        lore:
+          - '{color:normal}Put in {id:FINALTECH_COPY_CARD}'
+          - '{color:normal}Then it will slowly generate the specified item'
+        output: 'FINALTECH_COPY_CARD'
+  FINALTECH_ADVANCED_AUTO_CRAFT_FRAME:
+    name: '{color:prandom}Advanced Auto Craft Frame'
+    info:
+      1:
+        name: '{color:passive}Mechanism'
+        lore:
+          - '{color:normal}Parse how slimefun item is crafted'
+    parse-icon:
+      name: '{color:stress}Parse'
+      lore:
+        - '{color:action}[click] {color:normal}to parse item'
+    wiki-icon:
+      name: '{color:stress}Wiki'
+      lore:
+        - '{color:normal}↓ Put item here'
+        - '{color:normal}↙ Click and parse it'
+        - '{color:normal}↑↑ Put machine item in top two lines to parse item more steps'
+        - '    {color:normal}Available machine item can be found in slimefun guide.'
+        - '{color:normal}↑ Put quantity module to speed up'
+        - '{color:negative}The machine can not work at all'
+    parse-failed-icon:
+      name: '{color:negative}Parse Failed'
+      lore:
+        - '{color:normal}Please try to parse different item'
+    parse-extend-icon:
+      name: '{color:positive}Parse Success'
+      lore:
+        - '{color:action}[click] {color:normal}to get more information'
+    parse-success-icon:
+      name: '{color:positive}Parse Success'
+    parse-amount: '{color:conceal}Amount : {1}'
+  FINALTECH_ADVANCED_AUTO_CRAFT:
+    name: '{color:prandom}Advanced Auto Craft'
+    info:
+      1:
+        name: '{color:passive}Mechanism'
+        lore:
+          - '{color:normal}Parse how slimefun item is crafted'
+          - '{color:normal}Then craft it from its raw materials directly'
+      2:
+        name: '{color:passive}Mechanism'
+        lore:
+          - '{color:normal}Support using {id:FINALTECH_COPY_CARD} {color:normal}to replace raw material'
+        output: 'FINALTECH_COPY_CARD'
+    parse-icon:
+      name: '{color:stress}Parse'
+      lore:
+        - '{color:action}[click] {color:normal}to parse item'
+    wiki-icon:
+      name: '{color:stress}Wiki'
+      lore:
+        - '{color:normal}↓ Put item here'
+        - '{color:normal}↙ Click and parse it'
+        - '{color:normal}↑↑ Put machine item in top two lines to parse item more steps'
+        - '    {color:normal}Available machine item can be found in slimefun guide.'
+        - '{color:normal}↑ Put quantity module to speed up'
+    parse-failed-icon:
+      name: '{color:negative}Parse Failed'
+      lore:
+        - '{color:normal}Please try to parse different item'
+    parse-extend-icon:
+      name: '{color:positive}Parse Success'
+      lore:
+        - '{color:action}[click] {color:normal}to get more information'
+    parse-success-icon:
+      name: '{color:positive}Parse Success'
+    parse-amount: '{color:conceal}Amount : {1}'
+  FINALTECH_MULTI_FRAME_MACHINE:
+    name: '{color:prandom}Multi Frame Machine'
+    info:
+      1:
+        name: '{color:stress}Mechanism'
+        lore:
+          - '{color:normal}Put machine item in the center slots to work'
+  FINALTECH_CRAFT_STORAGE:
+    name: '{color:prandom}Craft Storage'
+    info:
+      1:
+        name: '{color:stress}Mechanism'
+        lore:
+          - '{color:normal}Craft in an crazy way'
+    invalid:
+      name: '{color:negative}Invalid'
+      lore:
+        - '{color:normal}Hold slimefun item and click me to setup craft work'
+    valid:
+      name: '{color:positive}Valid'
+      input:
+        title:
+          - '{color:input}Inputs:'
+        items:
+          - '    §f{1}{color:conceal}[{color:number}{2}{color:conceal}] - {color:number}{3}'
+      output:
+        title:
+          - '{color:output}Output:'
+        items:
+          - '    §f{1}{color:conceal}[{color:number}{2}{color:conceal}]'
+          - '    {color:normal}Max Output: {color:number}{3}'
+  FINALTECH_ADVANCED_CRAFT_STORAGE:
+    name: '{color:prandom}Advanced Craft Storage'
+    info:
+      1:
+        name: '{color:stress}Mechanism'
+        lore:
+          - '{color:normal}Craft in an crazy way'
+    invalid:
+      name: '{color:negative}Invalid'
+      lore:
+        - '{color:normal}Hold slimefun item and click me to setup craft work'
+    valid:
+      name: '{color:positive}Valid'
+      input:
+        title:
+          - '{color:input}Inputs:'
+        items:
+          - '    §f{1}{color:conceal}[{color:number}{2}{color:conceal}] - {color:number}{3}'
+      output:
+        title:
+          - '{color:output}Output:'
+        items:
+          - '    §f{1}{color:conceal}[{color:number}{2}{color:conceal}]'
+          - '    {color:normal}Max Output: {color:number}{3}'
   FINALTECH_ITEM_FIXER:
     name: '{color:prandom}Item Fixer'
     info:
@@ -2695,6 +3079,20 @@ items:
           - '{color:normal}Slowly restore durability of item'
   FINALTECH_COBBLESTONE_FACTORY:
     name: '{color:prandom}Cobblestone Factory'
+  FINALTECH_HEALTH_CURER:
+    name: '{color:prandom}Health Curer'
+    info:
+      1:
+        name: '{color:passive}Mechanism'
+        lore:
+          - '{color:action}[Right-Click] Click me to heal you'
+  FINALTECH_EFFECT_CURER:
+    name: '{color:prandom}Effect Curer'
+    info:
+      1:
+        name: '{color:passive}Mechanism'
+        lore:
+          - '{color:action}[Right-Click] Click me to make you fresh'
   FINALTECH_FUEL_CHARGER:
     name: '{color:prandom}Fuel Charger'
     info:
@@ -2767,13 +3165,6 @@ items:
       lore:
         - '{color:normal}Stored Energy: {color:number}{1} J'
         - '{color:normal}Times: {color:number}{2}'
-  FINALTECH_MATRIX_OPERATION_ACCELERATOR:
-    name: '{color:prandom}Matrix Operation Accelerator'
-    info:
-      1:
-        name: '{color:passive}Mechanism'
-        lore:
-          - '{color:normal}Place it below the furnace to work'
   FINALTECH_CURE_TOWER:
     name: '{color:prandom}Cure Tower'
     info:
@@ -2841,6 +3232,19 @@ items:
       - ''
       - '{color:negative}While the stored energy is more than half of capacity'
       - '{color:negative}Stored energy will be reduced by half'
+  ManualCraftMachine:
+    craft-icon:
+      name: '{color:normal}Click To Craft'
+      lore:
+        - '{color:normal}Energy: {color:number}{1}J'
+    status-icon:
+      name: '{color:normal}No Valid Craft'
+    previous-icon:
+      name: '{color:normal}Previous'
+    next-icon:
+      name: '{color:normal}Next'
+    match-item:
+      lore: '{color:conceal}Can be crafted {color:number}{1} {color:conceal}times'
   FINALTECH_MANUAL_CRAFTING_TABLE:
     name: '{color:prandom}Manual Crafting Table'
   FINALTECH_MANUAL_ENHANCED_CRAFTING_TABLE:
@@ -2956,6 +3360,13 @@ items:
         name: '{color:negative}Limit'
         lore:
           - '{color:normal}Cost {color:number}1 life {color:normal}every use'
+  FINALTECH_MATRIX_OPERATION_ACCELERATE_CARD:
+    name: '{color:prandom}Matrix Operation Accelerate Card'
+    info:
+      1:
+        name: '{color:positive}Usage'
+        lore:
+          - '{color:normal}Accelerate the operation of the machine'
   FINALTECH_MATRIX_QUANTITY_MODULE:
     name: '{color:prandom}Matrix Quantity Module'
     info:
@@ -2964,56 +3375,21 @@ items:
         lore:
           - '{color:normal}Can tweak some machines to an amazing efficiency'
           - '{color:normal}Efficiency tweak is downward compatible'
-  FINALTECH_ADVANCED_AUTO_CRAFT:
-    name: '{color:prandom}Advanced Auto Craft'
+  FINALTECH_MATRIX_OPERATION_ACCELERATOR:
+    name: '{color:prandom}Matrix Operation Accelerator'
     info:
       1:
         name: '{color:passive}Mechanism'
         lore:
-          - '{color:normal}Parse how slimefun item is crafted'
-          - '{color:normal}Then craft it from its raw materials directly'
-      2:
+          - '{color:normal}Place it below the furnace to work'
+  FINALTECH_ENTROPY_CONSTRUCTOR:
+    name: '{color:prandom}Entropy Constructor'
+    info:
+      1:
         name: '{color:passive}Mechanism'
         lore:
-          - '{color:normal}Support using {id:FINALTECH_COPY_CARD} {color:normal}to replace raw material'
-        output: 'FINALTECH_COPY_CARD'
-    parse-icon:
-      name: '{color:stress}Parse'
-      lore:
-        - '{color:action}[click] {color:normal}to parse item'
-    wiki-icon:
-      name: '{color:stress}Wiki'
-      lore:
-        - '{color:normal}↓ Put item here'
-        - '{color:normal}↙ Click and parse it'
-        - '{color:normal}↑↑ Put machine item in top two lines to parse item more steps'
-        - '    {color:normal}Available machine item can be found in slimefun guide.'
-        - '{color:normal}↑ Put quantity module to speed up'
-    parse-failed-icon:
-      name: '{color:negative}Parse Failed'
-      lore:
-        - '{color:normal}Please try to parse different item'
-    parse-extend-icon:
-      name: '{color:positive}Parse Success'
-      lore:
-        - '{color:action}[click] {color:normal}to get more information'
-    parse-success-icon:
-      name: '{color:positive}Parse Success'
-    parse-amount: '{color:conceal}Amount : {1}'
-  FINALTECH_MULTI_FRAME_MACHINE:
-    name: '{color:prandom}Multi Frame Machine'
-    info:
-      1:
-        name: '{color:stress}Mechanism'
-        lore:
-          - '{color:normal}Put machine item in the center slots to work'
-  FINALTECH_MATRIX_ITEM_DISMANTLE_TABLE:
-    name: '{color:prandom}Matrix Item Dismantle Table'
-    info:
-      1:
-        name: '{color:stress}Introduction'
-        lore:
-          - '{color:normal}Restore item to its raw materials'
+          - '{color:normal}Convert items to {id:FINALTECH_ENTROPY} {color:normal}with same amount'
+        output: 'FINALTECH_ENTROPY'
   FINALTECH_MATRIX_EXPANDED_CAPACITOR:
     name: '{color:prandom}Matrix Expanded Capacitor'
     info:
@@ -3027,23 +3403,6 @@ items:
       lore:
         - '{color:normal}Transferable Energy: {color:number}{1} J'
         - '{color:normal}Stored Energy Stack: {color:number}{2}'
-  FINALTECH_MATRIX_ITEM_DESERIALIZE_PARSER:
-    name: '{color:prandom}Matrix Item Deserialize Parser'
-    info:
-      1:
-        name: '{color:passive}Mechanism'
-        lore:
-          - '{color:normal}Put in {id:FINALTECH_COPY_CARD}'
-          - '{color:normal}Then it will slowly generate the specified item'
-        output: 'FINALTECH_COPY_CARD'
-  FINALTECH_ENTROPY_CONSTRUCTOR:
-    name: '{color:prandom}Entropy Constructor'
-    info:
-      1:
-        name: '{color:passive}Mechanism'
-        lore:
-          - '{color:normal}Convert items to {id:FINALTECH_ENTROPY} {color:normal}with same amount'
-        output: 'FINALTECH_ENTROPY'
   FINALTECH_MATRIX_GENERATOR:
     name: '{color:prandom}Matrix Generator'
     info:
@@ -3067,6 +3426,28 @@ items:
       lore:
         - '{color:normal}Affected Machine: {color:number}{1}'
         - '{color:normal}Range: {color:number}{2}'
+  FINALTECH_MATRIX_ITEM_DISMANTLE_TABLE:
+    name: '{color:prandom}Matrix Item Dismantle Table'
+    info:
+      1:
+        name: '{color:stress}Introduction'
+        lore:
+          - '{color:normal}Restore item to its raw materials'
+  FINALTECH_MATRIX_STORAGE:
+    name: '{color:prandom}Matrix Storage'
+    info:
+      1:
+        name: '{color:passive}Mechanism'
+        lore:
+          - '{color:normal}Can store items.'
+    status:
+      name: '{color:passive}Status'
+      lore:
+        - '{color:action}[Click {color:conceal}(empty hand){color:action}] {color:normal}Insert all items above.'
+        - '{color:action}[Click {color:conceal}(hold {id:FINALTECH_STORAGE_CARD}{color:conceal}){color:action}] {color:normal}Insert all items from it.'
+    show-item:
+      lore:
+        - '{color:conceal}Amount: {1}'
   FINALTECH_MATRIX_ACCELERATOR:
     name: '{color:prandom}Matrix Accelerator'
     info:
@@ -3092,8 +3473,17 @@ items:
         - '{color:normal}Accelerate Range: {color:number}{1}'
         - '{color:normal}Accelerate Machine: {color:number}{2}'
         - '{color:normal}Accelerate Times: {color:number}{3}'
-  FINALTECH_MATRIX_ITEM_SERIALIZATION_CONSTRUCTOR:
-    name: '{color:prandom}Matrix Item Serialization Constructor'
+  FINALTECH_MATRIX_COPY_CARD_DUPLICATOR:
+    name: '{color:prandom}Matrix Copy Card Duplicator'
+    info:
+      1:
+        name: '{color:passive}Mechanism'
+        lore:
+          - '{color:normal}Put in {id:FINALTECH_COPY_CARD}'
+          - '{color:normal}Then it will slowly generate the specified item'
+        output: 'FINALTECH_COPY_CARD'
+  FINALTECH_MATRIX_COPY_CARD_FACTORY:
+    name: '{color:prandom}Matrix Copy Card Factory'
     info:
       1:
         name: '{color:passive}Mechanism'
@@ -3128,13 +3518,13 @@ items:
       name: '{color:normal}Status'
       lore:
         - '{color:normal}Item Name: {color:number}{1}'
-        - '{color:normal}Item Amount: {color:number}{2}{color:normal}/{color:number}{3}'
+        - '{color:normal}Item Amount: {color:number}{2}{color:normal} / {color:number}{3}'
         - '{color:normal}Rate: {color:number}{4}'
     phony:
       name: '{color:normal}Status'
       lore:
-        - '{color:normal}Copy Card Amount: {color:number}{1}{color:normal}/{color:number}{2}'
-        - '{color:normal}Copy Card Type: {color:number}{3}{color:normal}/{color:number}{4}'
+        - '{color:normal}Copy Card Amount: {color:number}{1}{color:normal} / {color:number}{2}'
+        - '{color:normal}Copy Card Type: {color:number}{3}{color:normal} / {color:number}{4}'
   FINALTECH_MATRIX_REACTOR:
     name: '{color:prandom}Matrix Reactor'
     info:
@@ -3179,19 +3569,6 @@ items:
     status:
       lore:
         - '{color:normal}Progress: {color:number}{1} {color:normal}/ {color:number}{2}'
-  ManualCraftMachine:
-    craft-icon:
-      name: '{color:normal}Click To Craft'
-      lore:
-        - '{color:normal}Energy: {color:number}{1}J'
-    status-icon:
-      name: '{color:normal}No Valid Craft'
-    previous-icon:
-      name: '{color:normal}Previous'
-    next-icon:
-      name: '{color:normal}Next'
-    match-item:
-      lore: '{color:conceal}Can be crafted {color:number}{1} {color:conceal}times'
   ENERGY_REGULATOR:
     hologram:
       multi-regulator: '&4Multiple Energy Regulators connected'
@@ -3222,27 +3599,6 @@ items:
           - '{color:normal}Generated energy: {color:number}{1} J'
         lore-consume:
           - '{color:normal}Consumed energy: {color:number}{1} J'
-effect:
-  VOID_CURSE:
-    message:
-      death: '{1} {color:normal}is swallowed by the void.'
-research:
-  REPLACEABLE_CARD: 'replace item with card!'
-  ORDER_DUST: 'ordered universe'
-  BUG: 'crash me'
-  ENTROPY: 'more and more'
-  ETHER: 'infinity resource'
-  ANNULAR: 'new start'
-  PHONY: 'the reality of you'
-  LOGIC: 'logic and digital'
-  MACHINE_CARD: 'machine card'
-  BOX: 'light and dark'
-  CONSUMABLE_ITEM: 'Consumables'
-  QUANTITY_MODULE: 'quantity module'
-  COPY_CARD: 'copy every thing'
-  ENERGY_CARD: 'electricity trading'
-  SIMPLE_TOOL: 'simple tool'
-  MACHINE_TOOL: 'machine tool'
 message:
   no-permission:
     location: '{color:negative}No permission here!'

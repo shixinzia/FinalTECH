@@ -3,12 +3,11 @@ package io.taraxacum.finaltech.core.item.machine.manual;
 import io.github.thebusybiscuit.slimefun4.api.items.ItemGroup;
 import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItem;
 import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItemStack;
-import io.github.thebusybiscuit.slimefun4.api.recipes.RecipeType;
 import io.taraxacum.finaltech.FinalTech;
+import io.taraxacum.finaltech.core.interfaces.RecipeItem;
 import io.taraxacum.finaltech.core.inventory.manual.AbstractManualMachineInventory;
 import io.taraxacum.finaltech.core.inventory.manual.MatrixCraftingTableInventory;
 import io.taraxacum.finaltech.core.option.Icon;
-import io.taraxacum.finaltech.core.interfaces.RecipeItem;
 import io.taraxacum.finaltech.setup.FinalTechRecipeTypes;
 import io.taraxacum.finaltech.util.RecipeUtil;
 import io.taraxacum.libs.plugin.dto.LocationData;
@@ -25,8 +24,8 @@ import java.util.List;
  * @author Final_ROOT
  */
 public class MatrixCraftingTable extends AbstractManualMachine implements RecipeItem {
-    public MatrixCraftingTable(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
-        super(itemGroup, item, recipeType, recipe);
+    public MatrixCraftingTable(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item) {
+        super(itemGroup, item);
     }
 
     @Nonnull

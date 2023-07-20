@@ -7,7 +7,6 @@ import io.github.thebusybiscuit.slimefun4.core.guide.SlimefunGuide;
 import io.github.thebusybiscuit.slimefun4.core.guide.SlimefunGuideMode;
 import io.github.thebusybiscuit.slimefun4.implementation.Slimefun;
 import io.taraxacum.finaltech.FinalTech;
-import io.taraxacum.libs.slimefun.dto.ItemValueTable;
 import io.taraxacum.finaltech.core.group.RecipeItemGroup;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -21,15 +20,14 @@ import java.util.Optional;
 
 /**
  * A #{@link Command} that will show the value of an item.
- * #{@link ItemValueTable}
  * @author Final_ROOT
  */
 public class ShowItemInfo implements CommandExecutor {
     @Override
     public boolean onCommand(@Nonnull CommandSender commandSender, @Nonnull Command command, @Nonnull String s, @Nonnull String[] strings) {
         if (commandSender instanceof Player player) {
-            ItemStack item = player.getInventory().getItemInMainHand();
-            SlimefunItem slimefunItem = SlimefunItem.getByItem(item);
+            ItemStack itemStack = player.getInventory().getItemInMainHand();
+            SlimefunItem slimefunItem = SlimefunItem.getByItem(itemStack);
             if(slimefunItem == null) {
                 player.sendRawMessage(FinalTech.getLanguageString("message", "invalid-item"));
                 return true;
@@ -47,7 +45,7 @@ public class ShowItemInfo implements CommandExecutor {
                     return true;
                 }
 
-                RecipeItemGroup recipeItemGroup = RecipeItemGroup.getByItemStack(player, playerProfile.get(), SlimefunGuideMode.SURVIVAL_MODE, item);
+                RecipeItemGroup recipeItemGroup = RecipeItemGroup.getByItemStack(player, playerProfile.get(), SlimefunGuideMode.SURVIVAL_MODE, FinalTech.getSimpleInventoryHistoryService(), itemStack);
                 GuideHistory guideHistory = playerProfile.get().getGuideHistory();
                 if (recipeItemGroup != null) {
                     guideHistory.clear();

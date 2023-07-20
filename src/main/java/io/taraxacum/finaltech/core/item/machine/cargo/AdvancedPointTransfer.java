@@ -3,7 +3,6 @@ package io.taraxacum.finaltech.core.item.machine.cargo;
 import io.github.thebusybiscuit.slimefun4.api.items.ItemGroup;
 import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItem;
 import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItemStack;
-import io.github.thebusybiscuit.slimefun4.api.recipes.RecipeType;
 import io.github.thebusybiscuit.slimefun4.core.handlers.BlockBreakHandler;
 import io.github.thebusybiscuit.slimefun4.core.handlers.BlockPlaceHandler;
 import io.github.thebusybiscuit.slimefun4.implementation.Slimefun;
@@ -12,6 +11,8 @@ import io.taraxacum.common.util.JavaUtil;
 import io.taraxacum.finaltech.FinalTech;
 import io.taraxacum.finaltech.core.dto.CargoDTO;
 import io.taraxacum.finaltech.core.dto.SimpleCargoDTO;
+import io.taraxacum.finaltech.core.interfaces.DigitInjectableItem;
+import io.taraxacum.finaltech.core.interfaces.LogicInjectableItem;
 import io.taraxacum.finaltech.core.inventory.AbstractMachineInventory;
 import io.taraxacum.finaltech.core.inventory.cargo.AdvancedPointTransferInventory;
 import io.taraxacum.finaltech.core.option.*;
@@ -30,7 +31,6 @@ import org.bukkit.block.data.Directional;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
-import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import javax.annotation.Nonnull;
@@ -39,18 +39,21 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.BiConsumer;
 
 /**
  * @author Final_ROOT
  */
-public class AdvancedPointTransfer extends AbstractCargo implements RecipeItem {
+public class AdvancedPointTransfer extends AbstractCargo implements RecipeItem, DigitInjectableItem, LogicInjectableItem {
     private final double particleDistance = 0.25;
     private final int particleInterval = 2;
     private final int range = ConfigUtil.getOrDefaultItemSetting(8, this, "range");
     private int[] itemMatch;
+    private BiConsumer<Inventory, LocationData> logicInjectInventoryUpdater;
+    private BiConsumer<Inventory, LocationData> digitInjectInventoryUpdater;
 
-    public AdvancedPointTransfer(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
-        super(itemGroup, item, recipeType, recipe);
+    public AdvancedPointTransfer(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item) {
+        super(itemGroup, item);
     }
 
     @Nullable
@@ -58,6 +61,8 @@ public class AdvancedPointTransfer extends AbstractCargo implements RecipeItem {
     protected AbstractMachineInventory setMachineInventory() {
         AdvancedPointTransferInventory advancedPointTransferInventory = new AdvancedPointTransferInventory(this);
         this.itemMatch = advancedPointTransferInventory.itemMatchSlot;
+        this.logicInjectInventoryUpdater = advancedPointTransferInventory::updateCargoFilter;
+        this.digitInjectInventoryUpdater = advancedPointTransferInventory::updateCargoNumber;
         return advancedPointTransferInventory;
     }
 
@@ -277,5 +282,29 @@ public class AdvancedPointTransfer extends AbstractCargo implements RecipeItem {
     public void registerDefaultRecipes() {
         RecipeUtil.registerDescriptiveRecipe(FinalTech.getLanguageManager(), this,
                 String.valueOf(this.range));
+    }
+
+    @Override
+    public void injectDigit(@Nonnull LocationData locationData, int digit) {
+        CargoNumber.OPTION.setOrClearValue(FinalTech.getLocationDataService(), locationData, String.valueOf(digit));
+
+        Inventory inventory = FinalTech.getLocationDataService().getInventory(locationData);
+        if (inventory != null) {
+            this.digitInjectInventoryUpdater.accept(inventory, locationData);
+        }
+    }
+
+    @Override
+    public void injectLogic(@Nonnull LocationData locationData, boolean logic) {
+        if (logic) {
+            CargoFilter.OPTION.setOrClearValue(FinalTech.getLocationDataService(), locationData, CargoFilter.VALUE_BLACK);
+        } else {
+            CargoFilter.OPTION.setOrClearValue(FinalTech.getLocationDataService(), locationData, CargoFilter.VALUE_WHITE);
+        }
+
+        Inventory inventory = FinalTech.getLocationDataService().getInventory(locationData);
+        if (inventory != null) {
+            this.logicInjectInventoryUpdater.accept(inventory, locationData);
+        }
     }
 }

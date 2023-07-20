@@ -22,7 +22,11 @@ public class ConstantTableUtil {
 
     public static final int ITEM_MAX_STACK = 64;
 
-    public static final double WARNING_TPS = 19.5;
+    public static final double WARNING_TPS = 19.9;
+
+    public static final double FULL_TPS = 20;
 
     public static final String SLIMEFUN_TICK_INTERVAL = String.format("%.2f", Slimefun.getTickerTask().getTickRate() / 20.0);
+
+    public static final String RAW_MATERIAL_ID_PREFIX = "minecraft_";
 }

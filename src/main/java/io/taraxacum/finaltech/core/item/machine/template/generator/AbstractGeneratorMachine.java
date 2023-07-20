@@ -3,22 +3,21 @@ package io.taraxacum.finaltech.core.item.machine.template.generator;
 import io.github.thebusybiscuit.slimefun4.api.items.ItemGroup;
 import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItem;
 import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItemStack;
-import io.github.thebusybiscuit.slimefun4.api.recipes.RecipeType;
 import io.github.thebusybiscuit.slimefun4.core.handlers.BlockBreakHandler;
 import io.github.thebusybiscuit.slimefun4.core.handlers.BlockPlaceHandler;
 import io.taraxacum.finaltech.FinalTech;
+import io.taraxacum.finaltech.core.interfaces.RecipeItem;
 import io.taraxacum.finaltech.core.inventory.AbstractMachineInventory;
 import io.taraxacum.finaltech.core.inventory.simple.GeneratorMachineInventory;
+import io.taraxacum.finaltech.core.item.machine.AbstractMachine;
+import io.taraxacum.finaltech.core.option.Icon;
+import io.taraxacum.finaltech.util.MachineUtil;
 import io.taraxacum.libs.plugin.dto.AdvancedMachineRecipe;
 import io.taraxacum.libs.plugin.dto.ItemAmountWrapper;
 import io.taraxacum.libs.plugin.dto.LocationData;
 import io.taraxacum.libs.plugin.util.InventoryUtil;
-import io.taraxacum.libs.slimefun.dto.RandomMachineRecipe;
-import io.taraxacum.finaltech.core.interfaces.RecipeItem;
 import io.taraxacum.libs.slimefun.dto.MachineRecipeFactory;
-import io.taraxacum.finaltech.core.option.Icon;
-import io.taraxacum.finaltech.core.item.machine.AbstractMachine;
-import io.taraxacum.finaltech.util.MachineUtil;
+import io.taraxacum.libs.slimefun.dto.RandomMachineRecipe;
 import me.mrCookieSlime.Slimefun.Objects.SlimefunItem.abstractItems.MachineRecipe;
 import org.bukkit.Material;
 import org.bukkit.Tag;
@@ -39,8 +38,8 @@ public abstract class AbstractGeneratorMachine extends AbstractMachine implement
     private int moduleSlot;
     private int statusSlot;
 
-    public AbstractGeneratorMachine(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
-        super(itemGroup, item, recipeType, recipe);
+    public AbstractGeneratorMachine(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item) {
+        super(itemGroup, item);
     }
 
     @Nullable
@@ -49,7 +48,7 @@ public abstract class AbstractGeneratorMachine extends AbstractMachine implement
         GeneratorMachineInventory generatorMachineInventory = new GeneratorMachineInventory(this);
         this.moduleSlot = generatorMachineInventory.moduleSlot;
         this.statusSlot = generatorMachineInventory.statusSlot;
-        return null;
+        return generatorMachineInventory;
     }
 
     @Nonnull

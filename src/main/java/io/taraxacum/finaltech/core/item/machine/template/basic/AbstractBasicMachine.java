@@ -1,21 +1,25 @@
 package io.taraxacum.finaltech.core.item.machine.template.basic;
 
-import io.github.thebusybiscuit.slimefun4.api.items.*;
-import io.github.thebusybiscuit.slimefun4.api.recipes.RecipeType;
+import io.github.thebusybiscuit.slimefun4.api.items.ItemGroup;
+import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItem;
+import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItemStack;
 import io.github.thebusybiscuit.slimefun4.core.handlers.BlockBreakHandler;
 import io.github.thebusybiscuit.slimefun4.core.handlers.BlockPlaceHandler;
 import io.taraxacum.finaltech.FinalTech;
+import io.taraxacum.finaltech.core.interfaces.DigitInjectableItem;
+import io.taraxacum.finaltech.core.interfaces.LogicInjectableItem;
+import io.taraxacum.finaltech.core.interfaces.RecipeItem;
 import io.taraxacum.finaltech.core.inventory.AbstractMachineInventory;
 import io.taraxacum.finaltech.core.inventory.limit.lock.BasicMachineInventory;
+import io.taraxacum.finaltech.core.item.machine.AbstractMachine;
+import io.taraxacum.finaltech.core.option.MachineMaxStack;
+import io.taraxacum.finaltech.core.option.MachineRecipeLock;
+import io.taraxacum.finaltech.util.MachineUtil;
+import io.taraxacum.libs.plugin.dto.AdvancedMachineRecipe;
 import io.taraxacum.libs.plugin.dto.LocationData;
 import io.taraxacum.libs.plugin.util.InventoryUtil;
 import io.taraxacum.libs.slimefun.dto.AdvancedCraft;
-import io.taraxacum.libs.plugin.dto.AdvancedMachineRecipe;
 import io.taraxacum.libs.slimefun.dto.MachineRecipeFactory;
-import io.taraxacum.finaltech.core.interfaces.RecipeItem;
-import io.taraxacum.finaltech.core.item.machine.AbstractMachine;
-import io.taraxacum.finaltech.util.MachineUtil;
-import io.taraxacum.finaltech.core.option.MachineRecipeLock;
 import org.bukkit.block.Block;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
@@ -23,18 +27,22 @@ import org.bukkit.inventory.ItemStack;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.BiConsumer;
 
 /**
  * @author Final_ROOT
  */
-public abstract class AbstractBasicMachine extends AbstractMachine implements RecipeItem {
+public abstract class AbstractBasicMachine extends AbstractMachine implements RecipeItem, DigitInjectableItem, LogicInjectableItem {
     private final String offsetKey = "offset";
     private int recipeLockSlot;
+    private BiConsumer<Inventory, LocationData> logicInjectInventoryUpdater;
+    private BiConsumer<Inventory, LocationData> digitInjectInventoryUpdater;
 
     @ParametersAreNonnullByDefault
-    protected AbstractBasicMachine(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
-        super(itemGroup, item, recipeType, recipe);
+    protected AbstractBasicMachine(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item) {
+        super(itemGroup, item);
     }
 
     @Nullable
@@ -42,6 +50,8 @@ public abstract class AbstractBasicMachine extends AbstractMachine implements Re
     protected AbstractMachineInventory setMachineInventory() {
         BasicMachineInventory basicMachineInventory = new BasicMachineInventory(this);
         this.recipeLockSlot = basicMachineInventory.recipeLockSlot;
+        this.logicInjectInventoryUpdater = basicMachineInventory::updateMachineRecipeLock;
+        this.digitInjectInventoryUpdater = basicMachineInventory::updateMachineMaxStack;
         return basicMachineInventory;
     }
 
@@ -55,11 +65,6 @@ public abstract class AbstractBasicMachine extends AbstractMachine implements Re
     @Override
     protected BlockBreakHandler onBlockBreak() {
         return MachineUtil.simpleBlockBreakerHandler(FinalTech.getLocationDataService(), this);
-    }
-
-    @Override
-    protected boolean isSynchronized() {
-        return false;
     }
 
     @Override
@@ -102,6 +107,35 @@ public abstract class AbstractBasicMachine extends AbstractMachine implements Re
                 }
                 InventoryUtil.stockSlots(inventory, this.getOutputSlot());
             }
+        }
+    }
+
+    @Override
+    protected boolean isSynchronized() {
+        return false;
+    }
+
+    @Override
+    public void injectDigit(@Nonnull LocationData locationData, int digit) {
+        MachineMaxStack.OPTION.setOrClearValue(FinalTech.getLocationDataService(), locationData, String.valueOf(digit));
+
+        Inventory inventory = FinalTech.getLocationDataService().getInventory(locationData);
+        if (inventory != null) {
+            this.digitInjectInventoryUpdater.accept(inventory, locationData);
+        }
+    }
+
+    @Override
+    public void injectLogic(@Nonnull LocationData locationData, boolean logic) {
+        if (logic) {
+            MachineRecipeLock.OPTION.setOrClearValue(FinalTech.getLocationDataService(), locationData, MachineRecipeLock.VALUE_UNLOCK);
+        } else {
+            MachineRecipeLock.OPTION.setOrClearValue(FinalTech.getLocationDataService(), locationData, MachineRecipeLock.VALUE_LOCK_OFF);
+        }
+
+        Inventory inventory = FinalTech.getLocationDataService().getInventory(locationData);
+        if (inventory != null) {
+            this.logicInjectInventoryUpdater.accept(inventory, locationData);
         }
     }
 }

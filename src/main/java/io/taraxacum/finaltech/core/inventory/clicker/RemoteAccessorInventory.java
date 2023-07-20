@@ -29,6 +29,7 @@ public class RemoteAccessorInventory extends AbstractClickerInventory {
         this.range = range;
     }
 
+    @Nonnull
     @Override
     protected int[] getBorder() {
         return this.border;
@@ -51,7 +52,7 @@ public class RemoteAccessorInventory extends AbstractClickerInventory {
             Block targetBlock = block;
             for (int i = 0; i < this.range; i++) {
                 targetBlock = targetBlock.getRelative(blockFace);
-                if(!targetBlock.getChunk().isLoaded()) {
+                if (!targetBlock.getChunk().isLoaded()) {
                     return;
                 }
                 BlockMenu blockMenu = slimefunLocationDataService.getBlockMenu(targetBlock.getLocation());

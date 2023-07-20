@@ -16,15 +16,15 @@ public abstract class SpecialResearch extends Research {
      * Text to show in the slimefun guide while player is not unlocked this research.
      * @return text to show what player is needed to unlocked it.
      */
-    abstract public String[] getShowText(@Nonnull Player player);
+    public abstract String[] getShowText(@Nonnull Player player);
 
     /**
      * @return whether player can research this research.
      */
-    abstract public boolean canResearch(@Nonnull Player player);
+    public abstract boolean canResearch(@Nonnull Player player);
 
     /**
      * What to do if player unlock this research successful.
      */
-    abstract public void afterResearch(@Nonnull Player player);
+    public abstract void afterResearch(@Nonnull Player player);
 }

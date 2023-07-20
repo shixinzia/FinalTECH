@@ -3,6 +3,7 @@ package io.taraxacum.finaltech.core.inventory.cargo;
 import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItem;
 import io.taraxacum.finaltech.FinalTech;
 import io.taraxacum.finaltech.core.option.*;
+import io.taraxacum.libs.plugin.dto.LocationData;
 import org.bukkit.Location;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
@@ -25,6 +26,7 @@ public class AdvancedLocationTransferInventory extends LocationTransferInventory
         super(slimefunItem);
     }
 
+    @Nonnull
     @Override
     protected int[] getBorder() {
         return this.border;
@@ -67,5 +69,9 @@ public class AdvancedLocationTransferInventory extends LocationTransferInventory
         SlotSearchSize.OPTION.checkAndUpdateIcon(inventory, this.slotSearchSizeSlot, FinalTech.getLocationDataService(), location);
         SlotSearchOrder.OPTION.checkAndUpdateIcon(inventory, this.slotSearchOrderSlot, FinalTech.getLocationDataService(), location);
         CargoLimit.OPTION.checkAndUpdateIcon(inventory, this.cargoLimitSlot, FinalTech.getLocationDataService(), location);
+    }
+
+    public void updateCargoNumber(@Nonnull Inventory inventory, @Nonnull LocationData locationData) {
+        CargoNumber.OPTION.checkAndUpdateIcon(inventory, this.cargoNumberSlot, FinalTech.getLocationDataService(), locationData);
     }
 }

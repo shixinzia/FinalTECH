@@ -17,11 +17,13 @@ public abstract class AbstractClickerInventory extends AbstractMachineInventory 
         this.clickerMachine = abstractClickerMachine;
     }
 
+    @Nonnull
     @Override
     protected int[] getInputBorder() {
         return new int[0];
     }
 
+    @Nonnull
     @Override
     protected int[] getOutputBorder() {
         return new int[0];

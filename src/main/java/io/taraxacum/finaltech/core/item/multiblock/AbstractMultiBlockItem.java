@@ -7,6 +7,7 @@ import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItemStack;
 import io.github.thebusybiscuit.slimefun4.core.multiblocks.MultiBlockMachine;
 import io.taraxacum.finaltech.FinalTech;
 import io.taraxacum.finaltech.core.interfaces.RecipeItem;
+import io.taraxacum.finaltech.util.ConfigUtil;
 import io.taraxacum.libs.slimefun.dto.MachineRecipeFactory;
 import org.bukkit.block.BlockFace;
 import org.bukkit.inventory.ItemStack;
@@ -19,6 +20,9 @@ import javax.annotation.Nonnull;
  * @author Final_ROOT
  */
 public abstract class AbstractMultiBlockItem extends MultiBlockMachine {
+    public AbstractMultiBlockItem(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item, @Nonnull BlockFace blockFace) {
+        super(itemGroup, item, ConfigUtil.getRecipe(item.getItemId()), blockFace);
+    }
     public AbstractMultiBlockItem(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item, @Nonnull ItemStack[] recipe, @Nonnull BlockFace blockFace) {
         super(itemGroup, item, recipe, blockFace);
     }

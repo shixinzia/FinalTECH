@@ -27,6 +27,7 @@ public class AdvancedAutoCraftInventory extends AdvancedAutoCraftFrameInventory 
         super(slimefunItem, locationRecipeMap);
     }
 
+    @Nonnull
     @Override
     protected int[] getBorder() {
         return this.border;

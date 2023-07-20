@@ -6,6 +6,7 @@ import io.taraxacum.finaltech.core.inventory.AbstractMachineInventory;
 import io.taraxacum.finaltech.core.option.BlockSearchMode;
 import io.taraxacum.finaltech.core.option.CargoFilter;
 import io.taraxacum.finaltech.core.option.CargoMode;
+import io.taraxacum.libs.plugin.dto.LocationData;
 import io.taraxacum.libs.plugin.interfaces.LogicInventory;
 import org.bukkit.Location;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -35,16 +36,19 @@ public class PointTransferInventory extends AbstractMachineInventory implements 
         super(slimefunItem);
     }
 
+    @Nonnull
     @Override
     protected int[] getBorder() {
         return this.border;
     }
 
+    @Nonnull
     @Override
     protected int[] getInputBorder() {
         return this.inputBorder;
     }
 
+    @Nonnull
     @Override
     protected int[] getOutputBorder() {
         return this.outputBorder;
@@ -97,5 +101,9 @@ public class PointTransferInventory extends AbstractMachineInventory implements 
         CargoMode.OPTION.checkAndUpdateIcon(inventory, this.cargoModeSlot, FinalTech.getLocationDataService(), location);
         BlockSearchMode.POINT_INPUT_OPTION.checkAndUpdateIcon(inventory, this.inputBlockSearchModeSlot, FinalTech.getLocationDataService(), location);
         BlockSearchMode.POINT_OUTPUT_OPTION.checkAndUpdateIcon(inventory, this.outputBlockSearchModeSlot, FinalTech.getLocationDataService(), location);
+    }
+
+    public void updateCargoFilter(@Nonnull Inventory inventory, @Nonnull LocationData locationData) {
+        CargoFilter.OPTION.checkAndUpdateIcon(inventory, this.cargoFilterSlot, FinalTech.getLocationDataService(), locationData);
     }
 }

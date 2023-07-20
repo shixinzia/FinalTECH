@@ -24,7 +24,7 @@ public class DigitalNumber extends UnusableSlimefunItem implements RecipeItem, D
 
     private final int digit;
 
-    public DigitalNumber(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe, int digit) {
+    public DigitalNumber(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item, @Nonnull RecipeType recipeType, @Nonnull ItemStack[] recipe, int digit) {
         super(itemGroup, item, recipeType, recipe);
         this.digit = digit;
         if(DIGIT_MAP.containsKey(this.getDigit())) {

@@ -22,7 +22,13 @@ import java.util.*;
 public abstract class UsableSlimefunItem extends AbstractMySlimefunItem {
     private final Map<Player, List<Long>> intervalThresholdMap = new HashMap<>();
 
-    public UsableSlimefunItem(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
+    public UsableSlimefunItem(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item) {
+        super(itemGroup, item);
+        this.addItemHandler(MachineUtil.BLOCK_PLACE_HANDLER_DENY);
+        this.addItemHandler((ItemUseHandler) UsableSlimefunItem.this::doFunction);
+    }
+
+    public UsableSlimefunItem(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item, @Nonnull RecipeType recipeType, @Nonnull ItemStack[] recipe) {
         super(itemGroup, item, recipeType, recipe);
         this.addItemHandler(MachineUtil.BLOCK_PLACE_HANDLER_DENY);
         this.addItemHandler((ItemUseHandler) UsableSlimefunItem.this::doFunction);

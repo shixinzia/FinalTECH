@@ -3,12 +3,12 @@ package io.taraxacum.finaltech.core.item.machine.range.line.pile;
 import io.github.thebusybiscuit.slimefun4.api.items.ItemGroup;
 import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItem;
 import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItemStack;
-import io.github.thebusybiscuit.slimefun4.api.recipes.RecipeType;
 import io.github.thebusybiscuit.slimefun4.core.attributes.EnergyNetComponent;
 import io.github.thebusybiscuit.slimefun4.core.handlers.BlockBreakHandler;
 import io.github.thebusybiscuit.slimefun4.core.handlers.BlockPlaceHandler;
 import io.github.thebusybiscuit.slimefun4.core.networks.energy.EnergyNetComponentType;
 import io.taraxacum.common.util.JavaUtil;
+import io.taraxacum.common.util.StringNumberUtil;
 import io.taraxacum.finaltech.FinalTech;
 import io.taraxacum.finaltech.core.interfaces.LocationMachine;
 import io.taraxacum.finaltech.core.interfaces.MenuUpdater;
@@ -19,11 +19,10 @@ import io.taraxacum.finaltech.core.item.machine.range.AbstractRangeMachine;
 import io.taraxacum.finaltech.core.item.machine.range.line.AbstractLineMachine;
 import io.taraxacum.finaltech.core.option.RouteShow;
 import io.taraxacum.finaltech.util.BlockTickerUtil;
+import io.taraxacum.finaltech.util.ConfigUtil;
+import io.taraxacum.finaltech.util.MachineUtil;
 import io.taraxacum.libs.plugin.dto.LocationData;
 import io.taraxacum.libs.plugin.util.ItemStackUtil;
-import io.taraxacum.finaltech.util.MachineUtil;
-import io.taraxacum.common.util.StringNumberUtil;
-import io.taraxacum.finaltech.util.ConfigUtil;
 import io.taraxacum.libs.slimefun.util.EnergyUtil;
 import io.taraxacum.libs.slimefun.util.LocationDataUtil;
 import org.bukkit.Location;
@@ -46,8 +45,8 @@ public abstract class AbstractElectricityShootPile extends AbstractLineMachine i
     protected final Set<String> notAllowedId = new HashSet<>(ConfigUtil.getItemStringList(this, "not-allowed-id"));
     private int statusSlot;
 
-    public AbstractElectricityShootPile(ItemGroup itemGroup, SlimefunItemStack item, RecipeType recipeType, ItemStack[] recipe) {
-        super(itemGroup, item, recipeType, recipe);
+    public AbstractElectricityShootPile(@Nonnull ItemGroup itemGroup, @Nonnull SlimefunItemStack item) {
+        super(itemGroup, item);
     }
 
     @Nullable
@@ -76,7 +75,10 @@ public abstract class AbstractElectricityShootPile extends AbstractLineMachine i
         if (blockData instanceof Directional directional) {
             Runnable runnable = () -> {
                 Inventory inventory = FinalTech.getLocationDataService().getInventory(locationData);
-                boolean hasViewer = inventory != null && !inventory.getViewers().isEmpty();
+                if (inventory == null) {
+                    return;
+                }
+                boolean hasViewer = !inventory.getViewers().isEmpty() || RouteShow.VALUE_TRUE.equals(RouteShow.OPTION.getOrDefaultValue(FinalTech.getLocationDataService(), locationData));
 
                 int count = 0;
                 Summary summary = new Summary(hasViewer || RouteShow.VALUE_TRUE.equals(RouteShow.OPTION.getOrDefaultValue(FinalTech.getLocationDataService(), locationData)));

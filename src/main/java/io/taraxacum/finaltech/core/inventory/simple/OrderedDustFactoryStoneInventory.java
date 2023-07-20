@@ -11,6 +11,7 @@ import javax.annotation.Nonnull;
 /**
  * @author Final_ROOT
  */
+@Deprecated
 public class OrderedDustFactoryStoneInventory extends AbstractOrdinaryMachineInventory {
     private final int[] border = new int[] {7, 8, 16, 17, 25, 26, 34, 35, 43, 44, 52, 53};
     private final int[] inputBorder = new int[] {6, 15, 24, 33, 42, 51};
@@ -21,16 +22,19 @@ public class OrderedDustFactoryStoneInventory extends AbstractOrdinaryMachineInv
         super(machine);
     }
 
+    @Nonnull
     @Override
     protected int[] getBorder() {
         return this.border;
     }
 
+    @Nonnull
     @Override
     protected int[] getInputBorder() {
         return this.inputBorder;
     }
 
+    @Nonnull
     @Override
     protected int[] getOutputBorder() {
         return this.outputBorder;

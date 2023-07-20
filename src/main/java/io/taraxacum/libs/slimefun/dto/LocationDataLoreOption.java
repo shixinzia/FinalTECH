@@ -1,6 +1,7 @@
 package io.taraxacum.libs.slimefun.dto;
 
 import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItem;
+import io.taraxacum.libs.plugin.dto.LocationData;
 import io.taraxacum.libs.plugin.interfaces.LocationDataService;
 import io.taraxacum.libs.plugin.util.ItemStackUtil;
 import org.bukkit.Location;
@@ -21,7 +22,8 @@ import java.util.function.Consumer;
 public class LocationDataLoreOption extends LocationDataOption {
 
     /**
-     * -1: replace the lore
+     * -1: replace all the lore
+     * others: replace the lore from the specified line.
      */
     private final int loreOffset;
     private final Map<String, List<String>> valueLoreMap;
@@ -67,6 +69,14 @@ public class LocationDataLoreOption extends LocationDataOption {
         ItemStack itemStack = inventory.getItem(slot);
         if(!ItemStackUtil.isItemNull(itemStack)) {
             String value = this.getOrDefaultValue(locationDataService, location);
+            this.updateLore(itemStack, value);
+        }
+    }
+
+    public void checkAndUpdateIcon(@Nonnull Inventory inventory, int slot, @Nonnull LocationDataService locationDataService, @Nonnull LocationData locationData) {
+        ItemStack itemStack = inventory.getItem(slot);
+        if(!ItemStackUtil.isItemNull(itemStack)) {
+            String value = this.getOrDefaultValue(locationDataService, locationData);
             this.updateLore(itemStack, value);
         }
     }

@@ -41,16 +41,19 @@ public class LocationTransferInventory extends AbstractMachineInventory implemen
         super(slimefunItem);
     }
 
+    @Nonnull
     @Override
     protected int[] getBorder() {
         return this.border;
     }
 
+    @Nonnull
     @Override
     protected int[] getInputBorder() {
         return this.inputBorder;
     }
 
+    @Nonnull
     @Override
     protected int[] getOutputBorder() {
         return this.outputBorder;
@@ -129,5 +132,9 @@ public class LocationTransferInventory extends AbstractMachineInventory implemen
         SlotSearchLine.L1_OPTION.checkAndUpdateIcon(inventory, this.line1Slot, FinalTech.getLocationDataService(), location);
         SlotSearchLine.L2_OPTION.checkAndUpdateIcon(inventory, this.line2Slot, FinalTech.getLocationDataService(), location);
         SlotSearchLine.L3_OPTION.checkAndUpdateIcon(inventory, this.line3Slot, FinalTech.getLocationDataService(), location);
+    }
+
+    public void updateCargoOrder(@Nonnull Inventory inventory, @Nonnull LocationData locationData) {
+        CargoOrder.OPTION.checkAndUpdateIcon(inventory, this.cargoOrderSlot, FinalTech.getLocationDataService(), locationData);
     }
 }

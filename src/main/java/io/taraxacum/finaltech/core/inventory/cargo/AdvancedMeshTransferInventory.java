@@ -3,6 +3,7 @@ package io.taraxacum.finaltech.core.inventory.cargo;
 import io.github.thebusybiscuit.slimefun4.api.items.SlimefunItem;
 import io.taraxacum.finaltech.FinalTech;
 import io.taraxacum.finaltech.core.option.*;
+import io.taraxacum.libs.plugin.dto.LocationData;
 import org.bukkit.Location;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
@@ -31,6 +32,7 @@ public class AdvancedMeshTransferInventory extends MeshTransferInventory {
         super(slimefunItem);
     }
 
+    @Nonnull
     @Override
     protected int[] getBorder() {
         return this.border;
